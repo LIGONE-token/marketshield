@@ -91,3 +91,16 @@ footer {
     border-color: #3b7f3b;
     transform: translateY(-3px);
 }
+.entry-box {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 12px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.entry-box h3 {
+    margin-top: 0;
+    color: #2c7a3f;
+}
