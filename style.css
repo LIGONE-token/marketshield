@@ -65,3 +65,29 @@ footer {
     color: #444;
     margin-top: 40px;
 }
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    width: 90%;
+    max-width: 900px;
+    margin: 25px auto;
+}
+
+.cat-item {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.cat-item:hover {
+    background: #e8f5e9;
+    border-color: #3b7f3b;
+    transform: translateY(-3px);
+}
