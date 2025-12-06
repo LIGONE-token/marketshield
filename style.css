@@ -187,3 +187,19 @@ header .subtitle {
 .feedback-btn:hover {
     background: #005fcc;
 }
+.feedback-container {
+    width: 100% !important;
+    margin: 20px 0;
+    
+    /* Wichtig: doppelte Zentrierung */
+    display: flex !important;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+.feedback-btn {
+    /* verhindert 100%-Breite durch andere CSS-Regeln */
+    width: auto !important;
+    display: inline-block !important;
+    margin: 0 auto !important;
+}
