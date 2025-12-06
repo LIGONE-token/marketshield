@@ -1,3 +1,17 @@
+html, body {
+  font-size: 18px;      /* normale Schrift wird größer */
+  line-height: 1.6;     /* bessere Lesbarkeit */
+}
+
+.category-grid button {
+  font-size: 18px;      /* Buttons größer */
+  padding: 14px 16px;   /* mehr Platz im Button */
+}
+
+.content {
+  font-size: 18px;      /* Lesetext größer */
+}
+
 body {
     font-family: Arial, sans-serif;
     margin: 0;
