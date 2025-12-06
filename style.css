@@ -244,3 +244,9 @@ body.christmas .subtitle {
 #gewinnspiel {
   text-align: center;
 }
+#gewinnspiel {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
