@@ -147,3 +147,23 @@ footer {
     border-color: #c2c2c2;
     transform: translateX(3px);
 }
+body {
+    background: #fafafa;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+#results {
+    padding: 20px;
+    font-size: 18px;
+    line-height: 1.5;
+}
+header h1 {
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+header .subtitle {
+    font-size: 18px;
+    color: #666;
+}
