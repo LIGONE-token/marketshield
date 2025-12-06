@@ -167,3 +167,23 @@ header .subtitle {
     font-size: 18px;
     color: #666;
 }
+.feedback-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.feedback-btn {
+    padding: 12px 20px;
+    border-radius: 8px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+}
+
+.feedback-btn:hover {
+    background: #005fcc;
+}
