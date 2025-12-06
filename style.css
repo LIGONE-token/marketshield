@@ -203,3 +203,36 @@ header .subtitle {
     display: inline-block !important;
     margin: 0 auto !important;
 }
+/* 🎄 Weihnachtsmodus – wird per JS über body.christmas aktiviert */
+body.christmas {
+    background: #f8f3f0;
+    background-image: radial-gradient(circle at top, rgba(255,255,255,0.7), transparent 55%);
+}
+
+/* Optional: Header/Fußzeile leicht anpassen */
+body.christmas header,
+body.christmas footer {
+    background-color: #b71c1c;
+    color: #fff;
+}
+
+/* Kategorie-Buttons im Weihnachtslook */
+body.christmas .category-grid button {
+    background-color: #c62828;
+    color: #fff;
+    border: none;
+}
+
+body.christmas .category-grid button:hover {
+    background-color: #8e1b1b;
+}
+
+/* Feedback-/Anregungen-Button an das Weihnachtsdesign anpassen */
+body.christmas .feedback-btn {
+    background-color: #2e7d32;
+    color: #fff;
+}
+
+body.christmas .feedback-btn:hover {
+    background-color: #1b5e20;
+}
