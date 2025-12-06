@@ -236,3 +236,8 @@ body.christmas .feedback-btn {
 body.christmas .feedback-btn:hover {
     background-color: #1b5e20;
 }
+/* Weihnachtsmodus: Untertitel ("Fair informiert.") besser lesbar machen */
+body.christmas .subtitle {
+    color: #ffffff !important;
+    text-shadow: 0 0 4px rgba(0,0,0,0.45);
+}
