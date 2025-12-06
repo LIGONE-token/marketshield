@@ -1,7 +1,6 @@
-// 🎄 Weihnachtsdesign automatisch ein-/ausschalten
 document.addEventListener("DOMContentLoaded", function () {
     const now = new Date();
-    const month = now.getMonth() + 1; // Januar = 1, Dezember = 12
+    const month = now.getMonth() + 1;
     const day = now.getDate();
 
     const isChristmasTime = (month === 12 && day >= 1 && day <= 26);
