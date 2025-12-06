@@ -1,3 +1,7 @@
 {
-  "finanzen": []
+  "finanzen": {
+    "description": "Themen zu Finanzen, Sicherheit, Geldmanagement und wichtigen Warnhinweisen.",
+    "items": []
+  }
 }
+
