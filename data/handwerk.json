@@ -1,3 +1,6 @@
 {
-  "handwerk": []
+  "handwerk": {
+    "description": "Informationen über handwerkliche Tätigkeiten, Berufe und Tipps aus der Praxis.",
+    "items": []
+  }
 }
