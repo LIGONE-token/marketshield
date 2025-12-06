@@ -1,3 +1,4 @@
+// 🎄 Weihnachtsmodus aktivieren (1.–26. Dezember)
 document.addEventListener("DOMContentLoaded", function () {
     const now = new Date();
     const month = now.getMonth() + 1;
@@ -21,6 +22,8 @@ fetch("data/categories.json")
 
     data.categories.forEach(cat => {
       const btn = document.createElement("button");
+
+      // Worttrennung für "Verbraucherschutz"
       btn.innerHTML = cat.title.replace("Verbraucherschutz", "Verbraucher-<br>schutz");
       btn.dataset.category = cat.id;
 
@@ -35,7 +38,7 @@ fetch("data/categories.json")
 
 
 
-// 🔹 Suchfunktion
+// 🔹 Suchfunktion (wird später an entries.json angebunden)
 document.getElementById("searchInput").addEventListener("input", function () {
     const q = this.value.trim().toLowerCase();
     const resultBox = document.getElementById("results");
@@ -55,27 +58,9 @@ document.getElementById("searchInput").addEventListener("input", function () {
 
 
 
-// 🔹 Kategorie-Datei laden und anzeigen
-async function loadCategory(catId) {
-    const resultBox = document.getElementById("results");
-
-    try {
-        const response = await fetch(`data/${catId}.json`);
-        const data = await response.json();
-
-        const categoryData = data[catId];
-
-        resultBox.innerHTML = `
-            <h2>${categoryData.description}</h2>
-            <ul>
-              ${(categoryData.items || []).map(item => `<li>${item}</li>`).join("")}
-            </ul>
-        `;
-    } catch (error) {
-        resultBox.innerHTML = "<p>Fehler beim Laden der Kategorie.</p>";
-        console.error("Ladefehler:", error);
-    }
-}
+// 🔹 EINZIGE gültige loadCategory-Funktion
+//    → Sie lädt immer entries.json
+//    → Für später beliebig viele Einträge geeignet (auch 100.000+)
 function loadCategory(categoryId) {
   fetch("data/entries.json")
     .then(response => response.json())
@@ -83,13 +68,15 @@ function loadCategory(categoryId) {
       const results = document.getElementById("results");
       results.innerHTML = "";
 
+      // Einträge filtern nach Kategorie
       const filtered = data.entries.filter(entry => entry.category === categoryId);
 
       if (filtered.length === 0) {
-        results.innerHTML = "<p>Keine Einträge vorhanden.</p>";
+        results.innerHTML = "<p>Noch keine Einträge in dieser Kategorie.</p>";
         return;
       }
 
+      // Einträge anzeigen
       filtered.forEach(entry => {
         const box = document.createElement("div");
         box.classList.add("entry-box");
@@ -103,34 +90,4 @@ function loadCategory(categoryId) {
       });
     })
     .catch(err => console.error("Fehler beim Laden der Einträge:", err));
-}
-function loadCategory(categoryId) {
-  fetch("data/entries.json")
-    .then(response => response.json())
-    .then(data => {
-      const results = document.getElementById("results");
-      results.innerHTML = "";
-
-      const filtered = data.entries.filter(entry => entry.category === categoryId);
-
-      if (filtered.length === 0) {
-        results.innerHTML = "<p>Für diese Kategorie sind noch keine Einträge vorhanden.</p>";
-        return;
-      }
-
-      filtered.forEach(entry => {
-        const box = document.createElement("div");
-        box.classList.add("entry-box");
-
-        box.innerHTML = `
-          <h3>${entry.title}</h3>
-          <p>${entry.text}</p>
-        `;
-
-        results.appendChild(box);
-      });
-    })
-    .catch(err => {
-      console.error("Fehler beim Laden der Einträge:", err);
-    });
 }
