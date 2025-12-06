@@ -1,9 +1,6 @@
 {
-  "movies": [
-    {
-      "title": "Das erstaunliche Leben des Walter Mitty",
-      "genre": "Abenteuer",
-      "reason": "Ein inspirierender Film, der Mut macht, Neues zu wagen und das Leben aktiv zu gestalten."
-    }
-  ]
+  "movies": {
+    "description": "Eine Sammlung verschiedener Filme und Empfehlungen aus unterschiedlichen Genres.",
+    "items": []
+  }
 }
