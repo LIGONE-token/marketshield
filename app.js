@@ -17,30 +17,31 @@ document.getElementById("searchInput").addEventListener("input", function () {
 });
 
 
-// 🔹 Dynamische Kategorie-Dateien
-const categoryFiles = {
-    "Kosmetik": "kosmetik.json",
-    "Lebensmittel": "lebensmittel.json",
-    "Haushalt": "haushalt.json",
-    "Schadstoffe": "schadstoffe.json",
-    "Naturmittel": "naturmittel.json",
-    "Reisen": "reisen.json",
-    "Auto & Ersatzteile": "auto.json",
-    "Finanzen": "finanzen.json",
-    "Technik": "technik.json",
-    "Buchtipps": "buchtipps.json",
-    "Sehenswürdigkeiten": "sehenswuerdigkeiten.json",
-    "Berufstipps": "berufstipps.json",
-    "Löhne & Gehälter": "loehne.json",
-    "Senioren & Alltagshilfe": "senioren.json"
-};
-
-
-// 🔹 Kategorie laden
-async function loadCategory(catName) {
-    const file = categoryFiles[catName];
+async function loadCategory(catId) {
     const resultBox = document.getElementById("results");
 
+    try {
+        const response = await fetch(`data/${catId}.json`);
+        const data = await response.json();
+
+        // Daten aus der JSON holen (z. B. haushalt → haushalt-Daten)
+        const categoryData = data[catId];
+
+        // Ausgabe
+        resultBox.innerHTML = `
+            <h2>${categoryData.description}</h2>
+            <ul>
+              ${(categoryData.items || []).map(item => `<li>${item}</li>`).join("")}
+            </ul>
+        `;
+    } catch (error) {
+        resultBox.innerHTML = "<p>Fehler beim Laden der Kategorie.</p>";
+        console.error("Ladefehler:", error);
+    }
+}
+
+
+    
     resultBox.innerHTML = `
         <div class="placeholder">
             Kategorie <strong>${catName}</strong> wird geladen ...
