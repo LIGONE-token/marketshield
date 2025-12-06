@@ -1,3 +1,6 @@
 {
-  "salaries": []
+  "salararies": {
+    "description": "Übersichten und Informationen über Löhne und Gehälter in verschiedenen Branchen und Regionen.",
+    "items": []
+  }
 }
