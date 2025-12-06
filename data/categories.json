@@ -1,20 +1,20 @@
 {
   "categories": [
     { "id": "community", "title": "Community" },
-    { "id": "movies", "title": "Filmtipps" },
+    { "id": "movies", "title": "Filme" },
     { "id": "recipes", "title": "Rezepte" },
-    { "id": "handwerk", "title": "Handwerksberufe" },
-    { "id": "salaries", "title": "Löhne & Gehälter" },
+    { "id": "handwerk", "title": "Handwerk" },
+    { "id": "salaries", "title": "Löhne" },
     { "id": "senioren", "title": "Seniorenhilfe" },
     { "id": "foundation", "title": "Stiftung" },
-    { "id": "haushalt", "title": "Haushaltstipps" },
-    { "id": "lebensmittel", "title": "Lebensmittelwarnungen" },
-    { "id": "kosmetik", "title": "Kosmetik & Giftstoffe" },
-    { "id": "kinder", "title": "Gefahren für Kinder" },
-    { "id": "gesundheit", "title": "Gesundheitstipps" },
-    { "id": "sparen", "title": "Sparen & Alltagstricks" },
-    { "id": "finanzen", "title": "Finanztipps & Warnungen" },
-    { "id": "supermarkt", "title": "Supermarktfallen" },
-    { "id": "verbraucher", "title": "Verbraucherschutz & Betrugswarnungen" }
+    { "id": "haushalt", "title": "Haushalt" },
+    { "id": "lebensmittel", "title": "Lebensmittel" },
+    { "id": "kosmetik", "title": "Kosmetik" },
+    { "id": "kinder", "title": "Kinderschutz" },
+    { "id": "gesundheit", "title": "Gesundheit" },
+    { "id": "sparen", "title": "Sparen" },
+    { "id": "finanzen", "title": "Finanzen" },
+    { "id": "supermarkt", "title": "Supermarkt" },
+    { "id": "verbraucher", "title": "Verbraucherschutz" }
   ]
 }
