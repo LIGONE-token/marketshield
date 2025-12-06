@@ -250,3 +250,6 @@ body.christmas .subtitle {
   margin-right: auto;
   width: 100%;
 }
+#gewinnspiel.info-box {
+  display: block;
+}
