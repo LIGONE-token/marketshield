@@ -91,3 +91,30 @@ function loadCategory(categoryId) {
     })
     .catch(err => console.error("Fehler beim Laden der Einträge:", err));
 }
+// 🔧 Hilfsfunktion: Massendaten-Datei erzeugen
+window.createMassFile = function () {
+  const count = 5000;          // Anzahl Datensätze pro Datei
+  const fileIndex = 1;         // Dateinummer (für additives_1, _2, ...)
+
+  const entries = [];
+  for (let i = 1; i <= count; i++) {
+    entries.push({
+      id: "auto_" + ((fileIndex - 1) * count + i),
+      category: "zusatzstoffe",
+      sub: "auto",
+      topic: "Automatisch erzeugter Zusatzstoff " + i,
+      text: "Automatisch generierter Platzhalter für Massendaten-Tests."
+    });
+  }
+
+  const json = JSON.stringify({ entries: entries }, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `additives_${fileIndex}.json`;
+  a.click();
+
+  URL.revokeObjectURL(url);
+};
