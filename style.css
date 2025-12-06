@@ -127,3 +127,23 @@ footer {
   display: block;             /* block-Element */
   padding: 10px 14px;         /* schöner Abstand */
 }
+/* Schönere Buttons für die Kategorien */
+.category-grid button {
+    background: #f7f7f7;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 17px;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.2s ease;
+    width: 100%;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.category-grid button:hover {
+    background: #e9e9e9;
+    border-color: #c2c2c2;
+    transform: translateX(3px);
+}
