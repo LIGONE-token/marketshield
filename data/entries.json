@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "id": "e001",
+      "category": "lebensmittel",
+      "title": "Versteckter Zucker in Kinderprodukten",
+      "text": "Über 80% aller Kinderprodukte enthalten zugesetzten Zucker, oft unter Namen wie Maltodextrin oder Glucose-Fructose-Sirup versteckt."
+    },
+    {
+      "id": "e002",
+      "category": "kosmetik",
+      "title": "Hormonaktive Stoffe in Hautcremes",
+      "text": "Viele Hautcremes enthalten Parabene, die hormonähnlich wirken können. Besonders riskant für Jugendliche."
+    },
+    {
+      "id": "e003",
+      "category": "gesundheit",
+      "title": "Vitamin-D-Mangel weit verbreitet",
+      "text": "Über 60% der Bevölkerung hat zu niedrige Vitamin-D-Werte. Folgen: Müdigkeit, Infekte, schlechte Stimmung."
+    },
+    {
+      "id": "e004",
+      "category": "finanzen",
+      "title": "Warum Kleinanleger benachteiligt sind",
+      "text": "Große Akteure handeln schneller, mit besseren Daten. Kleinanleger reagieren verzögert und verlieren dadurch häufiger."
+    }
+  ]
+}
