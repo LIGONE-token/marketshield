@@ -1,3 +1,25 @@
+// Kategorien dynamisch aus categories.json laden
+fetch("data/categories.json")
+  .then(response => response.json())
+  .then(data => {
+    const grid = document.querySelector(".category-grid");
+
+    data.categories.forEach(cat => {
+      const btn = document.createElement("button");
+      btn.textContent = cat.title;
+      btn.dataset.category = cat.id;
+
+      btn.addEventListener("click", () => {
+        loadCategory(cat.id);
+      });
+
+      grid.appendChild(btn);
+    });
+  })
+  .catch(error => console.error("Fehler beim Laden der Kategorien:", error));
+
+
+
 // 🔹 Suchfunktion
 document.getElementById("searchInput").addEventListener("input", function () {
     const q = this.value.trim().toLowerCase();
