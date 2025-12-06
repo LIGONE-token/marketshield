@@ -104,3 +104,12 @@ footer {
     margin-top: 0;
     color: #2c7a3f;
 }
+/* Fix für überlaufenden Text in den Kategorie-Buttons */
+.category-grid button {
+  white-space: normal;        /* erlaubt Zeilenumbruch */
+  word-wrap: break-word;      /* bricht lange Wörter */
+  overflow-wrap: break-word;  /* moderne Variante */
+  width: 100%;                /* volle Breite */
+  display: block;             /* block-Element */
+  padding: 10px 14px;         /* schöner Abstand */
+}
