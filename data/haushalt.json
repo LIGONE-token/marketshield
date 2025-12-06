@@ -1,3 +1,7 @@
 {
-  "haushalt": []
+  "haushalt": {
+    "description": "Tipps, Tricks und Informationen rund um den Haushalt.",
+    "items": []
+  }
 }
+
