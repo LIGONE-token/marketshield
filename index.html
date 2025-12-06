@@ -65,6 +65,35 @@
 </div>
 
 </footer>
+<script>
+function generateAdditives(count = 5000, fileIndex = 1) {
+    const entries = [];
+    for (let i = 1; i <= count; i++) {
+        entries.push({
+            id: "auto_" + ((fileIndex - 1) * count + i),
+            category: "zusatzstoffe",
+            sub: "auto",
+            topic: "Automatisch erzeugter Zusatzstoff " + i,
+            text: "Automatisch generierter Platzhalter für eine große Datenmenge."
+        });
+    }
+
+    const json = JSON.stringify({ entries: entries }, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `additives_${fileIndex}.json`;
+    a.click();
+}
+
+window.createMassFile = function() {
+    const fileIndex = prompt("Dateinummer (z.B. 1, 2, 3 …):", "1");
+    const amount = prompt("Wie viele Datensätze? (5000 empfohlen):", "5000");
+    generateAdditives(Number(amount), Number(fileIndex));
+};
+</script>
 
 </body>
 </html>
