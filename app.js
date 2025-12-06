@@ -76,3 +76,31 @@ async function loadCategory(catId) {
         console.error("Ladefehler:", error);
     }
 }
+function loadCategory(categoryId) {
+  fetch("data/entries.json")
+    .then(response => response.json())
+    .then(data => {
+      const results = document.getElementById("results");
+      results.innerHTML = "";
+
+      const filtered = data.entries.filter(entry => entry.category === categoryId);
+
+      if (filtered.length === 0) {
+        results.innerHTML = "<p>Keine Einträge vorhanden.</p>";
+        return;
+      }
+
+      filtered.forEach(entry => {
+        const box = document.createElement("div");
+        box.classList.add("entry-box");
+
+        box.innerHTML = `
+          <h3>${entry.title}</h3>
+          <p>${entry.text}</p>
+        `;
+
+        results.appendChild(box);
+      });
+    })
+    .catch(err => console.error("Fehler beim Laden der Einträge:", err));
+}
