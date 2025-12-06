@@ -1,0 +1,20 @@
+{
+  "categories": [
+    { "id": "community", "title": "Community" },
+    { "id": "movies", "title": "Filmtipps" },
+    { "id": "recipes", "title": "Rezepte" },
+    { "id": "handwerk", "title": "Handwerksberufe" },
+    { "id": "salaries", "title": "Löhne & Gehälter" },
+    { "id": "senioren", "title": "Seniorenhilfe" },
+    { "id": "foundation", "title": "Stiftung" },
+    { "id": "haushalt", "title": "Haushaltstipps" },
+    { "id": "lebensmittel", "title": "Lebensmittelwarnungen" },
+    { "id": "kosmetik", "title": "Kosmetik & Giftstoffe" },
+    { "id": "kinder", "title": "Gefahren für Kinder" },
+    { "id": "gesundheit", "title": "Gesundheitstipps" },
+    { "id": "sparen", "title": "Sparen & Alltagstricks" },
+    { "id": "finanzen", "title": "Finanztipps & Warnungen" },
+    { "id": "supermarkt", "title": "Supermarktfallen" },
+    { "id": "verbraucher", "title": "Verbraucherschutz & Betrugswarnungen" }
+  ]
+}
