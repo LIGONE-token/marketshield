@@ -1,3 +1,7 @@
 {
-  "lebensmittel": []
+  "lebensmittel": {
+    "description": "Hinweise, Warnungen und Informationen zu Lebensmitteln und deren Sicherheit.",
+    "items": []
+  }
 }
+
