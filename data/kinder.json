@@ -1,3 +1,7 @@
 {
-  "kinder": []
+  "kinder": {
+    "description": "Inhalte und Hinweise zu Themen rund um Kinder, Sicherheit und Alltag.",
+    "items": []
+  }
 }
+
