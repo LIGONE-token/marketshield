@@ -1,8 +1,6 @@
 {
-  "community": [
-    {
-      "title": "Gemeinsam für mehr Wissen",
-      "content": "Diese Plattform soll Menschen verbinden, informieren und stärken. Jeder kann dazu beitragen, indem er Wissen teilt."
-    }
-  ]
+  "community": {
+    "description": "Informationen und Inhalte rund um Gemeinschaft, Austausch und gegenseitige Unterstützung.",
+    "items": []
+  }
 }
