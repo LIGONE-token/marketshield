@@ -6,7 +6,7 @@ fetch("data/categories.json")
 
     data.categories.forEach(cat => {
       const btn = document.createElement("button");
-      btn.textContent = cat.title;
+      btn.innerHTML = cat.title;
       btn.dataset.category = cat.id;
 
       btn.addEventListener("click", () => {
