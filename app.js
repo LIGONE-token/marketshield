@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.classList.remove("christmas");
     }
 });
+const dataFiles = ["data/additives_test.json"];
 
 
 // 🔹 Kategorien aus categories.json laden
