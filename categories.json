@@ -1,39 +1,39 @@
 {
   "categories": [
+    { "id": "naehrstoffe", "title": "Nährstoffe" },
+    { "id": "vitamine", "title": "Vitamine" },
+    { "id": "minerale", "title": "Minerale" },
+    { "id": "aminos", "title": "Aminos" },
+    { "id": "pflanzen", "title": "Pflanzen" },
+    { "id": "immunsystem", "title": "Immunsystem" },
+
     { "id": "zusatzstoffe", "title": "Zusatzstoffe" },
     { "id": "zucker", "title": "Zucker" },
-    { "id": "verpackung", "title": "Verpackung" },
     { "id": "verarbeitung", "title": "Verarbeitung" },
-    { "id": "naehrstoffe", "title": "Nährstoffe" },
+    { "id": "gifte", "title": "Gifte" },
+    { "id": "aromen", "title": "Aromen" },
 
-    { "id": "konservierer", "title": "Konservierer" },
-    { "id": "dufte", "title": "Düfte" },
-    { "id": "polymere", "title": "Polymere" },
+    { "id": "kosmetik", "title": "Kosmetik" },
     { "id": "uvfilter", "title": "UV-Filter" },
+    { "id": "polymere", "title": "Polymere" },
     { "id": "tenside", "title": "Tenside" },
-
-    { "id": "strahlung", "title": "Strahlung" },
-    { "id": "raumluft", "title": "Raumluft" },
     { "id": "reiniger", "title": "Reiniger" },
-    { "id": "wasser", "title": "Wasser" },
-    { "id": "textilien", "title": "Textilien" },
 
-    { "id": "schlaf", "title": "Schlaf" },
+    { "id": "wasser", "title": "Wasser" },
+    { "id": "raumluft", "title": "Raumluft" },
+    { "id": "strahlung", "title": "Strahlung" },
+    { "id": "textilien", "title": "Textilien" },
+    { "id": "umwelt", "title": "Umwelt" },
+
     { "id": "medikamente", "title": "Medikamente" },
     { "id": "stimulanzien", "title": "Stimulanzien" },
     { "id": "lebensstil", "title": "Lebensstil" },
-    { "id": "immunsystem", "title": "Immunsystem" },
-
-    { "id": "abos", "title": "Abos" },
-    { "id": "versicherungen", "title": "Versicherung" },
-    { "id": "kredite", "title": "Kredite" },
-    { "id": "marketing", "title": "Marketing" },
-    { "id": "digitales", "title": "Digitales" },
+    { "id": "schlaf", "title": "Schlaf" },
+    { "id": "finanzen", "title": "Finanzen" },
 
     { "id": "kinder", "title": "Kinder" },
     { "id": "senioren", "title": "Senioren" },
     { "id": "tiere", "title": "Tiere" },
-    { "id": "umwelt", "title": "Umwelt" },
     { "id": "trends", "title": "Trends" }
   ]
 }
