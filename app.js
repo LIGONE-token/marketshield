@@ -63,35 +63,37 @@ document.getElementById("searchInput").addEventListener("input", function () {
 //    → Sie lädt immer entries.json
 //    → Für später beliebig viele Einträge geeignet (auch 100.000+)
 function loadCategory(categoryId) {
-  fetch("data/entries.json")
-    .then(response => response.json())
-    .then(data => {
-      const results = document.getElementById("results");
-      results.innerHTML = "";
+  Promise.all(
+    dataFiles.map(file => fetch(file).then(res => res.json()))
+  )
+  .then(fileContents => {
+    const allEntries = fileContents.flat();
 
-      // Einträge filtern nach Kategorie
-      const filtered = data.entries.filter(entry => entry.category === categoryId);
+    const results = document.getElementById("results");
+    results.innerHTML = "";
 
-      if (filtered.length === 0) {
-        results.innerHTML = "<p>Noch keine Einträge in dieser Kategorie.</p>";
-        return;
-      }
+    const filtered = allEntries.filter(entry => entry.category === categoryId);
 
-      // Einträge anzeigen
-      filtered.forEach(entry => {
-        const box = document.createElement("div");
-        box.classList.add("entry-box");
+    if (filtered.length === 0) {
+      results.innerHTML = "<p>Noch keine Einträge in dieser Kategorie.</p>";
+      return;
+    }
 
-        box.innerHTML = `
-          <h3>${entry.title}</h3>
-          <p>${entry.text}</p>
-        `;
+    filtered.forEach(entry => {
+      const box = document.createElement("div");
+      box.classList.add("entry-box");
 
-        results.appendChild(box);
-      });
-    })
-    .catch(err => console.error("Fehler beim Laden der Einträge:", err));
+      box.innerHTML = `
+        <h3>${entry.name}</h3>
+        <p>${entry.description}</p>
+      `;
+
+      results.appendChild(box);
+    });
+  })
+  .catch(err => console.error("Fehler beim Laden der Daten:", err));
 }
+
 // 🔧 Hilfsfunktion: Massendaten-Datei erzeugen
 window.createMassFile = function () {
   const count = 5000;          // Anzahl Datensätze pro Datei
