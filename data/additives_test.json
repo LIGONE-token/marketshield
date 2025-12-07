@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "Zusatzstoff A",
+    "description": "Kurzbeschreibung für Zusatzstoff A.",
+    "risk": "low",
+    "category": "additives"
+  },
+  {
+    "id": 2,
+    "name": "Zusatzstoff B",
+    "description": "Kurzbeschreibung für Zusatzstoff B.",
+    "risk": "medium",
+    "category": "additives"
+  },
+  {
+    "id": 3,
+    "name": "Zusatzstoff C",
+    "description": "Kurzbeschreibung für Zusatzstoff C.",
+    "risk": "high",
+    "category": "additives"
+  }
+]
