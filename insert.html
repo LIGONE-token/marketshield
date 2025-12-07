@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// --- Liste aller echten Vitamine ---
+const vitamins = [
+  {
+    title: "Vitamin A",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 85,
+    processing_score: 1,
+    summary: "Wichtig für Sehkraft, Haut und Immunsystem.",
+    mechanism: "Unterstützt Zellwachstum und antioxidative Prozesse.",
+    scientific_note: "Retinol und Beta-Carotin sind die wichtigsten Formen.",
+    effects_positive: ["Immunsystem", "Haut", "Augen"],
+    effects_negative: [],
+    risk_groups: ["Schwangere (Überdosierung)", "Lebererkrankungen"],
+    synergy: ["Zink"],
+    natural_sources: ["Karotten", "Süsskartoffeln", "Spinat"],
+    tags: ["essentiell", "fettlöslich"]
+  },
+  {
+    title: "Vitamin B1 (Thiamin)",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 80,
+    processing_score: 2,
+    summary: "Wichtig für Energieproduktion und Nervenfunktion.",
+    mechanism: "Unterstützt Kohlenhydratstoffwechsel.",
+    scientific_note: "Mangel führt zu Nervenschäden (Beriberi).",
+    effects_positive: ["Energiestoffwechsel", "Nervensystem"],
+    effects_negative: [],
+    risk_groups: ["Alkoholiker"],
+    synergy: ["Magnesium"],
+    natural_sources: ["Vollkorn", "Hülsenfrüchte"],
+    tags: ["wasserlöslich"]
+  },
+  {
+    title: "Vitamin B2 (Riboflavin)",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 82,
+    processing_score: 1,
+    summary: "Wichtig für Zellwachstum und Energieproduktion.",
+    mechanism: "Baustein für FAD und FMN.",
+    scientific_note: "Lichtempfindlich → Verlust bei Lagerung.",
+    effects_positive: ["Energie", "Haut", "Augen"],
+    effects_negative: [],
+    risk_groups: [],
+    synergy: ["B-Komplex"],
+    natural_sources: ["Milch", "Mandeln"],
+    tags: ["wasserlöslich"]
+  },
+  {
+    title: "Vitamin B3 (Niacin)",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 78,
+    processing_score: 2,
+    summary: "Wichtig für Stoffwechsel und Haut.",
+    mechanism: "Baustein für NAD/NADP.",
+    scientific_note: "Hautrötungen bei zu hoher Dosis.",
+    effects_positive: ["Energie", "Haut"],
+    effects_negative: ["Flush-Effekt"],
+    risk_groups: [],
+    synergy: [],
+    natural_sources: ["Fisch", "Geflügel"],
+    tags: ["wasserlöslich"]
+  },
+  {
+    title: "Vitamin B5 (Pantothensäure)",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 76,
+    processing_score: 1,
+    summary: "Wichtig für Hormone und Energieproduktion.",
+    mechanism: "Baustein von Coenzym A.",
+    scientific_note: "",
+    effects_positive: ["Stoffwechsel"],
+    effects_negative: [],
+    risk_groups: [],
+    synergy: [],
+    natural_sources: ["Avocado", "Pilze"],
+    tags: ["wasserlöslich"]
+  },
+  {
+    title: "Vitamin B6",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 88,
+    processing_score: 1,
+    summary: "Unterstützt Nerven und Immunfunktion.",
+    mechanism: "Coenzym für zahlreiche Stoffwechselprozesse.",
+    scientific_note: "",
+    effects_positive: ["Nervensystem", "Hormone"],
+    effects_negative: [],
+    risk_groups: ["Frauen mit PMS"],
+    synergy: ["Magnesium"],
+    natural_sources: ["Bananen", "Kartoffeln"],
+    tags: ["wasserlöslich"]
+  },
+  {
+    title: "Vitamin B7 (Biotin)",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 84,
+    processing_score: 1,
+    summary: "Wichtig für Haut, Haare und Nägel.",
+    mechanism: "Coenzym für Fettsäure- und Aminosäurestoffwechsel.",
+    scientific_note: "",
+    effects_positive: ["Haut", "Haare"],
+    effects_negative: [],
+    risk_groups: [],
+    synergy: [],
+    natural_sources: ["Eier", "Nüsse"],
+    tags: ["wasserlöslich"]
+  },
+  {
+    title: "Vitamin B9 (Folsäure)",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 90,
+    processing_score: 1,
+    summary: "Wichtig für Zellteilung und Schwangerschaft.",
+    mechanism: "DNA-Synthese und Blutbildung.",
+    scientific_note: "",
+    effects_positive: ["Schwangerschaft", "Blutbildung"],
+    effects_negative: [],
+    risk_groups: ["Schwangere", "Ältere Menschen"],
+    synergy: ["B12"],
+    natural_sources: ["Grünes Gemüse"],
+    tags: ["wasserlöslich"]
+  },
+  {
+    title: "Vitamin B12",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 92,
+    processing_score: 1,
+    summary: "Wichtig für Nerven und Blutbildung.",
+    mechanism: "DNA-Synthese, Myelinaufbau.",
+    scientific_note: "Nur in tierischen Produkten.",
+    effects_positive: ["Nervensystem", "Blut"],
+    effects_negative: [],
+    risk_groups: ["Veganer"],
+    synergy: ["Folsäure"],
+    natural_sources: ["Fleisch", "Milch"],
+    tags: ["wasserlöslich"]
+  },
+  {
+    title: "Vitamin C",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 95,
+    processing_score: 1,
+    summary: "Antioxidans, wichtig für Immunsystem.",
+    mechanism: "Fängt freie Radikale ab.",
+    scientific_note: "",
+    effects_positive: ["Immunsystem", "Haut"],
+    effects_negative: [],
+    risk_groups: [],
+    synergy: ["Zink"],
+    natural_sources: ["Zitrusfrüchte"],
+    tags: ["wasserlöslich"]
+  },
+  {
+    title: "Vitamin D",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 98,
+    processing_score: 1,
+    summary: "Wichtig für Knochen, Immunsystem und Hormone.",
+    mechanism: "Reguliert Kalziumaufnahme.",
+    scientific_note: "",
+    effects_positive: ["Knochen", "Immunsystem"],
+    effects_negative: [],
+    risk_groups: ["Menschen ohne Sonne"],
+    synergy: ["Vitamin K2"],
+    natural_sources: ["Sonne", "Fisch"],
+    tags: ["fettlöslich"]
+  },
+  {
+    title: "Vitamin E",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 85,
+    processing_score: 1,
+    summary: "Antioxidans, schützt Zellmembranen.",
+    mechanism: "Neutralisiert freie Radikale.",
+    scientific_note: "",
+    effects_positive: ["Zellschutz"],
+    effects_negative: [],
+    risk_groups: [],
+    synergy: [],
+    natural_sources: ["Nüsse", "Öle"],
+    tags: ["fettlöslich"]
+  },
+  {
+    title: "Vitamin K",
+    category: "vitamine",
+    type: "Vitamin",
+    score: 87,
+    processing_score: 1,
+    summary: "Wichtig für Blutgerinnung und Knochen.",
+    mechanism: "Aktiviert Gerinnungsfaktoren.",
+    scientific_note: "",
+    effects_positive: ["Blut", "Knochen"],
+    effects_negative: [],
+    risk_groups: ["Personen mit Blutverdünnern"],
+    synergy: ["Vitamin D"],
+    natural_sources: ["Grünkohl", "Spinat"],
+    tags: ["fettlöslich"]
+  }
+];
+
+async function insertAll() {
+  for (const v of vitamins) {
+    const { error } = await supabase.from("entries").insert(v);
+    if (error) {
+      console.log("FEHLER BEI:", v.title, error);
+    } else {
+      console.log("EINGEFÜGT:", v.title);
+    }
+  }
+}
+
+insertAll();
+</script>
+</body>
+</html>
