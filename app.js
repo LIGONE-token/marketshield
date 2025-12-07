@@ -51,13 +51,41 @@ document.getElementById("searchInput").addEventListener("input", function () {
         return;
     }
 
-    resultBox.innerHTML = `
-        <div class="placeholder">
-            Suche nach: <strong>${q}</strong><br>
-            Die vollständige Datenbank wird geladen ...
-        </div>
-    `;
+    // Alle Dateien laden (wie bei loadCategory)
+    Promise.all(
+        dataFiles.map(file => fetch(file).then(res => res.json()))
+    )
+    .then(listOfEntries => {
+        const allEntries = listOfEntries.flat();
+
+        // Suchfilter
+        const filtered = allEntries.filter(entry =>
+            entry.name.toLowerCase().includes(q) ||
+            entry.description.toLowerCase().includes(q)
+        );
+
+        resultBox.innerHTML = "";
+
+        if (filtered.length === 0) {
+            resultBox.innerHTML = "<p>Keine Ergebnisse gefunden.</p>";
+            return;
+        }
+
+        filtered.forEach(entry => {
+            const box = document.createElement("div");
+            box.classList.add("entry-box");
+
+            box.innerHTML = `
+                <h3>${entry.name}</h3>
+                <p>${entry.description}</p>
+            `;
+
+            resultBox.appendChild(box);
+        });
+    })
+    .catch(err => console.error("Suchfehler:", err));
 });
+
 
 // ░░░░░░░░░░░░░  EINTRÄGE LADEN  ░░░░░░░░░░░░░░░░░░░░
 
