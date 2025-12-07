@@ -5,16 +5,19 @@
     <title>Market Shield – Fair informiert</title>
     <link rel="stylesheet" href="style.css">
     <script defer src="app.js"></script>
-    <!-- Social Sharing Preview -->
-<meta property="og:title" content="Market Shield – Wissen für alle">
-<meta property="og:description" content="Die größte unabhängige Wissensquelle, die Menschen stärkt.">
-<meta property="og:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
-<meta property="og:image:type" content="image/jpeg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<script defer data-domain="ligone-token.github.io/marketshield" src="https://plausible.io/js/script.js"></script>
 
+    <!-- Social Sharing Preview -->
+    <meta property="og:title" content="Market Shield – Wissen für alle">
+    <meta property="og:description" content="Die unabhängige Wissensquelle, die Menschen stärkt.">
+    <meta property="og:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Analytics -->
+    <script defer data-domain="ligone-token.github.io/marketshield" src="https://plausible.io/js/script.js"></script>
 </head>
 
 <body>
@@ -34,11 +37,10 @@
 
 <div class="ligone-links">
     <a href="https://ligone.ch" target="_blank">Offizielle Seite</a> |
-    <a href="https://ligone-token.github.io/ligone-web/" target="_blank">Token App</a> |
-    <a href="#/about-ligone">Über LIGONE</a>
+    <a href="https://ligone-token.github.io/ligone-web/" target="_blank">Token App</a>
 </div>
-<div class="category-grid"></div>
 
+<div class="category-grid"></div>
 
 <div id="results"></div>
 
@@ -54,46 +56,15 @@
   <div id="winnerMessage" class="winner-message"></div>
 </section>
 
-    
 <footer>
     Powered by LIGONE – Fair Consumer Technology
     <div style="margin-top:12px;">
-    <a href="stiftung.html" 
-       style="color:#0077cc; text-decoration:none; font-size:14px;">
-       Geplante LIGONE Stiftung (ab 2026)
-    </a>
-</div>
-
+        <a href="stiftung.html" style="color:#0077cc; text-decoration:none; font-size:14px;">
+            Geplante LIGONE Stiftung (ab 2026)
+        </a>
+    </div>
 </footer>
-<script>
-function generateAdditives(count = 5000, fileIndex = 1) {
-    const entries = [];
-    for (let i = 1; i <= count; i++) {
-        entries.push({
-            id: "auto_" + ((fileIndex - 1) * count + i),
-            category: "zusatzstoffe",
-            sub: "auto",
-            topic: "Automatisch erzeugter Zusatzstoff " + i,
-            text: "Automatisch generierter Platzhalter für eine große Datenmenge."
-        });
-    }
-
-    const json = JSON.stringify({ entries: entries }, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `additives_${fileIndex}.json`;
-    a.click();
-}
-
-window.createMassFile = function() {
-    const fileIndex = prompt("Dateinummer (z.B. 1, 2, 3 …):", "1");
-    const amount = prompt("Wie viele Datensätze? (5000 empfohlen):", "5000");
-    generateAdditives(Number(amount), Number(fileIndex));
-};
-</script>
 
 </body>
 </html>
+
