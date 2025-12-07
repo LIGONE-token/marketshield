@@ -42,19 +42,67 @@ fetch("categories.json")
 // ░░░░░░░░░░░░░  SUCHFELD (temporär deaktiviert, bis Supabase aktiv ist) ░░░░░░░░░░░░░░░░░░░░
 
 // Leerer Loader verhindert Fehler aus fehlenden Dateien
-document.getElementById("searchInput").addEventListener("input", function () {
+document.getElementById("searchInput").addEventListener("input", async function () {
+    const query = this.value.trim();
+
     const resultBox = document.getElementById("results");
+    resultBox.innerHTML = "";
 
-    const q = this.value.trim();
-
-    if (q.length < 2) {
-        resultBox.innerHTML = "";
+    if (query.length < 2) {
         return;
     }
 
-    // Noch keine lokalen Dateien → Meldung anzeigen
-    resultBox.innerHTML = `<p>Suche wird aktiviert, sobald Supabase-Daten geladen werden.</p>`;
+    resultBox.innerHTML = "<p>Suche...</p>";
+
+    const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+
+    // 🔍 Supabase Volltext-ähnliche Suche (ILIKE)
+    const url =
+        `${SUPABASE_URL}/rest/v1/entries?` +
+        `title=ilike.%25${query}%25` +
+        `&or=(summary.ilike.%25${query}%25,mechanism.ilike.%25${query}%25)` +
+        `&select=*`;
+
+    const response = await fetch(url, {
+        headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+    });
+
+    const data = await response.json();
+
+    if (!data || data.length === 0) {
+        resultBox.innerHTML = "<p>Keine Treffer.</p>";
+        return;
+    }
+
+    // ⭐ Relevanz-Bewertung
+    const ranked = data.map(item => {
+        let score = 0;
+        const q = query.toLowerCase();
+
+        if (item.title?.toLowerCase().includes(q)) score += 8;
+        if (item.summary?.toLowerCase().includes(q)) score += 4;
+        if (item.mechanism?.toLowerCase().includes(q)) score += 2;
+
+        score += (item.score || 0) * 0.2; // Bonus für Empfehlung
+        return { item, score };
+    })
+    .sort((a, b) => b.score - a.score)
+    .map(r => r.item);
+
+    // ⭐ Ausgabe
+    resultBox.innerHTML = ranked.map(entry => `
+        <div class="entry-card">
+            <h2>${entry.title}</h2>
+            <p>${entry.summary || ""}</p>
+            <p><strong>Score:</strong> ${entry.score}/10</p>
+        </div>
+    `).join("");
 });
+
 
 
 // ░░░░░░░░░░░░░  EINTRÄGE LADEN (noch ohne Supabase) ░░░░░░░░░░░░░░░░░░░░
