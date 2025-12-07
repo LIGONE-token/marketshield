@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // ░░░░░░░░░░░░░  KATEGORIEN LADEN  ░░░░░░░░░░░░░░░░░░░░
 
-// Holt die Buttons direkt aus categories.json im Hauptordner
 fetch("categories.json")
   .then(response => response.json())
   .then(data => {
@@ -24,8 +23,6 @@ fetch("categories.json")
 
     data.categories.forEach(cat => {
       const btn = document.createElement("button");
-
-      // Einfacher, fehlerfreier Button-Text
       btn.textContent = cat.title;
       btn.dataset.category = cat.id;
 
@@ -39,25 +36,20 @@ fetch("categories.json")
   .catch(error => console.error("Fehler beim Laden der Kategorien:", error));
 
 
-// ░░░░░░░░░░░░░  SUCHFELD (temporär deaktiviert, bis Supabase aktiv ist) ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  SUCHFUNKTION (Supabase)  ░░░░░░░░░░░░░░░░░░░░
 
-// Leerer Loader verhindert Fehler aus fehlenden Dateien
 document.getElementById("searchInput").addEventListener("input", async function () {
     const query = this.value.trim();
-
     const resultBox = document.getElementById("results");
     resultBox.innerHTML = "";
 
-    if (query.length < 2) {
-        return;
-    }
+    if (query.length < 2) return;
 
     resultBox.innerHTML = "<p>Suche...</p>";
 
     const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
     const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-    // 🔍 Supabase Volltext-ähnliche Suche (ILIKE)
     const url =
         `${SUPABASE_URL}/rest/v1/entries?` +
         `title=ilike.%25${query}%25` +
@@ -78,7 +70,6 @@ document.getElementById("searchInput").addEventListener("input", async function 
         return;
     }
 
-    // ⭐ Relevanz-Bewertung
     const ranked = data.map(item => {
         let score = 0;
         const q = query.toLowerCase();
@@ -87,15 +78,15 @@ document.getElementById("searchInput").addEventListener("input", async function 
         if (item.summary?.toLowerCase().includes(q)) score += 4;
         if (item.mechanism?.toLowerCase().includes(q)) score += 2;
 
-        score += (item.score || 0) * 0.2; // Bonus für Empfehlung
+        score += (item.score || 0) * 0.2;
         return { item, score };
     })
     .sort((a, b) => b.score - a.score)
     .map(r => r.item);
 
-    // ⭐ Ausgabe
+    // ⭐ Ausgabe mit klickbarer Kurzkarte
     resultBox.innerHTML = ranked.map(entry => `
-        <div class="entry-card">
+        <div class="entry-card search-result" data-id="${entry.id}">
             <h2>${entry.title}</h2>
             <p>${entry.summary || ""}</p>
             <p><strong>Score:</strong> ${entry.score}/10</p>
@@ -104,8 +95,18 @@ document.getElementById("searchInput").addEventListener("input", async function 
 });
 
 
+// ░░░░░░░░░░░░░  KLICK AUF SUCHERGEBNIS → VOLLANSICHT  ░░░░░░░░░░░░░░░░░░░░
 
-// ░░░░░░░░░░░░░  EINTRÄGE LADEN (noch ohne Supabase) ░░░░░░░░░░░░░░░░░░░░
+document.addEventListener("click", function (e) {
+    const card = e.target.closest(".search-result");
+    if (!card) return;
+
+    const id = card.dataset.id;
+    loadFullEntry(id);
+});
+
+
+// ░░░░░░░░░░░░░  KATEGORIE → VOLLANSICHT ANZEIGEN  ░░░░░░░░░░░░░░░░░░░░
 
 async function loadCategory(categoryId) {
     const results = document.getElementById("results");
@@ -114,13 +115,15 @@ async function loadCategory(categoryId) {
     const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
     const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-    // Supabase REST API Anfrage
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/entries?category=eq.${categoryId}`, {
-        headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/entries?category=eq.${categoryId}`,
+        {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${SUPABASE_KEY}`
+            }
         }
-    });
+    );
 
     const data = await response.json();
 
@@ -133,7 +136,7 @@ async function loadCategory(categoryId) {
 
     data.forEach(entry => {
         const box = document.createElement("div");
-        box.classList.add("entry-card");
+        box.classList.add("entry-card", "full");
 
         box.innerHTML = `
             <h2 class="entry-title">${entry.title}</h2>
@@ -155,29 +158,19 @@ async function loadCategory(categoryId) {
             <p>${entry.mechanism || "Keine Info"}</p>
 
             <h3>Positive Effekte</h3>
-            <ul>
-                ${(entry.effects_positive || []).map(e => `<li>✓ ${e}</li>`).join("")}
-            </ul>
+            <ul>${(entry.effects_positive || []).map(e => `<li>✓ ${e}</li>`).join("")}</ul>
 
             <h3>Negative Effekte</h3>
-            <ul>
-                ${(entry.effects_negative || []).map(e => `<li>⚠ ${e}</li>`).join("")}
-            </ul>
+            <ul>${(entry.effects_negative || []).map(e => `<li>⚠ ${e}</li>`).join("")}</ul>
 
             <h3>Risikogruppen</h3>
-            <ul>
-                ${(entry.risk_groups || []).map(e => `<li>• ${e}</li>`).join("")}
-            </ul>
+            <ul>${(entry.risk_groups || []).map(e => `<li>• ${e}</li>`).join("")}</ul>
 
             <h3>Synergien</h3>
-            <ul>
-                ${(entry.synergy || []).map(e => `<li>• ${e}</li>`).join("")}
-            </ul>
+            <ul>${(entry.synergy || []).map(e => `<li>• ${e}</li>`).join("")}</ul>
 
             <h3>Natürliche Quellen</h3>
-            <ul>
-                ${(entry.natural_sources || []).map(e => `<li>• ${e}</li>`).join("")}
-            </ul>
+            <ul>${(entry.natural_sources || []).map(e => `<li>• ${e}</li>`).join("")}</ul>
 
             <h3>Wissenschaftlicher Hinweis</h3>
             <p>${entry.scientific_note || "Keine wissenschaftliche Notiz verfügbar."}</p>
@@ -185,4 +178,50 @@ async function loadCategory(categoryId) {
 
         results.appendChild(box);
     });
+}
+
+
+// ░░░░░░░░░░░░░  VOLLANSICHT FÜR EINZELNEN EINTRAG  ░░░░░░░░░░░░░░░░░░░░
+
+async function loadFullEntry(id) {
+    const results = document.getElementById("results");
+    results.innerHTML = "<p>Lade Eintrag...</p>";
+
+    const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/entries?id=eq.${id}`, {
+        headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+    });
+
+    const data = await response.json();
+    const entry = data[0];
+
+    results.innerHTML = `
+        <div class="entry-card full">
+            <h2 class="entry-title">${entry.title}</h2>
+
+            <div class="score-section">
+                <strong>Score:</strong>
+                <span class="score-value score-${entry.score}">${entry.score}/10</span>
+            </div>
+
+            <p>${entry.summary || ""}</p>
+
+            <h3>Wirkmechanismus</h3>
+            <p>${entry.mechanism || "Keine Angaben"}</p>
+
+            <h3>Positive Effekte</h3>
+            <ul>${(entry.effects_positive || []).map(e => `<li>✓ ${e}</li>`).join("")}</ul>
+
+            <h3>Negative Effekte</h3>
+            <ul>${(entry.effects_negative || []).map(e => `<li>⚠ ${e}</li>`).join("")}</ul>
+
+            <h3>Synergien</h3>
+            <ul>${(entry.synergy || []).map(e => `<li>• ${e}</li>`).join("")}</ul>
+        </div>
+    `;
 }
