@@ -18,7 +18,7 @@ const dataFiles = ["data/additives_test.json"];
 
 // ░░░░░░░░░░░░░  KATEGORIEN LADEN  ░░░░░░░░░░░░░░░░░░░░
 
-fetch("data/categories.json")
+fetch("categories.json")
   .then(response => response.json())
   .then(data => {
     const grid = document.querySelector(".category-grid");
