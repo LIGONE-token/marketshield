@@ -253,3 +253,37 @@ body.christmas .subtitle {
 #gewinnspiel.info-box {
   display: block;
 }
+/* ───────────────────────────────
+   SCORE-FARBEN (1–10)
+   ─────────────────────────────── */
+
+.score-value {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+    color: white;
+    display: inline-block;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+/* Rot: schlecht (1–3) */
+.score-1, .score-2, .score-3 {
+    background-color: #d9534f;
+}
+
+/* Orange: mittel (4–6) */
+.score-4, .score-5, .score-6 {
+    background-color: #f0ad4e;
+    color: #222;
+}
+
+/* Hellgrün: gut (7–8) */
+.score-7, .score-8 {
+    background-color: #5cb85c;
+}
+
+/* Dunkelgrün: sehr gut (9–10) */
+.score-9, .score-10 {
+    background-color: #2e8b57;
+}
