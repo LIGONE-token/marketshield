@@ -206,7 +206,11 @@ async function loadFullEntry(id) {
 
             <div class="score-section">
                 <strong>Score:</strong>
-                <span class="score-value score-${entry.score}">${entry.score}/10</span>
+                <span class="score-value score-${entry.score}">
+    ${entry.score}/10
+    <span class="score-dot score-${entry.score}"></span>
+</span>
+
             </div>
 
             <p>${entry.summary || ""}</p>
