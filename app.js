@@ -12,10 +12,12 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.classList.remove("christmas");
     }
 });
+
+// 🔹 Die Dateien, die deine Einträge enthalten
 const dataFiles = ["data/additives_test.json"];
 
+// ░░░░░░░░░░░░░  KATEGORIEN LADEN  ░░░░░░░░░░░░░░░░░░░░
 
-// 🔹 Kategorien aus categories.json laden
 fetch("data/categories.json")
   .then(response => response.json())
   .then(data => {
@@ -38,8 +40,8 @@ fetch("data/categories.json")
   .catch(error => console.error("Fehler beim Laden der Kategorien:", error));
 
 
+// ░░░░░░░░░░░░░  SUCHFELD  ░░░░░░░░░░░░░░░░░░░░
 
-// 🔹 Suchfunktion (wird später an entries.json angebunden)
 document.getElementById("searchInput").addEventListener("input", function () {
     const q = this.value.trim().toLowerCase();
     const resultBox = document.getElementById("results");
@@ -57,67 +59,42 @@ document.getElementById("searchInput").addEventListener("input", function () {
     `;
 });
 
+// ░░░░░░░░░░░░░  EINTRÄGE LADEN  ░░░░░░░░░░░░░░░░░░░░
 
-
-// 🔹 EINZIGE gültige loadCategory-Funktion
-//    → Sie lädt immer entries.json
-//    → Für später beliebig viele Einträge geeignet (auch 100.000+)
 function loadCategory(categoryId) {
-  Promise.all(
-    dataFiles.map(file => fetch(file).then(res => res.json()))
-  )
-  .then(fileContents => {
-    const allEntries = fileContents.flat();
 
-    const results = document.getElementById("results");
-    results.innerHTML = "";
+    // 1. Alle Dateien laden
+    Promise.all(
+        dataFiles.map(file => fetch(file).then(res => res.json()))
+    )
+    .then(listOfEntries => {
+        // JSON Arrays zusammenführen
+        const allEntries = listOfEntries.flat();
 
-    const filtered = allEntries.filter(entry => entry.category === categoryId);
+        const results = document.getElementById("results");
+        results.innerHTML = "";
 
-    if (filtered.length === 0) {
-      results.innerHTML = "<p>Noch keine Einträge in dieser Kategorie.</p>";
-      return;
-    }
+        // Nur Einträge der ausgewählten Kategorie
+        const filtered = allEntries.filter(e => e.category === categoryId);
 
-    filtered.forEach(entry => {
-      const box = document.createElement("div");
-      box.classList.add("entry-box");
+        if (filtered.length === 0) {
+            results.innerHTML = "<p>Noch keine Einträge in dieser Kategorie.</p>";
+            return;
+        }
 
-      box.innerHTML = `
-        <h3>${entry.name}</h3>
-        <p>${entry.description}</p>
-      `;
+        // Alle passenden Einträge anzeigen
+        filtered.forEach(entry => {
+            const box = document.createElement("div");
+            box.classList.add("entry-box");
 
-      results.appendChild(box);
-    });
-  })
-  .catch(err => console.error("Fehler beim Laden der Daten:", err));
+            box.innerHTML = `
+                <h3>${entry.name}</h3>
+                <p>${entry.description}</p>
+            `;
+
+            results.appendChild(box);
+        });
+    })
+    .catch(err => console.error("Fehler beim Laden der Daten:", err));
 }
 
-// 🔧 Hilfsfunktion: Massendaten-Datei erzeugen
-window.createMassFile = function () {
-  const count = 5000;          // Anzahl Datensätze pro Datei
-  const fileIndex = 1;         // Dateinummer (für additives_1, _2, ...)
-
-  const entries = [];
-  for (let i = 1; i <= count; i++) {
-    entries.push({
-      id: "auto_" + ((fileIndex - 1) * count + i),
-      category: "zusatzstoffe",
-      sub: "auto",
-      topic: "Automatisch erzeugter Zusatzstoff " + i,
-      text: "Automatisch generierter Platzhalter für Massendaten-Tests."
-    });
-  }
-
-  const json = JSON.stringify({ entries: entries }, null, 2);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `additives_${fileIndex}.json`;
-  a.click();
-
-  URL.revokeObjectURL(url);
-};
