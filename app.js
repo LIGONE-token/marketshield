@@ -159,6 +159,10 @@ async function loadCategory(categoryId) {
 
         box.innerHTML = `
             <h2 class="entry-title">${entry.title}</h2>
+<div class="full-metrics">
+    <div class="search-score score-${Math.max(1, Math.min(10, Math.ceil(entry.score)))}"></div>
+    <div class="process-score pscore-${entry.processing_score}"></div>
+</div>
 
             <div class="score-section">
                 <strong>Score:</strong>
