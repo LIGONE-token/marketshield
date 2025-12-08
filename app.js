@@ -198,11 +198,7 @@ async function loadCategory(categoryId) {
                 <div class="process-bar">${renderProcessBar(entry.processing_score)}</div>
             </div>
 
-            <div class="score-section">
-                <strong>Score:</strong>
-                <span class="score-value score-${entry.score}">${entry.score}/100</span>
-            </div>
-
+            
             <h3>Kurzinfo</h3>
             <p>${entry.summary || "Keine Info"}</p>
 
@@ -262,11 +258,7 @@ async function loadFullEntry(id) {
                 <div class="process-bar">${renderProcessBar(entry.processing_score)}</div>
             </div>
 
-            <div class="score-section">
-                <strong>Score:</strong>
-                <span class="score-value score-${entry.score}">${entry.score}/10</span>
-            </div>
-
+            
             <p>${entry.summary || ""}</p>
 
             <h3>Wirkmechanismus</h3>
