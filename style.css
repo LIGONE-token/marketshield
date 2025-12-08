@@ -351,13 +351,6 @@ body.christmas .subtitle {
     margin-top: 4px;
 }
 
-.search-score,
-.process-score {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
 /* Gesundheitspunkte (1–10 bereits vorhanden) */
 
 /* Verarbeitungspunkte 1–10 */
