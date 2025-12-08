@@ -185,7 +185,7 @@ async function loadCategory(categoryId) {
 
             <div class="score-section">
                 <strong>Score:</strong>
-                <span class="score-value score-${entry.score}">${entry.score}/10</span>
+                <span class="score-value score-${entry.score}">${entry.score}/100</span>
             </div>
 
             <div class="processing-section">
