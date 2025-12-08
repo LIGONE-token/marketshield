@@ -51,10 +51,19 @@ document.getElementById("searchInput").addEventListener("input", async function 
     const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
     const url =
-        `${SUPABASE_URL}/rest/v1/entries?` +
-        `title=ilike.%25${query}%25` +
-        `&or=(summary.ilike.%25${query}%25,mechanism.ilike.%25${query}%25)` +
-        `&select=*`;
+  `${SUPABASE_URL}/rest/v1/entries?` +
+  `or=(` +
+  `title.ilike.%25${query}%25,` +
+  `summary.ilike.%25${query}%25,` +
+  `mechanism.ilike.%25${query}%25,` +
+  `scientific_note.ilike.%25${query}%25,` +
+  `effects_positive.cs.%22${query}%22,` +
+  `effects_negative.cs.%22${query}%22,` +
+  `risk_groups.cs.%22${query}%22,` +
+  `synergy.cs.%22${query}%22` +
+  `)` +
+  `&select=*`;
+
 
     const response = await fetch(url, {
         headers: {
