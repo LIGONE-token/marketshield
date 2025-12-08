@@ -100,10 +100,11 @@ resultBox.innerHTML = hint + ranked.map(entry => {
                 ${entry.summary ? entry.summary.substring(0, 80) + (entry.summary.length > 80 ? "…" : "") : ""}
             </div>
 
-            <div class="search-metrics">
-                <div class="search-score score-${healthScore}"></div>
-                <div class="process-score pscore-${processing}"></div>
-            </div>
+           <div class="search-metrics">
+    <div class="search-score score-${healthScore}"></div>
+    <div class="process-score pscore-${processing}"></div>
+</div>
+
         </div>
     `;
 }).join("");
