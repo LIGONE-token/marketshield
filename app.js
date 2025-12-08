@@ -152,13 +152,23 @@ function getHealthIcons(score) {
 }
 
 
-function getFactoryIcons(processing) {
-    const p = processing || 0;
+function renderProcessBar(score) {
+    const s = Math.max(1, Math.min(10, score || 1)); // 1–10
 
-    if (p <= 3) return `<span class="f1">🏭</span>`;
-    if (p <= 6) return `<span class="f2">🏭🏭</span>`;
-    return `<span class="f3">🏭🏭🏭</span>`;
+    let color = "#2ecc71"; // grün
+    if (s >= 4 && s <= 6) color = "#f1c40f"; // gelb
+    if (s >= 7) color = "#e74c3c"; // rot
+
+    const width = (s * 10) + "%"; // 1–10 → 10–100%
+
+    return `
+        <div class="process-bar-bg">
+            <div class="process-bar-fill" style="width:${width}; background:${color};"></div>
+        </div>
+        <div class="process-bar-label">${s}/10</div>
+    `;
 }
+
 
 
 // ░░░░░░░░░░░░░  KATEGORIE → VOLLANSICHT ANZEIGEN  ░░░░░░░░░░░░░░░░░░░░
