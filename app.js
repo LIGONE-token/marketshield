@@ -244,6 +244,11 @@ async function loadFullEntry(id) {
     results.innerHTML = `
         <div class="entry-card full">
             <h2 class="entry-title">${entry.title}</h2>
+                    <div class="metrics-icons">
+            <div class="health-icons">${getHealthIcons(entry.score)}</div>
+            <div class="factory-icons">${getFactoryIcons(entry.processing_score)}</div>
+        </div>
+
 
             <div class="score-section">
                 <strong>Score:</strong>
