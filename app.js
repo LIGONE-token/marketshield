@@ -85,16 +85,29 @@ document.getElementById("searchInput").addEventListener("input", async function 
       // Hinweis einfügen
 let hint = `<div class="search-hint">Für Details bitte antippen.</div>`;
 
-// Ergebnisse rendern
-resultBox.innerHTML = hint + ranked.map(entry => `
-    <div class="search-item search-result" data-id="${entry.id}">
-        <div class="search-title">${entry.title}</div>
-        <div class="search-short">
-            ${entry.summary ? entry.summary.substring(0, 80) + (entry.summary.length > 80 ? "…" : "") : ""}
+resultBox.innerHTML = hint + ranked.map(entry => {
+
+    const healthScore = Math.round((entry.score || 0) / 10);
+    const processing = entry.processing_score || 1;
+
+    // Warnsymbol ab Verarbeitung 7
+    const warning = processing >= 7 ? `<span class="warn-symbol">⚠</span>` : "";
+
+    return `
+        <div class="search-item search-result" data-id="${entry.id}">
+            <div class="search-title">${entry.title} ${warning}</div>
+            <div class="search-short">
+                ${entry.summary ? entry.summary.substring(0, 80) + (entry.summary.length > 80 ? "…" : "") : ""}
+            </div>
+
+            <div class="search-metrics">
+                <div class="search-score score-${healthScore}"></div>
+                <div class="process-score pscore-${processing}"></div>
+            </div>
         </div>
-        <div class="search-score score-${entry.score || 0}"></div>
-    </div>
-`).join("");
+    `;
+}).join("");
+
 });
 
 
