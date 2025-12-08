@@ -287,3 +287,48 @@ body.christmas .subtitle {
 .score-9, .score-10 {
     background-color: #2e8b57;
 }
+/* ░░░░░  KOMPAKTE SUCHERGEBNISSE  ░░░░░ */
+
+.search-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e5e5;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.search-item:hover {
+    background: #fafafa;
+}
+
+.search-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #222;
+}
+
+.search-short {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.3;
+}
+
+.search-score {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+}
+
+/* Score-Farben */
+.score-1 { background: #d9534f; }
+.score-2 { background: #e27a3f; }
+.score-3 { background: #f0ad4e; }
+.score-4 { background: #f7d358; }
+.score-5 { background: #f5da77; }
+.score-6 { background: #d7e87e; }
+.score-7 { background: #a5d76e; }
+.score-8 { background: #66cc66; }
+.score-9 { background: #45b649; }
+.score-10 { background: #2e8b57; }
