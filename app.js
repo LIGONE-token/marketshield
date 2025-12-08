@@ -127,12 +127,30 @@ document.addEventListener("click", function (e) {
 function getHealthIcons(score) {
     const s = score || 0;
 
-    if (s >= 80) return `<span class="h3">🌿🌿🌿</span>`;
-    if (s >= 60) return `<span class="h2">🌿🌿</span>`;
-    if (s >= 40) return `<span class="h1">🍃</span>`;
-    if (s >= 20) return `<span class="warn">⚠</span>`;
-    return `<span class="danger">☣</span>`;
+    // Sehr gut – 3 Herzen
+    if (s >= 80) {
+        return `<div class="health-score-box health-3">💚💚💚</div>`;
+    }
+
+    // Gut – 2 Herzen
+    if (s >= 60) {
+        return `<div class="health-score-box health-2">💚💚</div>`;
+    }
+
+    // Leicht gut – 1 Herz
+    if (s >= 40) {
+        return `<div class="health-score-box health-1">💚</div>`;
+    }
+
+    // Mittel – Orange
+    if (s >= 20) {
+        return `<div class="health-score-box health-mid">🧡🧡</div>`;
+    }
+
+    // SCHLECHT – Extrem deutliche Warnstufe
+    return `<div class="health-score-box health-bad">⚠️❗⚠️</div>`;
 }
+
 
 function getFactoryIcons(processing) {
     const p = processing || 0;
