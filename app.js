@@ -93,15 +93,17 @@ document.getElementById("searchInput").addEventListener("input", async function 
     .sort((a, b) => b.score - a.score)
     .map(r => r.item);
 
-    // ⭐ Ausgabe mit klickbarer Kurzkarte
-    resultBox.innerHTML = ranked.map(entry => `
-        <div class="entry-card search-result" data-id="${entry.id}">
-            <h2>${entry.title}</h2>
-            <p>${entry.summary || ""}</p>
-            <p><strong>Score:</strong> ${entry.score}/10</p>
+       resultBox.innerHTML = ranked.map(entry => `
+        <div class="search-item search-result" data-id="${entry.id}">
+            <div class="search-title">${entry.title}</div>
+            <div class="search-short">
+                ${entry.summary ? entry.summary.substring(0, 80) + (entry.summary.length > 80 ? "…" : "") : ""}
+            </div>
+            <div class="search-score score-${entry.score || 0}"></div>
         </div>
     `).join("");
 });
+
 
 
 // ░░░░░░░░░░░░░  KLICK AUF SUCHERGEBNIS → VOLLANSICHT  ░░░░░░░░░░░░░░░░░░░░
