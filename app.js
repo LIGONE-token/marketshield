@@ -87,11 +87,11 @@ let hint = `<div class="search-hint">Für Details bitte antippen.</div>`;
 
 resultBox.innerHTML = hint + ranked.map(entry => {
 
-    const healthScore = Math.max(1, Math.min(10, Math.ceil((entry.score || 1) / 10)));
-    const processing = entry.processing_score || 1;
+    const healthScore = Math.max(1, Math.min(10, Math.ceil((entry.score || 1))));
+    const processing = Math.max(1, Math.min(10, entry.processing_score || 1));
 
-    // Warnsymbol ab Verarbeitung 7
     const warning = processing >= 7 ? `<span class="warn-symbol">⚠</span>` : "";
+
 
     return `
         <div class="search-item search-result" data-id="${entry.id}">
