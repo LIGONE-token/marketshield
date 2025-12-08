@@ -527,3 +527,59 @@ body.christmas .subtitle {
     /* Leucht-Effekt */
     box-shadow: 0 0 20px rgba(255, 200, 0, 0.95);
 }
+/* ───────────────────────────────
+   GESUNDHEIT – HERZEN + WARNSTUFEN
+─────────────────────────────── */
+
+.health-score-box {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin: 10px 0;
+    font-weight: bold;
+    display: inline-block;
+    font-size: 22px;
+}
+
+/* 3 Herzen */
+.health-3 {
+    background: #e4fbe9;
+    border-left: 6px solid #2ecc71;
+    color: #2ecc71;
+}
+
+/* 2 Herzen */
+.health-2 {
+    background: #effff3;
+    border-left: 6px solid #58d68d;
+    color: #2ecc71;
+}
+
+/* 1 Herz */
+.health-1 {
+    background: #f7fff9;
+    border-left: 6px solid #7ee2a3;
+    color: #2ecc71;
+}
+
+/* Mittel */
+.health-mid {
+    background: #fff3d6;
+    border-left: 6px solid #ffb347;
+    color: #e67e22;
+}
+
+/* SCHLECHT — EXTREM DEUTLICH */
+.health-bad {
+    border-left: 12px solid #000;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 28px;
+    background: repeating-linear-gradient(
+        -45deg,
+        #ffeb3b,
+        #ffeb3b 14px,
+        #000 14px,
+        #000 28px
+    );
+    box-shadow: 0 0 20px rgba(255, 200, 0, 1);
+}
