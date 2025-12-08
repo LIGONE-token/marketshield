@@ -95,6 +95,7 @@ resultBox.innerHTML = hint + ranked.map(entry => `
         <div class="search-score score-${entry.score || 0}"></div>
     </div>
 `).join("");
+});
 
 
 
