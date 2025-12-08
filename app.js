@@ -198,7 +198,6 @@ async function loadCategory(categoryId) {
                 <div class="process-bar">${renderProcessBar(entry.processing_score)}</div>
             </div>
 
-            
             <h3>Kurzinfo</h3>
             <p>${entry.summary || "Keine Info"}</p>
 
