@@ -36,6 +36,44 @@ fetch("categories.json")
   .catch(error => console.error("Fehler beim Laden der Kategorien:", error));
 
 
+
+// ░░░░░░░░░░░░░  GESUNDHEITSSKALA  ░░░░░░░░░░░░░░░░░░░░
+
+function getHealthIcons(score) {
+    const s = score || 0;
+
+    if (s >= 80) return `<div class="health-score-box health-3">💚💚💚</div>`;
+    if (s >= 60) return `<div class="health-score-box health-2">💚💚</div>`;
+    if (s >= 40) return `<div class="health-score-box health-1">💚</div>`;
+    if (s >= 20) return `<div class="health-score-box health-mid">🧡🧡</div>`;
+
+    // Extrem deutliche Warnstufe
+    return `<div class="health-score-box health-bad">⚠️❗⚠️</div>`;
+}
+
+
+
+// ░░░░░░░░░░░░░  VERARBEITUNGS-BALKEN  ░░░░░░░░░░░░░░░░░░░░
+
+function renderProcessBar(score) {
+    const s = Math.max(1, Math.min(10, score || 1));
+
+    let color = "#2ecc71"; // wenig
+    if (s >= 4 && s <= 6) color = "#f1c40f"; // mittel
+    if (s >= 7) color = "#e74c3c"; // stark
+
+    const width = (s * 10) + "%";
+
+    return `
+        <div class="process-bar-bg">
+            <div class="process-bar-fill" style="width:${width}; background:${color};"></div>
+        </div>
+        <div class="process-bar-label">${s}/10</div>
+    `;
+}
+
+
+
 // ░░░░░░░░░░░░░  SUCHFUNKTION (Supabase)  ░░░░░░░░░░░░░░░░░░░░
 
 document.getElementById("searchInput").addEventListener("input", async function () {
@@ -52,8 +90,6 @@ document.getElementById("searchInput").addEventListener("input", async function 
 
     const url = `${SUPABASE_URL}/rest/v1/entries?select=*&or=(title.ilike.*${query}*,summary.ilike.*${query}*,mechanism.ilike.*${query}*,scientific_note.ilike.*${query}*)`;
 
-
-
     const response = await fetch(url, {
         headers: {
             apikey: SUPABASE_KEY,
@@ -68,110 +104,61 @@ document.getElementById("searchInput").addEventListener("input", async function 
         return;
     }
 
-    const ranked = data.map(item => {
-        let score = 0;
-        const q = query.toLowerCase();
+    const ranked = data
+        .map(item => {
+            let score = 0;
+            const q = query.toLowerCase();
 
-        if (item.title?.toLowerCase().includes(q)) score += 8;
-        if (item.summary?.toLowerCase().includes(q)) score += 4;
-        if (item.mechanism?.toLowerCase().includes(q)) score += 2;
+            if (item.title?.toLowerCase().includes(q)) score += 8;
+            if (item.summary?.toLowerCase().includes(q)) score += 4;
+            if (item.mechanism?.toLowerCase().includes(q)) score += 2;
 
-        score += (item.score || 0) * 0.2;
-        return { item, score };
-    })
-    .sort((a, b) => b.score - a.score)
-    .map(r => r.item);
+            score += (item.score || 0) * 0.2;
 
-      // Hinweis einfügen
-let hint = `<div class="search-hint">Für Details bitte antippen.</div>`;
+            return { item, score };
+        })
+        .sort((a, b) => b.score - a.score)
+        .map(r => r.item);
 
-resultBox.innerHTML = hint + ranked.map(entry => {
+    let hint = `<div class="search-hint">Für Details bitte antippen.</div>`;
 
-    const healthScore = Math.max(1, Math.min(10, Math.ceil((entry.score || 1))));
-    const processing = Math.max(1, Math.min(10, entry.processing_score || 1));
+    resultBox.innerHTML = hint + ranked.map(entry => {
 
-    const warning = processing >= 7 ? `<span class="warn-symbol">⚠</span>` : "";
-
-
-    return `
+        return `
         <div class="search-item search-result" data-id="${entry.id}">
-            <div class="search-title">${entry.title} ${warning}</div>
+            
+            <div class="search-title">${entry.title}</div>
+
             <div class="search-short">
                 ${entry.summary ? entry.summary.substring(0, 80) + (entry.summary.length > 80 ? "…" : "") : ""}
             </div>
 
-           <div class="search-metrics">
-    <div class="search-score score-${healthScore}"></div>
-    <div class="process-score pscore-${processing}"></div>
-</div>
+            <div class="search-metrics">
+                <div class="health-mini">${getHealthIcons(entry.score)}</div>
+                <div class="process-bar-mini">${renderProcessBar(entry.processing_score)}</div>
+            </div>
 
         </div>
-    `;
-}).join("");
+        `;
+    }).join("");
 
 });
 
 
 
 
-// ░░░░░░░░░░░░░  KLICK AUF SUCHERGEBNIS → VOLLANSICHT  ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  KLICK AUF SUCHERGEBNIS  ░░░░░░░░░░░░░░░░░░░░
 
 document.addEventListener("click", function (e) {
     const card = e.target.closest(".search-result");
     if (!card) return;
-
-    const id = card.dataset.id;
-    loadFullEntry(id);
+    loadFullEntry(card.dataset.id);
 });
 
-function getHealthIcons(score) {
-    const s = score || 0;
-
-    // Sehr gut – 3 Herzen
-    if (s >= 80) {
-        return `<div class="health-score-box health-3">💚💚💚</div>`;
-    }
-
-    // Gut – 2 Herzen
-    if (s >= 60) {
-        return `<div class="health-score-box health-2">💚💚</div>`;
-    }
-
-    // Leicht gut – 1 Herz
-    if (s >= 40) {
-        return `<div class="health-score-box health-1">💚</div>`;
-    }
-
-    // Mittel – Orange
-    if (s >= 20) {
-        return `<div class="health-score-box health-mid">🧡🧡</div>`;
-    }
-
-    // SCHLECHT – Extrem deutliche Warnstufe
-    return `<div class="health-score-box health-bad">⚠️❗⚠️</div>`;
-}
-
-
-function renderProcessBar(score) {
-    const s = Math.max(1, Math.min(10, score || 1)); // 1–10
-
-    let color = "#2ecc71"; // grün
-    if (s >= 4 && s <= 6) color = "#f1c40f"; // gelb
-    if (s >= 7) color = "#e74c3c"; // rot
-
-    const width = (s * 10) + "%"; // 1–10 → 10–100%
-
-    return `
-        <div class="process-bar-bg">
-            <div class="process-bar-fill" style="width:${width}; background:${color};"></div>
-        </div>
-        <div class="process-bar-label">${s}/10</div>
-    `;
-}
 
 
 
-// ░░░░░░░░░░░░░  KATEGORIE → VOLLANSICHT ANZEIGEN  ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  KATEGORIE → VOLLANSICHT  ░░░░░░░░░░░░░░░░░░░░
 
 async function loadCategory(categoryId) {
     const results = document.getElementById("results");
@@ -206,21 +193,14 @@ async function loadCategory(categoryId) {
         box.innerHTML = `
             <h2 class="entry-title">${entry.title}</h2>
 
-<div class="metrics-icons">
-    <div class="health-icons">${getHealthIcons(entry.score)}</div>
-<div class="process-bar">
-    ${renderProcessBar(entry.processing_score)}
-</div>
-</div>
+            <div class="metrics-icons">
+                <div class="health-icons">${getHealthIcons(entry.score)}</div>
+                <div class="process-bar">${renderProcessBar(entry.processing_score)}</div>
+            </div>
 
             <div class="score-section">
                 <strong>Score:</strong>
                 <span class="score-value score-${entry.score}">${entry.score}/100</span>
-            </div>
-
-            <div class="processing-section">
-                <strong>Industrielle Verarbeitung:</strong>
-                <span>${entry.processing_score}/10</span>
             </div>
 
             <h3>Kurzinfo</h3>
@@ -253,7 +233,8 @@ async function loadCategory(categoryId) {
 }
 
 
-// ░░░░░░░░░░░░░  VOLLANSICHT FÜR EINZELNEN EINTRAG  ░░░░░░░░░░░░░░░░░░░░
+
+// ░░░░░░░░░░░░░  EINZELANSICHT  ░░░░░░░░░░░░░░░░░░░░
 
 async function loadFullEntry(id) {
     const results = document.getElementById("results");
@@ -275,19 +256,15 @@ async function loadFullEntry(id) {
     results.innerHTML = `
         <div class="entry-card full">
             <h2 class="entry-title">${entry.title}</h2>
-                    <div class="metrics-icons">
-            <div class="health-icons">${getHealthIcons(entry.score)}</div>
-            <div class="factory-icons">${getFactoryIcons(entry.processing_score)}</div>
-        </div>
 
+            <div class="metrics-icons">
+                <div class="health-icons">${getHealthIcons(entry.score)}</div>
+                <div class="process-bar">${renderProcessBar(entry.processing_score)}</div>
+            </div>
 
             <div class="score-section">
                 <strong>Score:</strong>
-                <span class="score-value score-${entry.score}">
-    ${entry.score}/10
-    <span class="score-dot score-${entry.score}"></span>
-</span>
-
+                <span class="score-value score-${entry.score}">${entry.score}/10</span>
             </div>
 
             <p>${entry.summary || ""}</p>
