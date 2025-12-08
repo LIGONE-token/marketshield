@@ -82,16 +82,20 @@ document.getElementById("searchInput").addEventListener("input", async function 
     .sort((a, b) => b.score - a.score)
     .map(r => r.item);
 
-       resultBox.innerHTML = ranked.map(entry => `
-        <div class="search-item search-result" data-id="${entry.id}">
-            <div class="search-title">${entry.title}</div>
-            <div class="search-short">
-                ${entry.summary ? entry.summary.substring(0, 80) + (entry.summary.length > 80 ? "…" : "") : ""}
-            </div>
-            <div class="search-score score-${entry.score || 0}"></div>
+      // Hinweis einfügen
+let hint = `<div class="search-hint">Für Details bitte antippen.</div>`;
+
+// Ergebnisse rendern
+resultBox.innerHTML = hint + ranked.map(entry => `
+    <div class="search-item search-result" data-id="${entry.id}">
+        <div class="search-title">${entry.title}</div>
+        <div class="search-short">
+            ${entry.summary ? entry.summary.substring(0, 80) + (entry.summary.length > 80 ? "…" : "") : ""}
         </div>
-    `).join("");
-});
+        <div class="search-score score-${entry.score || 0}"></div>
+    </div>
+`).join("");
+
 
 
 
