@@ -198,7 +198,9 @@ async function loadCategory(categoryId) {
 
 <div class="metrics-icons">
     <div class="health-icons">${getHealthIcons(entry.score)}</div>
-    <div class="factory-icons">${getFactoryIcons(entry.processing_score)}</div>
+<div class="process-bar">
+    ${renderProcessBar(entry.processing_score)}
+</div>
 </div>
 
             <div class="score-section">
