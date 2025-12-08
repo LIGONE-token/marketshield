@@ -124,6 +124,24 @@ document.addEventListener("click", function (e) {
     loadFullEntry(id);
 });
 
+function getHealthIcons(score) {
+    const s = score || 0;
+
+    if (s >= 80) return `<span class="h3">🌿🌿🌿</span>`;
+    if (s >= 60) return `<span class="h2">🌿🌿</span>`;
+    if (s >= 40) return `<span class="h1">🍃</span>`;
+    if (s >= 20) return `<span class="warn">⚠</span>`;
+    return `<span class="danger">☣</span>`;
+}
+
+function getFactoryIcons(processing) {
+    const p = processing || 0;
+
+    if (p <= 3) return `<span class="f1">🏭</span>`;
+    if (p <= 6) return `<span class="f2">🏭🏭</span>`;
+    return `<span class="f3">🏭🏭🏭</span>`;
+}
+
 
 // ░░░░░░░░░░░░░  KATEGORIE → VOLLANSICHT ANZEIGEN  ░░░░░░░░░░░░░░░░░░░░
 
