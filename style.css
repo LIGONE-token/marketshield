@@ -332,3 +332,9 @@ body.christmas .subtitle {
 .score-8 { background: #66cc66; }
 .score-9 { background: #45b649; }
 .score-10 { background: #2e8b57; }
+
+#results {
+    border-top: 2px solid #f3f3f3;
+    margin-top: 8px;
+    padding-top: 4px;
+}
