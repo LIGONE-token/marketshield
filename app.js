@@ -50,19 +50,8 @@ document.getElementById("searchInput").addEventListener("input", async function 
     const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
     const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-    const url =
-  `${SUPABASE_URL}/rest/v1/entries?` +
-  `or=(` +
-  `title.ilike.%25${query}%25,` +
-  `summary.ilike.%25${query}%25,` +
-  `mechanism.ilike.%25${query}%25,` +
-  `scientific_note.ilike.%25${query}%25,` +
-  `effects_positive.cs.%22${query}%22,` +
-  `effects_negative.cs.%22${query}%22,` +
-  `risk_groups.cs.%22${query}%22,` +
-  `synergy.cs.%22${query}%22` +
-  `)` +
-  `&select=*`;
+    const url = `${SUPABASE_URL}/rest/v1/entries?select=*&or=(title.ilike.*${query}*,summary.ilike.*${query}*,mechanism.ilike.*${query}*,scientific_note.ilike.*${query}*)`;
+
 
 
     const response = await fetch(url, {
