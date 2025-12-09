@@ -8,11 +8,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (isChristmasTime) document.body.classList.add("christmas");
 });
 
-// ░░░░░░░░░░░░░  KONFIGURATION  ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  KONFIGURATION  
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-// ░░░░░░░░░░░░░  KATEGORIEN LADEN  ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  KATEGORIEN LADEN  
 fetch("categories.json")
     .then(response => response.json())
     .then(data => {
@@ -29,8 +29,7 @@ fetch("categories.json")
     })
     .catch(error => console.error("Fehler beim Laden der Kategorien:", error));
 
-
-// ░░░░░░░░░░░░░  GESUNDHEITS-SKALA (Herzen) ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  GESUNDHEITSSCORE  
 function getHealthIcons(score) {
     const s = score || 0;
 
@@ -41,8 +40,7 @@ function getHealthIcons(score) {
     return `<div class="health-score-box health-bad">⚠️❗⚠️</div>`;
 }
 
-
-// ░░░░░░░░░░░░░  INDUSTRIE-BALKEN ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  INDUSTRIE-SCORE  
 function renderProcessBar(score) {
     const s = Math.max(1, Math.min(10, score || 1));
 
@@ -60,8 +58,7 @@ function renderProcessBar(score) {
     `;
 }
 
-
-// ░░░░░░░░░░░░░  SUCHFUNKTION  ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  SUCHFUNKTION  
 document.getElementById("searchInput").addEventListener("input", async function () {
     const query = this.value.trim();
     const results = document.getElementById("results");
@@ -96,12 +93,10 @@ document.getElementById("searchInput").addEventListener("input", async function 
         .map(item => {
             let score = 0;
             const q = query.toLowerCase();
-
             if (item.title?.toLowerCase().includes(q)) score += 8;
             if (item.summary?.toLowerCase().includes(q)) score += 4;
             if (item.mechanism?.toLowerCase().includes(q)) score += 2;
             score += (item.score || 0) * 0.2;
-
             return { item, score };
         })
         .sort((a, b) => b.score - a.score)
@@ -119,12 +114,14 @@ document.getElementById("searchInput").addEventListener("input", async function 
 
                 <div class="search-metrics">
                     <div class="health-mini">${getHealthIcons(entry.score)}</div>
-                    <div class="process-bar-mini">${renderProcessBar(entry.processing_score)}</div>
+
+                    <div class="process-bar process-bar-mini">
+                        ${renderProcessBar(entry.processing_score)}
+                    </div>
                 </div>
             </div>
         `).join("");
 });
-
 
 // ░░░░░░░░░░░░░  CLICK → EINZELANSICHT  
 document.addEventListener("click", function (e) {
@@ -133,8 +130,7 @@ document.addEventListener("click", function (e) {
     loadFullEntry(card.dataset.id);
 });
 
-
-// ░░░░░░░░░░░░░  KATEGORIE → VOLLANSICHT  
+// ░░░░░░░░░░░░░  KATEGORIE-ANSICHT  
 async function loadCategory(categoryId) {
     const results = document.getElementById("results");
     results.innerHTML = "<p>Lade Daten...</p>";
@@ -149,7 +145,6 @@ async function loadCategory(categoryId) {
     });
 
     const data = await response.json();
-
     if (!data || data.length === 0) {
         results.innerHTML = "<p>Noch keine Einträge in dieser Kategorie.</p>";
         return;
@@ -169,7 +164,9 @@ async function loadCategory(categoryId) {
                     </div>
 
                     <div class="metric-row">
-                        ${renderProcessBar(entry.processing_score)}
+                        <div class="process-bar">
+                            ${renderProcessBar(entry.processing_score)}
+                        </div>
                         <span class="metric-text">Industriescore – Grad der Verarbeitung</span>
                     </div>
                 </div>
@@ -202,7 +199,6 @@ async function loadCategory(categoryId) {
     });
 }
 
-
 // ░░░░░░░░░░░░░  EINZELANSICHT  
 async function loadFullEntry(id) {
     const results = document.getElementById("results");
@@ -231,7 +227,9 @@ async function loadFullEntry(id) {
                 </div>
 
                 <div class="metric-row">
-                    ${renderProcessBar(entry.processing_score)}
+                    <div class="process-bar">
+                        ${renderProcessBar(entry.processing_score)}
+                    </div>
                     <span class="metric-text">Industriescore – Grad der Verarbeitung</span>
                 </div>
             </div>
