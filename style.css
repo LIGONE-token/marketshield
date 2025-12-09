@@ -56,7 +56,7 @@ header h1 {
 }
 
 /* ───────────────────────────────
-   SUB-INFO
+   SUB-INFO + LINKS
 ─────────────────────────────── */
 
 .sub-info,
@@ -64,6 +64,16 @@ header h1 {
     text-align: center;
     margin: 10px 0;
     font-size: 15px;
+}
+
+.ligone-links a {
+    color: #1e6f2e;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.ligone-links a:hover {
+    text-decoration: underline;
 }
 
 /* ───────────────────────────────
@@ -149,24 +159,28 @@ header h1 {
 }
 
 /* ───────────────────────────────
-   Metriken – Variante B
+   SCORE-BEREICH (ENDVERSION)
 ─────────────────────────────── */
 
 .metrics-icons {
-    margin: 10px 0 15px 0;
+    display: flex;
+    flex-direction: column;   /* Jeder Score ein eigener Block */
+    align-items: center;
+    gap: 22px;                /* Abstand zwischen Health & Industry */
+    margin: 20px 0;
 }
 
 .metric-row {
     display: flex;
-    justify-content: center;
+    flex-direction: column;   /* Score oben, Text unten */
     align-items: center;
-    gap: 12px;
-    margin: 6px 0;
 }
 
 .metric-text {
+    margin-top: 6px;
     font-size: 14px;
     color: #555;
+    text-align: center;
 }
 
 /* ───────────────────────────────
