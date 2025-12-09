@@ -115,13 +115,12 @@ header h1 {
 ─────────────────────────────── */
 
 .search-item {
-    padding: 10px 12px;
-    border-bottom: 1px solid #e5e5e5;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    /* display: flex !important; */
+    /* flex-direction: column !important; */
+    /* align-items: center !important; */
+    /* text-align: center !important; */
 }
+
 
 .search-item:hover {
     background: #fafafa;
