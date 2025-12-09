@@ -322,3 +322,51 @@ body.christmas .subtitle {
     color: #ffffff !important;
     text-shadow: 0 0 4px rgba(0,0,0,0.45);
 }
+/* ───────────────────────────────
+   FIX: ZENTRIERUNG ALLER SUCH- UND SCORE-BEREICHE
+─────────────────────────────── */
+
+.search-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+.search-title,
+.search-short {
+    width: 100%;
+    text-align: center !important;
+}
+
+.search-metrics {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100%;
+}
+
+/* Mini-Elemente (Herzen & Balken) korrekt mittig */
+.health-mini,
+.process-bar-mini {
+    transform-origin: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Vollansicht – Icons zentrieren */
+.metrics-icons {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100%;
+}
+
+/* Balken korrekt zentriert */
+.process-bar {
+    margin: 0 auto !important;
+}
+
+.process-bar-mini {
+    margin: 0 auto !important;
+}
