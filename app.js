@@ -24,7 +24,6 @@ fetch("categories.json")
             const btn = document.createElement("button");
             btn.textContent = cat.title;
             btn.dataset.category = cat.id;
-
             btn.addEventListener("click", () => loadCategory(cat.id));
             grid.appendChild(btn);
         });
@@ -126,11 +125,6 @@ document.getElementById("searchInput").addEventListener("input", async function 
                     <div class="health-mini">${getHealthIcons(entry.score)}</div>
                     <div class="process-bar-mini">${renderProcessBar(entry.processing_score)}</div>
                 </div>
-                <div class="score-explain">
-    <div class="ex-health">Gesundheitsindex: zeigt, wie positiv ein Stoff für den Körper ist (mehr Grün = besser)</div>
-    <div class="ex-process">Industriescore: zeigt den Grad der industriellen Verarbeitung (rot = hoch)</div>
-</div>
-
             </div>
         `).join("");
 });
@@ -177,6 +171,11 @@ async function loadCategory(categoryId) {
                 <div class="metrics-icons">
                     ${getHealthIcons(entry.score)}
                     ${renderProcessBar(entry.processing_score)}
+                </div>
+
+                <div class="score-explain">
+                    <div class="ex-health">Gesundheitsindex: zeigt, wie positiv ein Stoff für den Körper ist (mehr Grün = besser)</div>
+                    <div class="ex-process">Industriescore: zeigt den Grad der industriellen Verarbeitung (rot = hoch)</div>
                 </div>
 
                 <h3>Kurzinfo</h3>
@@ -233,6 +232,11 @@ async function loadFullEntry(id) {
             <div class="metrics-icons">
                 ${getHealthIcons(entry.score)}
                 ${renderProcessBar(entry.processing_score)}
+            </div>
+
+            <div class="score-explain">
+                <div class="ex-health">Gesundheitsindex: zeigt, wie positiv ein Stoff für den Körper ist (mehr Grün = besser)</div>
+                <div class="ex-process">Industriescore: zeigt den Grad der industriellen Verarbeitung (rot = hoch)</div>
             </div>
 
             <p>${entry.summary || ""}</p>
