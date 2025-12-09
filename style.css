@@ -316,3 +316,30 @@ body.christmas footer {
         width: 100px;
     }
 }
+/* === Weihnachtsmodus — original funktionierende Version === */
+
+body.christmas {
+    background: #f8f3f0;
+    background-image: radial-gradient(circle at top, rgba(255,255,255,0.7), transparent 55%);
+}
+
+body.christmas header,
+body.christmas footer {
+    background-color: #b71c1c;
+    color: #fff;
+}
+
+body.christmas .subtitle {
+    color: #ffffff !important;
+    text-shadow: 0 0 4px rgba(0,0,0,0.45);
+}
+
+body.christmas .category-grid button {
+    background-color: #c62828;
+    color: #fff;
+    border: none;
+}
+
+body.christmas .category-grid button:hover {
+    background-color: #8e1b1b;
+}
