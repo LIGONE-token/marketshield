@@ -159,29 +159,49 @@ header h1 {
 }
 
 /* ───────────────────────────────
-   SCORE-BEREICH (ENDVERSION)
+   SCORE-BEREICH – FINAL RESPONSIVE
 ─────────────────────────────── */
 
 .metrics-icons {
     display: flex;
-    flex-direction: column;   /* Jeder Score ein eigener Block */
-    align-items: center;
-    gap: 22px;                /* Abstand zwischen Health & Industry */
+    flex-direction: column;
+    align-items: flex-start;     /* Gesamter Score-Bereich links */
+    gap: 26px;
     margin: 20px 0;
+    width: 100%;
 }
 
 .metric-row {
     display: flex;
-    flex-direction: column;   /* Score oben, Text unten */
-    align-items: center;
+    flex-direction: column;      /* Score oben, Text unten */
+    align-items: flex-start;     /* Score + Text linksbündig */
+    width: 100%;
+}
+
+.metric-row .health-score-box,
+.metric-row .process-bar {
+    margin-left: 0;              /* keine Zentrierung */
 }
 
 .metric-text {
-    margin-top: 6px;
-    font-size: 14px;
+    margin-top: 5px;
+    font-size: 15px;
     color: #555;
-    text-align: center;
+    line-height: 1.35;
+    max-width: 90%;
 }
+
+/* Mobile – leichte Anpassung */
+@media (max-width: 480px) {
+    .metric-text {
+        font-size: 14px;
+        max-width: 100%;
+    }
+    .metrics-icons {
+        gap: 20px;
+    }
+}
+
 
 /* ───────────────────────────────
    HEALTH SCORE ICONS
