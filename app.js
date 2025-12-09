@@ -10,8 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // ░░░░░░░░░░░░░  KONFIGURATION  ░░░░░░░░░░░░░░░░░░░░
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
-const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
-
+    const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 // ░░░░░░░░░░░░░  KATEGORIEN LADEN  ░░░░░░░░░░░░░░░░░░░░
 fetch("categories.json")
@@ -31,7 +30,6 @@ fetch("categories.json")
     .catch(error => console.error("Fehler beim Laden der Kategorien:", error));
 
 
-
 // ░░░░░░░░░░░░░  GESUNDHEITS-SKALA (Herzen) ░░░░░░░░░░░░░░░░░░░░
 function getHealthIcons(score) {
     const s = score || 0;
@@ -42,7 +40,6 @@ function getHealthIcons(score) {
     if (s >= 20) return `<div class="health-score-box health-mid">🧡🧡</div>`;
     return `<div class="health-score-box health-bad">⚠️❗⚠️</div>`;
 }
-
 
 
 // ░░░░░░░░░░░░░  INDUSTRIE-BALKEN ░░░░░░░░░░░░░░░░░░░░
@@ -62,7 +59,6 @@ function renderProcessBar(score) {
         <div class="process-bar-label">${s}/10</div>
     `;
 }
-
 
 
 // ░░░░░░░░░░░░░  SUCHFUNKTION  ░░░░░░░░░░░░░░░░░░░░
@@ -130,8 +126,7 @@ document.getElementById("searchInput").addEventListener("input", async function 
 });
 
 
-
-// ░░░░░░░░░░░░░  CLICK → EINZELANSICHT  ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  CLICK → EINZELANSICHT  
 document.addEventListener("click", function (e) {
     const card = e.target.closest(".search-result");
     if (!card) return;
@@ -139,8 +134,7 @@ document.addEventListener("click", function (e) {
 });
 
 
-
-// ░░░░░░░░░░░░░  KATEGORIE → VOLLANSICHT  ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  KATEGORIE → VOLLANSICHT  
 async function loadCategory(categoryId) {
     const results = document.getElementById("results");
     results.innerHTML = "<p>Lade Daten...</p>";
@@ -169,20 +163,16 @@ async function loadCategory(categoryId) {
                 <h2 class="entry-title">${entry.title}</h2>
 
                 <div class="metrics-icons">
-                    ${getHealthIcons(entry.score)}
-                    ${renderProcessBar(entry.processing_score)}
+                    <div class="metric-row">
+                        ${getHealthIcons(entry.score)}
+                        <span class="metric-text">Gesundheitsindex – Wirkung auf den Körper</span>
+                    </div>
+
+                    <div class="metric-row">
+                        ${renderProcessBar(entry.processing_score)}
+                        <span class="metric-text">Industriescore – Grad der Verarbeitung</span>
+                    </div>
                 </div>
-
-                <div class="metrics-icons">
-    ${getHealthIcons(entry.score)}
-    ${renderProcessBar(entry.processing_score)}
-</div>
-
-<div class="score-explain">
-    <div class="ex-health">Gesundheitsindex: zeigt, wie positiv ein Stoff für den Körper ist (mehr Grün = besser)</div>
-    <div class="ex-process">Industriescore: zeigt den Grad der industriellen Verarbeitung (rot = hoch)</div>
-</div>
-
 
                 <h3>Kurzinfo</h3>
                 <p>${entry.summary || "Keine Info"}</p>
@@ -213,8 +203,7 @@ async function loadCategory(categoryId) {
 }
 
 
-
-// ░░░░░░░░░░░░░  EINZELANSICHT  ░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░░░░░░  EINZELANSICHT  
 async function loadFullEntry(id) {
     const results = document.getElementById("results");
     results.innerHTML = "<p>Lade Eintrag...</p>";
@@ -236,13 +225,15 @@ async function loadFullEntry(id) {
             <h2 class="entry-title">${entry.title}</h2>
 
             <div class="metrics-icons">
-                ${getHealthIcons(entry.score)}
-                ${renderProcessBar(entry.processing_score)}
-            </div>
+                <div class="metric-row">
+                    ${getHealthIcons(entry.score)}
+                    <span class="metric-text">Gesundheitsindex – Wirkung auf den Körper</span>
+                </div>
 
-            <div class="score-explain">
-                <div class="ex-health">Gesundheitsindex: zeigt, wie positiv ein Stoff für den Körper ist (mehr Grün = besser)</div>
-                <div class="ex-process">Industriescore: zeigt den Grad der industriellen Verarbeitung (rot = hoch)</div>
+                <div class="metric-row">
+                    ${renderProcessBar(entry.processing_score)}
+                    <span class="metric-text">Industriescore – Grad der Verarbeitung</span>
+                </div>
             </div>
 
             <p>${entry.summary || ""}</p>
