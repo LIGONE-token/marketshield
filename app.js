@@ -173,10 +173,16 @@ async function loadCategory(categoryId) {
                     ${renderProcessBar(entry.processing_score)}
                 </div>
 
-                <div class="score-explain">
-                    <div class="ex-health">Gesundheitsindex: zeigt, wie positiv ein Stoff für den Körper ist (mehr Grün = besser)</div>
-                    <div class="ex-process">Industriescore: zeigt den Grad der industriellen Verarbeitung (rot = hoch)</div>
-                </div>
+                <div class="metrics-icons">
+    ${getHealthIcons(entry.score)}
+    ${renderProcessBar(entry.processing_score)}
+</div>
+
+<div class="score-explain">
+    <div class="ex-health">Gesundheitsindex: zeigt, wie positiv ein Stoff für den Körper ist (mehr Grün = besser)</div>
+    <div class="ex-process">Industriescore: zeigt den Grad der industriellen Verarbeitung (rot = hoch)</div>
+</div>
+
 
                 <h3>Kurzinfo</h3>
                 <p>${entry.summary || "Keine Info"}</p>
