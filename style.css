@@ -12,8 +12,11 @@ body {
     margin: 0;
     background: #fafafa;
     color: #222;
-    text-align: center; /* GLOBAL FIX */
 }
+
+/* ───────────────────────────────
+   HEADER
+─────────────────────────────── */
 
 header {
     text-align: center;
@@ -39,6 +42,7 @@ header h1 {
 ─────────────────────────────── */
 
 .search-container {
+    text-align: center;
     margin: 25px 10px;
 }
 
@@ -51,11 +55,15 @@ header h1 {
     font-size: 16px;
 }
 
-.search-hint {
-    font-size: 13px;
-    color: #777;
-    padding: 6px 0;
-    margin-bottom: 4px;
+/* ───────────────────────────────
+   SUB-INFO
+─────────────────────────────── */
+
+.sub-info,
+.ligone-links {
+    text-align: center;
+    margin: 10px 0;
+    font-size: 15px;
 }
 
 /* ───────────────────────────────
@@ -91,7 +99,7 @@ header h1 {
 }
 
 /* ───────────────────────────────
-   ERGEBNISSE & KARTEN
+   ERGEBNISSE
 ─────────────────────────────── */
 
 #results {
@@ -101,6 +109,8 @@ header h1 {
     padding: 20px 0;
 }
 
+/* Karten */
+
 .entry-card {
     background: #fff;
     border: 1px solid #ddd;
@@ -108,7 +118,6 @@ header h1 {
     padding: 15px;
     margin: 12px 0;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    text-align: left;
 }
 
 /* ───────────────────────────────
@@ -116,14 +125,14 @@ header h1 {
 ─────────────────────────────── */
 
 .search-item {
-    padding: 10px 12px;
+    padding: 12px 14px;
     border-bottom: 1px solid #e5e5e5;
     cursor: pointer;
 }
 
 .search-title {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: bold;
 }
 
 .search-short {
@@ -139,9 +148,25 @@ header h1 {
     margin-top: 8px;
 }
 
-.health-mini, 
-.process-bar-mini {
-    transform: scale(0.75);
+/* ───────────────────────────────
+   Metriken – Variante B
+─────────────────────────────── */
+
+.metrics-icons {
+    margin: 10px 0 15px 0;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin: 6px 0;
+}
+
+.metric-text {
+    font-size: 14px;
+    color: #555;
 }
 
 /* ───────────────────────────────
@@ -149,49 +174,21 @@ header h1 {
 ─────────────────────────────── */
 
 .health-score-box {
-    padding: 10px 12px;
+    padding: 8px 10px;
     border-radius: 10px;
-    margin: 10px 0;
     font-weight: bold;
     display: inline-block;
-    font-size: 22px;
-
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    font-size: 20px;
 }
 
-.health-score-box:hover {
-    transform: scale(1.04);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-}
-
-.health-3 {
-    background: #e4fbe9;
-    border-left: 6px solid #2ecc71;
-    color: #2ecc71;
-    animation: healthPulse 2.2s infinite ease-in-out;
-}
-
-.health-2 {
-    background: #effff3;
-    border-left: 6px solid #58d68d;
-    color: #2ecc71;
-}
-
-.health-1 {
-    background: #f7fff9;
-    border-left: 6px solid #7ee2a3;
-    color: #2ecc71;
-}
-
-.health-mid {
-    background: #fff3d6;
-    border-left: 6px solid #ffb347;
-    color: #e67e22;
-}
+.health-3 { background:#e4fbe9; border-left:6px solid #2ecc71; color:#2ecc71; }
+.health-2 { background:#f3fff6; border-left:6px solid #58d68d; color:#2ecc71; }
+.health-1 { background:#f7fff9; border-left:6px solid #7ee2a3; color:#2ecc71; }
+.health-mid { background:#fff3d6; border-left:6px solid #ffb347; color:#e67e22; }
 
 .health-bad {
     border-left: 12px solid #000;
-    padding: 14px 18px;
+    padding: 12px 16px;
     background: repeating-linear-gradient(
         -45deg,
         #ffeb3b,
@@ -200,14 +197,7 @@ header h1 {
         #000 28px
     );
     color: #000;
-    font-size: 28px;
-    box-shadow: 0 0 20px rgba(255,200,0,1);
-}
-
-@keyframes healthPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-    100% { transform: scale(1); }
+    font-size: 26px;
 }
 
 /* ───────────────────────────────
@@ -215,66 +205,26 @@ header h1 {
 ─────────────────────────────── */
 
 .process-bar {
-    width: 180px;
-    max-width: 100%;
+    width: 120px;
     margin: 0 auto;
-
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.process-bar:hover {
-    transform: scale(1.04);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
 }
 
 .process-bar-bg {
     width: 100%;
-    height: 12px;
+    height: 10px;
     background: #eee;
     border-radius: 6px;
     overflow: hidden;
 }
 
 .process-bar-fill {
-    height: 12px;
+    height: 10px;
     border-radius: 6px;
-    transition: width 0.6s ease-out; /* Animation */
 }
 
 .process-bar-label {
-    margin-top: 4px;
-    font-size: 14px;
-    font-weight: bold;
-    color: #444;
-}
-
-.process-bar-mini .process-bar-bg {
-    height: 8px;
-}
-
-.process-bar-mini .process-bar-fill {
-    height: 8px;
-}
-
-.process-bar-mini .process-bar-label {
-    font-size: 10px;
-}
-
-/* ───────────────────────────────
-   SCORE-ERKLÄRUNG
-─────────────────────────────── */
-
-.score-explain {
-    margin-top: 8px;
-    text-align: center;
-    font-size: 14px;
-    color: #555;
-    line-height: 1.4;
-}
-
-.ex-health,
-.ex-process {
-    margin: 4px 0;
+    font-size: 13px;
+    margin-top: 3px;
 }
 
 /* ───────────────────────────────
@@ -285,65 +235,10 @@ footer {
     text-align: center;
     font-size: 13px;
     padding: 20px;
-    background: #ffffff;
-    color: #444;
+    background: #fff;
     margin-top: 40px;
 }
 
-/* ───────────────────────────────
-   WEIHNACHTSMODUS
-─────────────────────────────── */
-
-body.christmas {
-    background: #f8f3f0;
-    background-image: radial-gradient(circle at top, rgba(255,255,255,0.7), transparent 55%);
-}
-
-body.christmas header,
-body.christmas footer {
-    background-color: #b71c1c;
-    color: #fff;
-}
-
-body.christmas .category-grid button {
-    background-color: #c62828;
-    color: #fff;
-    border: none;
-}
-
-body.christmas .category-grid button:hover {
-    background-color: #8e1b1b;
-}
-
-body.christmas .subtitle {
-    color: #ffffff !important;
-    text-shadow: 0 0 4px rgba(0,0,0,0.45);
-}
-
-/* ───────────────────────────────
-   MOBILE OPTIMIERUNG
-─────────────────────────────── */
-
-@media (max-width: 480px) {
-
-    .entry-card {
-        padding: 12px;
-    }
-
-    .health-score-box {
-        font-size: 18px;
-        padding: 8px 10px;
-    }
-
-    .process-bar {
-        width: 140px;
-    }
-
-    .score-explain {
-        font-size: 13px;
-        padding: 0 10px;
-    }
-}
 .bottom-link {
     text-align: center;
     margin: 20px 0 40px 0;
@@ -352,10 +247,38 @@ body.christmas .subtitle {
 .bottom-link a {
     font-size: 15px;
     color: #2e7d32;
-    text-decoration: none;
     font-weight: bold;
+    text-decoration: none;
 }
 
 .bottom-link a:hover {
     text-decoration: underline;
+}
+
+/* ───────────────────────────────
+   WEIHNACHTSMODUS
+─────────────────────────────── */
+
+body.christmas {
+    background: #f8f3f0;
+}
+
+body.christmas header,
+body.christmas footer {
+    background: #b71c1c;
+    color: #fff;
+}
+
+/* ───────────────────────────────
+   MOBILE
+─────────────────────────────── */
+
+@media (max-width: 480px) {
+    .metric-text {
+        font-size: 13px;
+    }
+
+    .process-bar {
+        width: 100px;
+    }
 }
