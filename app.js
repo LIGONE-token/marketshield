@@ -22,8 +22,11 @@ fetch("categories.json")
         data.categories.forEach(cat => {
             const btn = document.createElement("button");
             btn.textContent = cat.title;
-            btn.dataset.category = cat.id;
-            btn.addEventListener("click", () => loadCategory(cat.id));
+
+            // ⚠️ WICHTIG: Kategorie-Name statt ID übergeben
+            btn.dataset.category = cat.title;
+            btn.addEventListener("click", () => loadCategory(cat.title));
+
             grid.appendChild(btn);
         });
     })
@@ -131,11 +134,12 @@ document.addEventListener("click", function (e) {
 });
 
 // ░░░░░░░░░░░░░  KATEGORIE-ANSICHT  
-async function loadCategory(categoryId) {
+async function loadCategory(categoryName) {
     const results = document.getElementById("results");
     results.innerHTML = "<p>Lade Daten...</p>";
 
-    const url = `${SUPABASE_URL}/rest/v1/entries?category=eq.${categoryId}`;
+    // ⭐ WICHTIG: Filter jetzt nach Kategorie-Text, NICHT ID
+    const url = `${SUPABASE_URL}/rest/v1/entries?category=eq.${encodeURIComponent(categoryName)}`;
 
     const response = await fetch(url, {
         headers: {
