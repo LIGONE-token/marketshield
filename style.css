@@ -444,3 +444,31 @@ body.christmas .category-grid button:hover {
         text-align: center;
     }
 }
+.compact-card {
+    padding: 12px;
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+.entry-title-small {
+    font-size: 18px;
+    margin: 0 0 6px 0;
+    font-weight: bold;
+}
+
+.entry-short {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+.mini-metrics {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.mini-health, .mini-process {
+    transform: scale(0.75);
+    transform-origin: left center;
+}
