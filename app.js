@@ -219,7 +219,24 @@ async function loadFullEntry(id) {
 
     const data = await response.json();
     const entry = data[0];
+// Allgemeine Begriffe erkennen → KEINE Scores/Mechanismen/Effekte anzeigen
+const isGeneral =
+    (!entry.processing_score && 
+     (!entry.effects_positive || entry.effects_positive.length === 0) &&
+     (!entry.effects_negative || entry.effects_negative.length === 0) &&
+     (!entry.risk_groups || entry.risk_groups.length === 0));
 
+if (isGeneral) {
+    results.innerHTML = `
+        <div class="entry-card">
+            <h2>${entry.title}</h2>
+            <p>${entry.summary || ""}</p>
+        </div>
+    `;
+    return;
+}
+
+    
     results.innerHTML = `
         <div class="entry-card">
             <h2 class="entry-title">${entry.title}</h2>
