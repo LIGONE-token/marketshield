@@ -401,3 +401,46 @@ body.christmas .category-grid button:hover {
         font-size: 16px;
     }
 }
+/* ───────────────────────────────
+   SHARE-BUTTONS
+─────────────────────────────── */
+
+.share-box {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+}
+
+.share-box h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.share-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.share-btn {
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    background: #2e7d32;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.share-btn:hover {
+    background: #1b5e20;
+}
+
+@media (max-width: 480px) {
+    .share-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
