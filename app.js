@@ -75,22 +75,53 @@ function renderProcessBar(score) {
 }
 
 
+// ░░░░░░░░░░░░░  KOPIERFUNKTION  
+function copyEntry(title, summary, url) {
+    const text =
+        `${title}\n\n${summary}\n\nMehr Infos:\n${url}`;
+
+    navigator.clipboard.writeText(text)
+        .then(() => alert("✔ Eintrag wurde kopiert!"))
+        .catch(() => alert("❌ Kopieren fehlgeschlagen."));
+}
+
+
 // ░░░░░░░░░░░░░  SHARE-BUTTONS  
 function renderShareButtons(entry) {
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(`Interessanter Beitrag auf MarketShield:\n${entry.title}`);
+    const pageUrl = window.location.href;
+    const shareText =
+        `Interessanter Beitrag auf MarketShield:\n${entry.title}\n${pageUrl}`;
 
     return `
         <div class="share-box">
-            <h3>Teilen</h3>
+            <h3 class="share-title">Teilen & Export</h3>
 
             <div class="share-buttons">
-                <button class="share-btn" onclick="window.open('https://wa.me/?text=${text}%20${url}', '_blank')">📱 WhatsApp</button>
-                <button class="share-btn" onclick="window.open('https://t.me/share/url?url=${url}&text=${text}', '_blank')">✈️ Telegram</button>
-                <button class="share-btn" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${url}', '_blank')">📘 Facebook</button>
-                <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${text}&url=${url}', '_blank')">🐦 X</button>
-                <button class="share-btn" onclick="navigator.clipboard.writeText(window.location.href)">🔗 Link kopieren</button>
-                <button class="share-btn" onclick="window.print()">🖨 Drucken / PDF</button>
+
+                <button class="share-btn" onclick="window.open('https://wa.me/?text=${encodeURIComponent(shareText)}', '_blank')">
+                    📱 WhatsApp
+                </button>
+
+                <button class="share-btn" onclick="window.open('https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(shareText)}', '_blank')">
+                    ✈️ Telegram
+                </button>
+
+                <button class="share-btn" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}', '_blank')">
+                    📘 Facebook
+                </button>
+
+                <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}', '_blank')">
+                    🐦 X (Twitter)
+                </button>
+
+                <button class="share-btn" onclick="copyEntry('${entry.title.replace(/'/g, "\\'")}', \`${(entry.summary || "").replace(/`/g, "\\`")}\`, '${pageUrl}')">
+                    📋 Kopieren
+                </button>
+
+                <button class="share-btn" onclick="window.print()">
+                    🖨 Drucken / PDF
+                </button>
+
             </div>
         </div>
     `;
@@ -252,7 +283,7 @@ function renderList(title, arr) {
 }
 
 
-// ░░░░░░░░░░░░░  GLOBALER CLICK-LISTENER (SUCHERGEBNISSE + KATEGORIE)
+// ░░░░░░░░░░░░░  GLOBALER CLICK-LISTENER 
 document.addEventListener("click", function (e) {
     const card = e.target.closest(".entry-card, .search-result");
     if (card && card.dataset.id) {
