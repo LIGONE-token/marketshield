@@ -343,3 +343,61 @@ body.christmas .category-grid button {
 body.christmas .category-grid button:hover {
     background-color: #8e1b1b;
 }
+/* ───────────────────────────────
+   INFO-EINTRÄGE (Score = 0)
+────────────────────────────── */
+
+.info-card {
+    background: #f9fafb;
+    border-left: 4px solid #5e7dff;
+    border-radius: 12px;
+    padding: 20px 18px;
+    margin: 18px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.info-card h2 {
+    margin-top: 0;
+    color: #2a2a2a;
+    font-size: 24px;
+}
+
+.info-text {
+    margin-top: 12px;
+    color: #444;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* kleiner Badge für neutrale Einträge */
+.info-badge {
+    display: inline-block;
+    background: #5e7dff;
+    color: white;
+    padding: 4px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+    float: right;
+    margin-left: 10px;
+    margin-top: 4px;
+}
+
+/* Animation: sanftes Einblenden */
+.info-card {
+    animation: fadeIn 0.35s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile — bessere Textdarstellung */
+@media (max-width: 480px) {
+    .info-card h2 {
+        font-size: 22px;
+    }
+    .info-text {
+        font-size: 16px;
+    }
+}
