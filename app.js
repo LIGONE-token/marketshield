@@ -8,9 +8,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+
 // ░░░░░░░░░░░░░  KONFIGURATION  
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+
+
+// ░░░░░░░░░░░░░  SUPABASE CLIENT  
+const supabase = {
+    async select(query) {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        return await response.json();
+    }
+};
+
 
 // ░░░░░░░░░░░░░  KATEGORIEN LADEN  
 fetch("categories.json")
@@ -28,7 +44,8 @@ fetch("categories.json")
         });
     });
 
-// ░░░░░░░░░░░░░  HEALTH SCORE (nur wenn > 0)
+
+// ░░░░░░░░░░░░░  HEALTH SCORE (Icon-System)
 function getHealthIcons(score) {
     if (!score || score === 0) return "";
 
@@ -39,7 +56,8 @@ function getHealthIcons(score) {
     return `<div class="health-score-box health-bad">⚠️❗⚠️</div>`;
 }
 
-// ░░░░░░░░░░░░░  INDUSTRIE SCORE (nur wenn > 0)
+
+// ░░░░░░░░░░░░░  INDUSTRIE SCORE (Balken)
 function renderProcessBar(score) {
     if (!score || score === 0) return "";
 
@@ -56,7 +74,8 @@ function renderProcessBar(score) {
     `;
 }
 
-// ░░░░░░░░░░░░░ SHARE-BUTTONS (NEU)
+
+// ░░░░░░░░░░░░░  SHARE-BUTTONS  
 function renderShareButtons(entry) {
     const url = encodeURIComponent(window.location.href);
     const text = encodeURIComponent(`Interessanter Beitrag auf MarketShield:\n${entry.title}`);
@@ -67,20 +86,16 @@ function renderShareButtons(entry) {
 
             <div class="share-buttons">
                 <button class="share-btn" onclick="window.open('https://wa.me/?text=${text}%20${url}', '_blank')">📱 WhatsApp</button>
-
                 <button class="share-btn" onclick="window.open('https://t.me/share/url?url=${url}&text=${text}', '_blank')">✈️ Telegram</button>
-
                 <button class="share-btn" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${url}', '_blank')">📘 Facebook</button>
-
                 <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${text}&url=${url}', '_blank')">🐦 X</button>
-
                 <button class="share-btn" onclick="navigator.clipboard.writeText(window.location.href)">🔗 Link kopieren</button>
-
                 <button class="share-btn" onclick="window.print()">🖨 Drucken / PDF</button>
             </div>
         </div>
     `;
 }
+
 
 // ░░░░░░░░░░░░░  SUCHFUNKTION  
 document.getElementById("searchInput").addEventListener("input", async function () {
@@ -94,17 +109,9 @@ document.getElementById("searchInput").addEventListener("input", async function 
 
     results.innerHTML = "<p>Suche...</p>";
 
-    const url = `${SUPABASE_URL}/rest/v1/entries?select=*&or=(
-        title.ilike.*${q}*,
-        summary.ilike.*${q}*,
-        mechanism.ilike.*${q}*
-    )`;
+    const query = `entries?select=*&or=(title.ilike.*${q}*,summary.ilike.*${q}*,mechanism.ilike.*${q}*)`;
+    const data = await supabase.select(query);
 
-    const response = await fetch(url, {
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-    });
-
-    const data = await response.json();
     if (!data || data.length === 0) {
         results.innerHTML = "<p>Keine Treffer.</p>";
         return;
@@ -115,48 +122,38 @@ document.getElementById("searchInput").addEventListener("input", async function 
     results.innerHTML = `
         <div class="search-hint">Für Details bitte antippen.</div>
         ${ranked.map(entry => `
-            <div class="search-item search-result" data-id="${entry.id}">
+            <div class="search-result" data-id="${entry.id}">
                 <div class="search-title">${entry.title}</div>
+
                 <div class="search-short">
                     ${entry.summary?.substring(0, 120) || ""}…
                 </div>
 
                 <div class="search-metrics">
                     ${entry.score > 0 ? `<div class="health-mini">${getHealthIcons(entry.score)}</div>` : ""}
-                    ${entry.processing_score > 0 ? `<div class="process-bar process-bar-mini">${renderProcessBar(entry.processing_score)}</div>` : ""}
+                    ${entry.processing_score > 0 ? `<div class="process-bar-mini">${renderProcessBar(entry.processing_score)}</div>` : ""}
                 </div>
             </div>
         `).join("")}
     `;
 });
 
-// ░░░░░░░░░░░░░  CLICK → EINZELANSICHT  
-document.addEventListener("click", function (e) {
-    const card = e.target.closest(".search-result");
-    if (card) loadFullEntry(card.dataset.id);
-});
 
 // ░░░░░░░░░░░░░  KATEGORIE-ANSICHT  
 async function loadCategory(categoryName) {
     const results = document.getElementById("results");
     results.innerHTML = "<p>Lade Daten...</p>";
 
-    const url = `${SUPABASE_URL}/rest/v1/entries?category=eq.${encodeURIComponent(categoryName)}`;
-
-    const response = await fetch(url, {
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-    });
-
-    const data = await response.json();
+    const query = `entries?select=*&category=eq.${encodeURIComponent(categoryName)}`;
+    const data = await supabase.select(query);
 
     if (!data || data.length === 0) {
         results.innerHTML = "<p>Noch keine Einträge in dieser Kategorie.</p>";
         return;
     }
 
-    // ⭐  KOMPATKE KARTEN-DARSTELLUNG
     results.innerHTML = data.map(entry => `
-        <div class="entry-card compact-card" data-id="${entry.id}">
+        <div class="entry-card" data-id="${entry.id}">
             <h3 class="entry-title-small">${entry.title}</h3>
 
             <p class="entry-short">
@@ -172,25 +169,27 @@ async function loadCategory(categoryName) {
 }
 
 
-// ░░░░░░░░░░░░░  EINZELANSICHT  
+// ░░░░░░░░░░░░░  EINZELANSICHT LADEN  
 async function loadFullEntry(id) {
     const results = document.getElementById("results");
     results.innerHTML = "<p>Lade Eintrag...</p>";
 
-    const url = `${SUPABASE_URL}/rest/v1/entries?id=eq.${id}`;
-    const response = await fetch(url, {
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-    });
+    const query = `entries?select=*&id=eq.${id}`;
+    const data = await supabase.select(query);
 
-    const data = await response.json();
+    if (!data || !data[0]) {
+        results.innerHTML = "<p>Fehler beim Laden.</p>";
+        return;
+    }
+
     results.innerHTML = renderEntryCard(data[0], true);
 }
 
-// ░░░░░░░░░░░░░  EINTRAG RENDERN  
+
+// ░░░░░░░░░░░░░  EINTRAG DARSTELLEN  
 function renderEntryCard(entry, full = false) {
     const isInfo = (entry.score === 0 && entry.processing_score === 0);
 
-    // ⭐ INFO-TYP → nur reiner Text, aber teilbar
     if (isInfo) {
         return `
             <div class="entry-card">
@@ -201,7 +200,6 @@ function renderEntryCard(entry, full = false) {
         `;
     }
 
-    // ⭐ SCIENCE-TYP → volle Anzeige + Share
     return `
         <div class="entry-card">
             <h2 class="entry-title">${entry.title}</h2>
@@ -228,6 +226,7 @@ function renderEntryCard(entry, full = false) {
     `;
 }
 
+
 // ░░░░░░░░░░░░░  DETAILFELDER  
 function renderDetails(e) {
     return `
@@ -251,3 +250,12 @@ function renderList(title, arr) {
         <ul>${arr.map(v => `<li>• ${v}</li>`).join("")}</ul>
     `;
 }
+
+
+// ░░░░░░░░░░░░░  GLOBALER CLICK-LISTENER (SUCHERGEBNISSE + KATEGORIE)
+document.addEventListener("click", function (e) {
+    const card = e.target.closest(".entry-card, .search-result");
+    if (card && card.dataset.id) {
+        loadFullEntry(card.dataset.id);
+    }
+});
