@@ -142,6 +142,7 @@ async function loadCategory(categoryName) {
     results.innerHTML = "<p>Lade Daten...</p>";
 
     const url = `${SUPABASE_URL}/rest/v1/entries?category=eq.${encodeURIComponent(categoryName)}`;
+
     const response = await fetch(url, {
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
     });
@@ -153,8 +154,23 @@ async function loadCategory(categoryName) {
         return;
     }
 
-    results.innerHTML = data.map(entry => renderEntryCard(entry)).join("");
+    // ⭐  KOMPATKE KARTEN-DARSTELLUNG
+    results.innerHTML = data.map(entry => `
+        <div class="entry-card compact-card" data-id="${entry.id}">
+            <h3 class="entry-title-small">${entry.title}</h3>
+
+            <p class="entry-short">
+                ${entry.summary ? entry.summary.substring(0, 120) + "…" : ""}
+            </p>
+
+            <div class="mini-metrics">
+                ${entry.score > 0 ? `<span class="mini-health">${getHealthIcons(entry.score)}</span>` : ""}
+                ${entry.processing_score > 0 ? `<span class="mini-process">${renderProcessBar(entry.processing_score)}</span>` : ""}
+            </div>
+        </div>
+    `).join("");
 }
+
 
 // ░░░░░░░░░░░░░  EINZELANSICHT  
 async function loadFullEntry(id) {
