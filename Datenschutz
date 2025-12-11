@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Datenschutz – MarketShield</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body style="font-family:Arial; padding:20px; max-width:900px; margin:auto;">
+<h1>Datenschutzerklärung</h1>
+
+<p>
+MarketShield speichert keine personenbezogenen Daten, verwendet keine Cookies
+und erstellt keine Nutzerprofile. Die Plattform dient ausschließlich der
+Bereitstellung von Informationen.
+</p>
+
+<h2>1. Verantwortliche Stelle</h2>
+<p>
+<strong>René Herrchen</strong><br>
+Spismattweg 11<br>
+3296 Arch<br>
+Schweiz<br>
+E-Mail: projekt@ligone.ch
+</p>
+
+<h2>2. Welche Daten werden verarbeitet?</h2>
+
+<h3>2.1. Technisch notwendige Daten</h3>
+<p>
+Beim Aufruf der Webseite verarbeitet der Hosting-Dienst Supabase automatisch:
+</p>
+<ul>
+    <li>anonymisierte IP-Adresse</li>
+    <li>Zeitpunkt des Zugriffs</li>
+    <li>Browsertyp / Betriebssystem</li>
+    <li>Abgerufene Inhalte (z. B. Kategorien, Einträge)</li>
+</ul>
+<p>
+Diese Daten sind technisch erforderlich, um die Seite auszuliefern.  
+Sie werden nicht zu Analysezwecken genutzt.
+</p>
+
+<h3>2.2. Keine Cookies, kein Tracking</h3>
+<p>
+MarketShield setzt keine Cookies, kein Tracking und keine Marketing-Pixel ein.
+</p>
+
+<h3>2.3. KI-Generierung von Inhalten</h3>
+<p>
+Einige Inhalte werden über externe KI-Systeme erstellt (z. B. DeepSeek).  
+Dabei werden ausschließlich sachliche Begriffe übermittelt, niemals persönliche Daten.
+</p>
+
+<h2>3. Weitergabe von Daten</h2>
+<p>
+Es erfolgt keine Weitergabe personenbezogener Daten an Dritte.  
+Supabase agiert ausschließlich als technischer Auftragsverarbeiter.
+</p>
+
+<h2>4. Rechte der Nutzer</h2>
+<p>
+Da MarketShield keine personenbezogenen Daten speichert, ergeben sich
+keine Auskunfts- oder Löschansprüche.
+</p>
+
+<h2>5. Änderungen dieser Erklärung</h2>
+<p>
+Diese Datenschutzerklärung wird erweitert, sobald neue Funktionen 
+(z. B. Analytics, Nutzerkonten oder ein Scanner) hinzukommen.
+</p>
+
+</body>
+</html>
