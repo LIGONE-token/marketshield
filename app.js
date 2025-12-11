@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // ░░░░░░░░░░░░░  KONFIGURATION  
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
-const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+    const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 // ░░░░░░░░░░░░░  KATEGORIEN LADEN  
 fetch("categories.json")
@@ -53,6 +53,32 @@ function renderProcessBar(score) {
             <div class="process-bar-fill" style="width:${s * 10}%; background:${color};"></div>
         </div>
         <div class="process-bar-label">${s}/10</div>
+    `;
+}
+
+// ░░░░░░░░░░░░░ SHARE-BUTTONS (NEU)
+function renderShareButtons(entry) {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`Interessanter Beitrag auf MarketShield:\n${entry.title}`);
+
+    return `
+        <div class="share-box">
+            <h3>Teilen</h3>
+
+            <div class="share-buttons">
+                <button class="share-btn" onclick="window.open('https://wa.me/?text=${text}%20${url}', '_blank')">📱 WhatsApp</button>
+
+                <button class="share-btn" onclick="window.open('https://t.me/share/url?url=${url}&text=${text}', '_blank')">✈️ Telegram</button>
+
+                <button class="share-btn" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${url}', '_blank')">📘 Facebook</button>
+
+                <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${text}&url=${url}', '_blank')">🐦 X</button>
+
+                <button class="share-btn" onclick="navigator.clipboard.writeText(window.location.href)">🔗 Link kopieren</button>
+
+                <button class="share-btn" onclick="window.print()">🖨 Drucken / PDF</button>
+            </div>
+        </div>
     `;
 }
 
@@ -148,17 +174,18 @@ async function loadFullEntry(id) {
 function renderEntryCard(entry, full = false) {
     const isInfo = (entry.score === 0 && entry.processing_score === 0);
 
-    // ⭐ INFO-TYP → nur reiner Text
+    // ⭐ INFO-TYP → nur reiner Text, aber teilbar
     if (isInfo) {
         return `
             <div class="entry-card">
                 <h2>${entry.title}</h2>
                 <p>${entry.summary || ""}</p>
+                ${renderShareButtons(entry)}
             </div>
         `;
     }
 
-    // ⭐ SCIENCE / STOFFE → volle Anzeige
+    // ⭐ SCIENCE-TYP → volle Anzeige + Share
     return `
         <div class="entry-card">
             <h2 class="entry-title">${entry.title}</h2>
@@ -180,6 +207,7 @@ function renderEntryCard(entry, full = false) {
             <p>${entry.summary || ""}</p>
 
             ${full ? renderDetails(entry) : ""}
+            ${full ? renderShareButtons(entry) : ""}
         </div>
     `;
 }
