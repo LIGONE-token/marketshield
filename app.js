@@ -1,9 +1,9 @@
 // 🎄 Weihnachtsmodus (1.–26. Dezember)
 document.addEventListener("DOMContentLoaded", function () {
     const now = new Date();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-    if (month === 12 && day >= 1 && day <= 26) {
+    const m = now.getMonth() + 1;
+    const d = now.getDate();
+    if (m === 12 && d >= 1 && d <= 26) {
         document.body.classList.add("christmas");
     }
 });
@@ -28,21 +28,20 @@ fetch("categories.json")
         });
     });
 
-// ░░░░░░░░░░░░░  HEALTH-SCORE (nur anzeigen wenn > 0)
+// ░░░░░░░░░░░░░  HEALTH SCORE (nur wenn > 0)
 function getHealthIcons(score) {
-    const s = score || 0;
-    if (s === 0) return ""; // ⭐ Score 0 → KEINE Anzeige
+    if (!score || score === 0) return "";
 
-    if (s >= 80) return `<div class="health-score-box health-3">💚💚💚</div>`;
-    if (s >= 60) return `<div class="health-score-box health-2">💚💚</div>`;
-    if (s >= 40) return `<div class="health-score-box health-1">💚</div>`;
-    if (s >= 20) return `<div class="health-score-box health-mid">🧡🧡</div>`;
+    if (score >= 80) return `<div class="health-score-box health-3">💚💚💚</div>`;
+    if (score >= 60) return `<div class="health-score-box health-2">💚💚</div>`;
+    if (score >= 40) return `<div class="health-score-box health-1">💚</div>`;
+    if (score >= 20) return `<div class="health-score-box health-mid">🧡🧡</div>`;
     return `<div class="health-score-box health-bad">⚠️❗⚠️</div>`;
 }
 
-// ░░░░░░░░░░░░░  INDUSTRIE-SCORE (nur anzeigen wenn > 0)
+// ░░░░░░░░░░░░░  INDUSTRIE SCORE (nur wenn > 0)
 function renderProcessBar(score) {
-    if (!score || score === 0) return ""; // ⭐ Score 0 → NICHT anzeigen
+    if (!score || score === 0) return "";
 
     const s = Math.max(1, Math.min(10, score));
     let color = "#2ecc71";
@@ -59,17 +58,20 @@ function renderProcessBar(score) {
 
 // ░░░░░░░░░░░░░  SUCHFUNKTION  
 document.getElementById("searchInput").addEventListener("input", async function () {
-    const query = this.value.trim();
+    const q = this.value.trim();
     const results = document.getElementById("results");
-    results.innerHTML = "";
-    if (query.length < 2) return;
+
+    if (q.length < 2) {
+        results.innerHTML = "";
+        return;
+    }
 
     results.innerHTML = "<p>Suche...</p>";
 
     const url = `${SUPABASE_URL}/rest/v1/entries?select=*&or=(
-        title.ilike.*${query}*,
-        summary.ilike.*${query}*,
-        mechanism.ilike.*${query}*
+        title.ilike.*${q}*,
+        summary.ilike.*${q}*,
+        mechanism.ilike.*${q}*
     )`;
 
     const response = await fetch(url, {
@@ -82,25 +84,24 @@ document.getElementById("searchInput").addEventListener("input", async function 
         return;
     }
 
-    const ranked = data
-        .map(item => ({ item, score: (item.score || 0) }))
-        .sort((a, b) => b.score - a.score)
-        .map(r => r.item);
+    const ranked = data.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-    results.innerHTML =
-        `<div class="search-hint">Für Details bitte antippen.</div>` +
-        ranked
-            .map(entry => `
+    results.innerHTML = `
+        <div class="search-hint">Für Details bitte antippen.</div>
+        ${ranked.map(entry => `
             <div class="search-item search-result" data-id="${entry.id}">
                 <div class="search-title">${entry.title}</div>
-                <div class="search-short">${entry.summary?.substring(0, 120) || ""}…</div>
+                <div class="search-short">
+                    ${entry.summary?.substring(0, 120) || ""}…
+                </div>
 
                 <div class="search-metrics">
                     ${entry.score > 0 ? `<div class="health-mini">${getHealthIcons(entry.score)}</div>` : ""}
                     ${entry.processing_score > 0 ? `<div class="process-bar process-bar-mini">${renderProcessBar(entry.processing_score)}</div>` : ""}
                 </div>
             </div>
-        `).join("");
+        `).join("")}
+    `;
 });
 
 // ░░░░░░░░░░░░░  CLICK → EINZELANSICHT  
@@ -115,20 +116,18 @@ async function loadCategory(categoryName) {
     results.innerHTML = "<p>Lade Daten...</p>";
 
     const url = `${SUPABASE_URL}/rest/v1/entries?category=eq.${encodeURIComponent(categoryName)}`;
-
     const response = await fetch(url, {
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
     });
 
     const data = await response.json();
+
     if (!data || data.length === 0) {
         results.innerHTML = "<p>Noch keine Einträge in dieser Kategorie.</p>";
         return;
     }
 
-    results.innerHTML = data
-        .map(entry => renderEntryCard(entry))
-        .join("");
+    results.innerHTML = data.map(entry => renderEntryCard(entry)).join("");
 }
 
 // ░░░░░░░░░░░░░  EINZELANSICHT  
@@ -145,10 +144,11 @@ async function loadFullEntry(id) {
     results.innerHTML = renderEntryCard(data[0], true);
 }
 
-// ░░░░░░░░░░░░░  EINTRAG RENDERN (zentrale Funktion)
+// ░░░░░░░░░░░░░  EINTRAG RENDERN  
 function renderEntryCard(entry, full = false) {
     const isInfo = (entry.score === 0 && entry.processing_score === 0);
 
+    // ⭐ INFO-TYP → nur reiner Text
     if (isInfo) {
         return `
             <div class="entry-card">
@@ -158,6 +158,7 @@ function renderEntryCard(entry, full = false) {
         `;
     }
 
+    // ⭐ SCIENCE / STOFFE → volle Anzeige
     return `
         <div class="entry-card">
             <h2 class="entry-title">${entry.title}</h2>
@@ -183,7 +184,7 @@ function renderEntryCard(entry, full = false) {
     `;
 }
 
-// ░░░░░░░░░░░░░  DETAILFELDER RENDERN  
+// ░░░░░░░░░░░░░  DETAILFELDER  
 function renderDetails(e) {
     return `
         ${renderList("Positive Effekte", e.effects_positive)}
@@ -192,8 +193,10 @@ function renderDetails(e) {
         ${renderList("Synergien", e.synergy)}
         ${renderList("Natürliche Quellen", e.natural_sources)}
 
-        <h3>Wissenschaftlicher Hinweis</h3>
-        <p>${e.scientific_note || "Keine wissenschaftliche Notiz verfügbar."}</p>
+        ${e.scientific_note ? `
+            <h3>Wissenschaftlicher Hinweis</h3>
+            <p>${e.scientific_note}</p>
+        ` : ""}
     `;
 }
 
