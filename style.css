@@ -328,3 +328,19 @@ footer {
   max-width: 120px;   /* 🔑 begrenzte Breite */
   height: 6px;
 }
+/* =========================
+   SUCHERGEBNIS – CTA
+========================= */
+
+.search-cta {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e74c3c;
+  opacity: 0.85;
+}
+
+.search-result:hover .search-cta {
+  text-decoration: underline;
+  opacity: 1;
+}
