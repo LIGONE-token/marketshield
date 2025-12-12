@@ -108,31 +108,36 @@ document.getElementById("searchInput").addEventListener("input", async function 
         return;
     }
 
-    results.innerHTML = `
-    ${data.map(entry => `
-        <div class="search-result" data-id="${entry.id}">
-            <div class="search-title">
-                ${entry.title}
-                <span class="search-arrow">›</span>
-            </div>
+   results.innerHTML = data.map(entry => `
+  <div class="entry-card entry-clickable" data-id="${entry.id}">
 
-            <div class="search-short">
-                ${entry.summary?.substring(0, 140) || ""}…
-            </div>
+    <div class="entry-header">
+      <h3 class="entry-title">
+        ${entry.title}
+      </h3>
+      <span class="entry-chevron">›</span>
+    </div>
 
-            <div class="search-metrics">
-                ${entry.processing_score > 0
-                    ? `<div class="process-mini">${renderProcessBar(entry.processing_score)}</div>`
-                    : ""}
-                ${entry.score > 0
-                    ? `<div class="health-mini">${getHealthIcons(entry.score)}</div>`
-                    : ""}
-            </div>
+    <p class="entry-short">
+      ${entry.summary?.substring(0, 200) || ""}…
+    </p>
 
-            <div class="search-cta">Details ansehen</div>
-        </div>
-    `).join("")}
-    `;
+    <div class="entry-metrics">
+      ${entry.processing_score > 0
+        ? `<div class="process-mini">${renderProcessBar(entry.processing_score)}</div>`
+        : ""}
+      ${entry.score > 0
+        ? `<div class="health-mini">${getHealthIcons(entry.score)}</div>`
+        : ""}
+    </div>
+
+    <div class="entry-action">
+      <span class="entry-action-btn">Details ansehen</span>
+    </div>
+
+  </div>
+`).join("");
+
 });
 
 
