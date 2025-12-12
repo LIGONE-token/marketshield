@@ -398,3 +398,60 @@ footer {
   text-decoration: underline;
   opacity: 1;
 }
+/* =========================
+   CTA – EINDEUTIG KLICKBAR
+========================= */
+
+.search-cta,
+.entry-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 10px;
+  padding: 8px 16px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #fff;
+  background: #e74c3c;
+
+  border-radius: 999px;          /* Button-Form */
+  width: fit-content;
+
+  cursor: pointer;               /* 🔑 Hand-Cursor */
+  user-select: none;
+
+  box-shadow: 0 4px 10px rgba(231, 76, 60, 0.35);
+  transition: 
+    background 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Pfeil im Button */
+.search-cta::after,
+.entry-cta::after {
+  content: "→";
+  font-size: 16px;
+  transition: transform 0.15s ease;
+}
+
+/* Hover = Aktion */
+.search-result:hover .search-cta,
+.entry-card:hover .entry-cta {
+  background: #c0392b;
+  box-shadow: 0 6px 16px rgba(192, 57, 43, 0.45);
+}
+
+.search-result:hover .search-cta::after,
+.entry-card:hover .entry-cta::after {
+  transform: translateX(4px);
+}
+
+/* Klick-Feedback */
+.search-cta:active,
+.entry-cta:active {
+  transform: scale(0.96);
+}
