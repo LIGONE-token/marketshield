@@ -339,6 +339,60 @@ footer {
   color: #e74c3c;
   opacity: 0.85;
 }
+/* =========================
+   KATEGORIE – KLAR KLICKBAR
+========================= */
+
+.entry-clickable {
+  cursor: pointer;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  position: relative;
+}
+
+.entry-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.14);
+  background: #fff8f6;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.entry-chevron {
+  font-size: 28px;
+  color: #ccc;
+  transition: transform .15s ease, color .15s ease;
+}
+
+.entry-clickable:hover .entry-chevron {
+  transform: translateX(4px);
+  color: #e74c3c;
+}
+
+.entry-action {
+  margin-top: 12px;
+}
+
+.entry-action-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: #e74c3c;
+}
+
+.entry-clickable:hover .entry-action-btn {
+  background: #c0392b;
+}
 
 .search-result:hover .search-cta {
   text-decoration: underline;
