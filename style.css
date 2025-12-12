@@ -148,3 +148,53 @@ footer {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+/* Suchergebnisse Container */
+#results {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Einzelnes Suchergebnis */
+.search-result {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-result:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* Titel */
+.search-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* Kurzbeschreibung */
+.search-short {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+/* Score-Zeile */
+.search-metrics {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Mini-Scores sauber einbetten */
+.health-mini,
+.process-bar-mini {
+  display: flex;
+  align-items: center;
+}
