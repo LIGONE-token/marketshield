@@ -114,15 +114,26 @@ document.getElementById("searchInput").addEventListener("input", async function 
     }
 
     results.innerHTML = `
-        ${data.map(entry => `
-            <div class="search-result" data-id="${entry.id}">
-                <div class="search-title">${entry.title}</div>
-                <div class="search-short">
-                    ${entry.summary?.substring(0, 120) || ""}…
-                </div>
+    ${data.map(entry => `
+        <div class="search-result" data-id="${entry.id}">
+            <div class="search-title">${entry.title}</div>
+
+            <div class="search-short">
+                ${entry.summary?.substring(0, 120) || ""}…
             </div>
-        `).join("")}
-    `;
+
+            <div class="search-metrics">
+                ${entry.processing_score > 0
+                  ? `<div class="process-mini">${renderProcessBar(entry.processing_score)}</div>`
+                  : ""}
+                ${entry.score > 0
+                  ? `<div class="health-mini">${getHealthIcons(entry.score)}</div>`
+                  : ""}
+            </div>
+        </div>
+    `).join("")}
+`;
+
 });
 
 
