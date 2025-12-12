@@ -311,3 +311,20 @@ footer {
 .health-1 { color: #f1c40f; }
 .health-mid { color: #e67e22; }
 .health-bad { color: #e74c3c; }
+/* =========================
+   MINI INDUSTRIESCORE (Suche)
+========================= */
+
+.process-mini .process-wrapper {
+  margin: 6px 0;
+}
+
+.process-mini .process-title,
+.process-mini .process-bar-label {
+  display: none; /* Kein Text in der Suche */
+}
+
+.process-mini .process-bar-bg {
+  max-width: 120px;   /* 🔑 begrenzte Breite */
+  height: 6px;
+}
