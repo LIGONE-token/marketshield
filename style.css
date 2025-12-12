@@ -1,24 +1,28 @@
-/* ───────────────────────────────
-   GLOBAL
-─────────────────────────────── */
+/* ==================================================
+   GLOBAL RESET & BASIS
+================================================== */
+
+* {
+  box-sizing: border-box;
+}
 
 html, body {
+  margin: 0;
+  padding: 0;
   font-size: 18px;
   line-height: 1.6;
-}
-
-body {
   font-family: Arial, sans-serif;
-  margin: 0;
   background: #fafafa;
   color: #222;
+  overflow-x: hidden;
 }
 
-/* ───────────────────────────────
-   HEADER
-─────────────────────────────── */
+/* ==================================================
+   HEADER – FULL WIDTH
+================================================== */
 
 header {
+  width: 100%;
   text-align: center;
   padding: 20px 10px;
   background: #ffffff;
@@ -26,28 +30,38 @@ header {
 }
 
 header h1 {
-  font-size: 32px;
+  font-size: clamp(24px, 5vw, 32px);
   margin-bottom: 5px;
 }
 
 .subtitle {
-  margin-top: -10px;
+  margin-top: -6px;
   color: #3b7f3b;
-  font-size: 18px;
+  font-size: clamp(16px, 3.8vw, 18px);
   font-weight: 600;
 }
 
-/* ───────────────────────────────
+/* ==================================================
+   ZENTRALER SEITENCONTAINER
+================================================== */
+
+.page-wrap {
+  width: 90%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ==================================================
    SUCHFELD
-─────────────────────────────── */
+================================================== */
 
 .search-container {
   text-align: center;
-  margin: 25px 10px;
+  margin: 25px 0;
 }
 
 #searchInput {
-  width: 90%;
+  width: 100%;
   max-width: 420px;
   padding: 12px;
   border-radius: 6px;
@@ -55,17 +69,15 @@ header h1 {
   font-size: 16px;
 }
 
-/* ───────────────────────────────
+/* ==================================================
    KATEGORIEN
-─────────────────────────────── */
+================================================== */
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   gap: 12px;
-  width: 90%;
-  max-width: 900px;
-  margin: 25px auto;
+  margin: 25px 0;
 }
 
 .category-grid button {
@@ -73,7 +85,7 @@ header h1 {
   border: 1px solid #dcdcdc;
   border-radius: 8px;
   padding: 12px 14px;
-  font-size: 17px;
+  font-size: 16px;
   text-align: left;
   cursor: pointer;
 }
@@ -82,14 +94,11 @@ header h1 {
   background: #e9e9e9;
 }
 
-/* ───────────────────────────────
+/* ==================================================
    ERGEBNISSE / KARTEN
-─────────────────────────────── */
+================================================== */
 
 #results {
-  width: 90%;
-  max-width: 720px;
-  margin: auto;
   padding: 20px 0;
 }
 
@@ -103,25 +112,29 @@ header h1 {
   cursor: pointer;
 }
 
+/* ==================================================
+   TITEL & TEXT
+================================================== */
+
 .entry-title {
-  font-size: 28px;
+  font-size: clamp(22px, 5vw, 28px);
   margin-bottom: 12px;
 }
 
 .entry-title-small {
-  font-size: 20px;
+  font-size: clamp(18px, 4.5vw, 20px);
   font-weight: 700;
   margin-bottom: 6px;
 }
 
 .entry-short {
-  font-size: 16px;
+  font-size: clamp(15px, 3.8vw, 16px);
   color: #444;
 }
 
-/* ───────────────────────────────
-   SCORE
-─────────────────────────────── */
+/* ==================================================
+   SCORE / METRICS
+================================================== */
 
 .metrics-icons {
   margin: 16px 0;
@@ -137,17 +150,17 @@ header h1 {
 }
 
 .metric-text {
-  font-size: 16px;
+  font-size: clamp(15px, 3.8vw, 16px);
   font-weight: 600;
   color: #333;
 }
 
-/* Health */
+/* Health Score */
 
 .health-score-box {
   padding: 8px 12px;
   border-radius: 10px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
 }
 
@@ -155,17 +168,13 @@ header h1 {
 .health-2 { background:#f3fff6; border-left:6px solid #58d68d; color:#2ecc71; }
 .health-1 { background:#f7fff9; border-left:6px solid #7ee2a3; color:#2ecc71; }
 .health-mid { background:#fff3d6; border-left:6px solid #ffb347; color:#e67e22; }
+.health-bad { background:#ffecec; border-left:6px solid #e74c3c; color:#e74c3c; }
 
-.health-bad {
-  background: #ffecec;
-  border-left: 6px solid #e74c3c;
-  color: #e74c3c;
-}
-
-/* Industrie */
+/* Industrie-Score */
 
 .process-bar-bg {
-  width: 120px;
+  width: 100%;
+  max-width: 200px;
   height: 10px;
   background: #eee;
   border-radius: 6px;
@@ -182,9 +191,9 @@ header h1 {
   color: #555;
 }
 
-/* ───────────────────────────────
-   SHARE-BUTTONS – FINAL
-─────────────────────────────── */
+/* ==================================================
+   SHARE-BUTTONS
+================================================== */
 
 .share-box {
   margin-top: 30px;
@@ -205,8 +214,8 @@ header h1 {
   font-weight: 600;
   cursor: pointer;
   border: none;
-  background: #2e7d32;   /* sattes Grün */
-  color: #ffffff;        /* weiße Schrift */
+  background: #2e7d32;
+  color: #ffffff;
   transition: background 0.2s ease;
 }
 
@@ -214,69 +223,54 @@ header h1 {
   background: #256628;
 }
 
-/* ───────────────────────────────
-   FOOTER
-─────────────────────────────── */
+/* ==================================================
+   FOOTER – FULL WIDTH
+================================================== */
 
 footer {
+  width: 100%;
   text-align: center;
   font-size: 13px;
   padding: 20px;
-  background: #fff;
+  background: #ffffff;
   margin-top: 40px;
 }
 
-/* ───────────────────────────────
-   MOBILE
-─────────────────────────────── */
+/* ==================================================
+   RESPONSIVE BREAKPOINTS
+================================================== */
 
 @media (max-width: 600px) {
+
+  .metric-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .share-buttons {
+    flex-direction: column;
+  }
+
   .share-btn {
     width: 100%;
     text-align: center;
   }
+}
 
-  .entry-title {
-    font-size: 24px;
+@media (max-width: 480px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
-/* ================================
-   🔧 HARD RESET – STARTSEITE
-   Stellt das ursprüngliche Layout
-   zuverlässig wieder her
-================================ */
 
-/* Zentrale Seitenbreite erzwingen */
-header,
-.search-container,
-.sub-info,
-.ligone-links,
-.category-grid,
-#results,
-footer,
-.bottom-link {
-    width: 90%;
-    max-width: 900px;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
+/* ==================================================
+   MEDIA SAFETY
+================================================== */
 
-/* Textausrichtung wie ursprünglich */
-header,
-.sub-info,
-.ligone-links,
-footer,
-.bottom-link {
-    text-align: center;
-}
-
-/* Kategorie-Grid explizit zentrieren */
-.category-grid {
-    margin-top: 25px;
-    margin-bottom: 25px;
-}
-
-/* Sicherheitsnetz gegen Linksrutsch */
-body {
-    overflow-x: hidden;
+img,
+iframe,
+video {
+  max-width: 100%;
+  height: auto;
 }
