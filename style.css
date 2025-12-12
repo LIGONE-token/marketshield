@@ -724,3 +724,30 @@ body.christmas .category-grid button:hover {
         font-size: 24px;
     }
 }
+.share-box {
+  margin-top: 30px;
+}
+
+.share-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.share-btn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+
+  background: #2e7d32;   /* sattes Grün */
+  color: #ffffff;        /* klare weiße Schrift */
+
+  transition: background 0.2s ease;
+}
+
+.share-btn:hover {
+  background: #256628;
+}
