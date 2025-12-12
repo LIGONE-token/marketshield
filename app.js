@@ -59,7 +59,7 @@ function getHealthIcons(score) {
 
 // ░░░░░░░░░░░░░  INDUSTRIE SCORE (Balken)
 function renderProcessBar(score) {
-    if (!score || score === 0) return "";
+    if (score === null || score === undefined) return "";
 
     const s = Math.max(1, Math.min(10, score));
     let color = "#2ecc71";
@@ -67,12 +67,16 @@ function renderProcessBar(score) {
     if (s >= 7) color = "#e74c3c";
 
     return `
-        <div class="process-bar-bg">
-            <div class="process-bar-fill" style="width:${s * 10}%; background:${color};"></div>
+        <div class="process-wrapper">
+            <div class="process-title">Industriescore</div>
+            <div class="process-bar-bg">
+                <div class="process-bar-fill" style="width:${s * 10}%; background:${color};"></div>
+            </div>
+            <div class="process-bar-label">${s}/10</div>
         </div>
-        <div class="process-bar-label">${s}/10</div>
     `;
 }
+
 
 
 // ░░░░░░░░░░░░░  KOPIERFUNKTION  
