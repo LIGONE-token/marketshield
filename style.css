@@ -240,3 +240,43 @@ footer {
     font-size: 24px;
   }
 }
+/* ================================
+   🔧 HARD RESET – STARTSEITE
+   Stellt das ursprüngliche Layout
+   zuverlässig wieder her
+================================ */
+
+/* Zentrale Seitenbreite erzwingen */
+header,
+.search-container,
+.sub-info,
+.ligone-links,
+.category-grid,
+#results,
+footer,
+.bottom-link {
+    width: 90%;
+    max-width: 900px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Textausrichtung wie ursprünglich */
+header,
+.sub-info,
+.ligone-links,
+footer,
+.bottom-link {
+    text-align: center;
+}
+
+/* Kategorie-Grid explizit zentrieren */
+.category-grid {
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+/* Sicherheitsnetz gegen Linksrutsch */
+body {
+    overflow-x: hidden;
+}
