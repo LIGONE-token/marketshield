@@ -115,8 +115,21 @@ document.getElementById("searchInput").addEventListener("input", async function 
 
     results.innerHTML = `
     ${data.map(entry => `
-        <div class="search-result" data-id="${entry.id}">
-            <div class="search-title">${entry.title}</div>
+      <div class="search-result" data-id="${entry.id}">
+    <div class="search-title">
+        ${entry.title}
+        <span class="search-arrow">›</span>
+    </div>
+
+    <div class="search-short">
+        ${entry.summary?.substring(0, 120) || ""}…
+    </div>
+
+    <div class="search-cta">
+        Details ansehen
+    </div>
+</div>
+
 
             <div class="search-short">
                 ${entry.summary?.substring(0, 120) || ""}…
