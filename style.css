@@ -198,3 +198,116 @@ footer {
   display: flex;
   align-items: center;
 }
+/* =========================
+   SUCHERGEBNISSE
+========================= */
+
+#results {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.search-result {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-result:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.search-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.search-short {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+}
+
+
+/* =========================
+   VERGLEICH
+========================= */
+
+.compare-btn {
+  display: block;
+  margin: 16px auto 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 22px;
+  border: none;
+  cursor: pointer;
+  background: #222;
+  color: #fff;
+}
+
+.compare-btn:hover {
+  background: #000;
+}
+
+.compare-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+
+/* =========================
+   INDUSTRIESCORE
+========================= */
+
+.process-wrapper {
+  margin: 10px 0;
+}
+
+.process-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.process-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.process-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.process-bar-label {
+  font-size: 13px;
+  margin-top: 4px;
+  opacity: 0.75;
+}
+
+
+/* =========================
+   HEALTH SCORE
+========================= */
+
+.health-score-box {
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+.health-3 { color: #2ecc71; }
+.health-2 { color: #27ae60; }
+.health-1 { color: #f1c40f; }
+.health-mid { color: #e67e22; }
+.health-bad { color: #e74c3c; }
