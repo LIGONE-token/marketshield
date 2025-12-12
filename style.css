@@ -1,26 +1,6 @@
-/* ==================================================
-   FARBVARIABLEN – ZENTRAL
-================================================== */
-
-:root {
-  --green-main: #2e7d32;
-  --green-soft: #e8f5e9;
-  --green-light: #f3fbf5;
-
-  --text-main: #222;
-  --text-soft: #555;
-
-  --bg-main: #fafafa;
-  --bg-card: #ffffff;
-  --bg-muted: #f1f1f1;
-
-  --border-soft: #dddddd;
-  --shadow-soft: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-/* ==================================================
-   GLOBAL
-================================================== */
+/* =====================================
+   GLOBAL – BASIS
+===================================== */
 
 * {
   box-sizing: border-box;
@@ -29,243 +9,137 @@
 html, body {
   margin: 0;
   padding: 0;
+  font-family: Arial, sans-serif;
   font-size: 18px;
   line-height: 1.6;
-  font-family: Arial, sans-serif;
-  background: var(--bg-main);
-  color: var(--text-main);
-  overflow-x: hidden;
+  background: #fafafa;
+  color: #222;
 }
 
-/* ==================================================
-   HEADER – FULL WIDTH
-================================================== */
+/* =====================================
+   HEADER
+===================================== */
 
 header {
-  width: 100%;
   text-align: center;
-  padding: 22px 10px;
-  background: linear-gradient(180deg, #ffffff 0%, var(--green-light) 100%);
-  border-bottom: 1px solid var(--border-soft);
+  padding: 20px 10px;
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
 }
 
 header h1 {
-  font-size: clamp(24px, 5vw, 32px);
-  margin-bottom: 4px;
-  color: var(--green-main);
+  margin: 0;
+  font-size: 32px;
+  color: #2e7d32;
 }
 
 .subtitle {
-  margin-top: -4px;
-  font-size: clamp(16px, 3.8vw, 18px);
+  margin: 4px 0 0;
+  color: #2e7d32;
   font-weight: 600;
-  color: var(--green-main);
 }
 
-/* ==================================================
-   ZENTRALER SEITENCONTAINER
-================================================== */
-
-.page-wrap {
-  width: 90%;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-/* ==================================================
+/* =====================================
    SUCHFELD
-================================================== */
+===================================== */
 
 .search-container {
   text-align: center;
-  margin: 25px 0;
+  margin: 25px auto;
 }
 
 #searchInput {
-  width: 100%;
+  width: 90%;
   max-width: 420px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border-soft);
+  padding: 12px;
   font-size: 16px;
-  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
-#searchInput:focus {
-  outline: none;
-  border-color: var(--green-main);
-}
-
-/* ==================================================
-   INFO + LINKS
-================================================== */
-
-.sub-info {
-  text-align: center;
-  font-size: 15px;
-  color: var(--text-soft);
-  margin: 10px 0 6px;
-}
-
-.ligone-links {
-  text-align: center;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
-.ligone-links a {
-  color: var(--green-main);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.ligone-links a:hover {
-  text-decoration: underline;
-}
-
-/* ==================================================
-   KATEGORIEN
-================================================== */
-
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 12px;
-  margin: 25px 0;
-}
-
-.category-grid button {
-  background: var(--bg-card);
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  padding: 12px 14px;
-  font-size: 16px;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.category-grid button:hover {
-  background: var(--green-soft);
-  border-color: var(--green-main);
-}
-
-/* ==================================================
-   ERGEBNISSE / KARTEN
-================================================== */
+/* =====================================
+   ERGEBNISSE
+===================================== */
 
 #results {
-  padding: 20px 0;
+  width: 90%;
+  max-width: 900px;
+  margin: 20px auto;
 }
 
-.entry-card,
-.search-result {
-  background: var(--bg-card);
-  border-radius: 14px;
-  padding: 16px;
-  margin: 14px 0;
-  box-shadow: var(--shadow-soft);
-  cursor: pointer;
-}
+/* =====================================
+   INFO / LINKS
+===================================== */
 
-/* ==================================================
-   TITEL & TEXT
-================================================== */
-
-.entry-title {
-  font-size: clamp(22px, 5vw, 28px);
-  margin-bottom: 12px;
-  color: var(--green-main);
-}
-
-.entry-title-small {
-  font-size: clamp(18px, 4.5vw, 20px);
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.entry-short {
-  font-size: clamp(15px, 3.8vw, 16px);
-  color: var(--text-soft);
-}
-
-/* ==================================================
-   SCORE / METRICS
-================================================== */
-
-.metrics-icons {
-  margin: 16px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.metric-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.metric-text {
-  font-size: clamp(15px, 3.8vw, 16px);
-  font-weight: 600;
-  color: #333;
-}
-
-/* Health */
-
-.health-score-box {
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.health-3 { background:#e4fbe9; border-left:6px solid #2ecc71; color:#2ecc71; }
-.health-2 { background:#f3fff6; border-left:6px solid #58d68d; color:#2ecc71; }
-.health-1 { background:#f7fff9; border-left:6px solid #7ee2a3; color:#2ecc71; }
-.health-mid { background:#fff3d6; border-left:6px solid #ffb347; color:#e67e22; }
-.health-bad { background:#ffecec; border-left:6px solid #e74c3c; color:#e74c3c; }
-
-/* ==================================================
-   FOOTER
-================================================== */
-
-footer {
-  width: 100%;
-  text-align: center;
-  font-size: 13px;
-  padding: 20px;
-  background: #ffffff;
-  border-top: 1px solid var(--border-soft);
-  margin-top: 40px;
-}
-
+.sub-info,
+.ligone-links,
 .bottom-link {
   text-align: center;
   font-size: 14px;
-  margin: 20px 0 30px;
+  margin: 10px auto;
+  color: #555;
 }
 
+.ligone-links a,
 .bottom-link a {
-  color: var(--green-main);
+  color: #2e7d32;
   text-decoration: none;
   font-weight: 600;
 }
 
+.ligone-links a:hover,
 .bottom-link a:hover {
   text-decoration: underline;
 }
 
-/* ==================================================
-   RESPONSIVE
-================================================== */
+/* =====================================
+   KATEGORIEN – REFERENZ (6 NEBENEINANDER)
+===================================== */
 
-@media (max-width: 600px) {
-  .metric-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+.category-grid {
+  width: 90%;
+  max-width: 900px;
+  margin: 30px auto;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.category-grid button {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  background: #ffffff;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.category-grid button:hover {
+  background: #f0f7f2;
+  border-color: #2e7d32;
+}
+
+/* =====================================
+   FOOTER
+===================================== */
+
+footer {
+  text-align: center;
+  font-size: 13px;
+  padding: 20px;
+  background: #ffffff;
+  border-top: 1px solid #ddd;
+  margin-top: 40px;
+}
+
+/* =====================================
+   RESPONSIVE – FEST DEFINIERT
+===================================== */
+
+@media (max-width: 900px) {
+  .category-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -273,15 +147,4 @@ footer {
   .category-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-}
-
-/* ==================================================
-   MEDIA SAFETY
-================================================== */
-
-img,
-iframe,
-video {
-  max-width: 100%;
-  height: auto;
 }
