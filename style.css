@@ -1,5 +1,25 @@
 /* ==================================================
-   GLOBAL RESET & BASIS
+   FARBVARIABLEN – ZENTRAL
+================================================== */
+
+:root {
+  --green-main: #2e7d32;
+  --green-soft: #e8f5e9;
+  --green-light: #f3fbf5;
+
+  --text-main: #222;
+  --text-soft: #555;
+
+  --bg-main: #fafafa;
+  --bg-card: #ffffff;
+  --bg-muted: #f1f1f1;
+
+  --border-soft: #dddddd;
+  --shadow-soft: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* ==================================================
+   GLOBAL
 ================================================== */
 
 * {
@@ -12,8 +32,8 @@ html, body {
   font-size: 18px;
   line-height: 1.6;
   font-family: Arial, sans-serif;
-  background: #fafafa;
-  color: #222;
+  background: var(--bg-main);
+  color: var(--text-main);
   overflow-x: hidden;
 }
 
@@ -24,21 +44,22 @@ html, body {
 header {
   width: 100%;
   text-align: center;
-  padding: 20px 10px;
-  background: #ffffff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 22px 10px;
+  background: linear-gradient(180deg, #ffffff 0%, var(--green-light) 100%);
+  border-bottom: 1px solid var(--border-soft);
 }
 
 header h1 {
   font-size: clamp(24px, 5vw, 32px);
-  margin-bottom: 5px;
+  margin-bottom: 4px;
+  color: var(--green-main);
 }
 
 .subtitle {
-  margin-top: -6px;
-  color: #3b7f3b;
+  margin-top: -4px;
   font-size: clamp(16px, 3.8vw, 18px);
   font-weight: 600;
+  color: var(--green-main);
 }
 
 /* ==================================================
@@ -63,10 +84,43 @@ header h1 {
 #searchInput {
   width: 100%;
   max-width: 420px;
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-soft);
   font-size: 16px;
+  background: #fff;
+}
+
+#searchInput:focus {
+  outline: none;
+  border-color: var(--green-main);
+}
+
+/* ==================================================
+   INFO + LINKS
+================================================== */
+
+.sub-info {
+  text-align: center;
+  font-size: 15px;
+  color: var(--text-soft);
+  margin: 10px 0 6px;
+}
+
+.ligone-links {
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.ligone-links a {
+  color: var(--green-main);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.ligone-links a:hover {
+  text-decoration: underline;
 }
 
 /* ==================================================
@@ -81,17 +135,19 @@ header h1 {
 }
 
 .category-grid button {
-  background: #f7f7f7;
-  border: 1px solid #dcdcdc;
-  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
   padding: 12px 14px;
   font-size: 16px;
   text-align: left;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .category-grid button:hover {
-  background: #e9e9e9;
+  background: var(--green-soft);
+  border-color: var(--green-main);
 }
 
 /* ==================================================
@@ -104,11 +160,11 @@ header h1 {
 
 .entry-card,
 .search-result {
-  background: #ffffff;
-  border-radius: 12px;
+  background: var(--bg-card);
+  border-radius: 14px;
   padding: 16px;
   margin: 14px 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-soft);
   cursor: pointer;
 }
 
@@ -119,6 +175,7 @@ header h1 {
 .entry-title {
   font-size: clamp(22px, 5vw, 28px);
   margin-bottom: 12px;
+  color: var(--green-main);
 }
 
 .entry-title-small {
@@ -129,7 +186,7 @@ header h1 {
 
 .entry-short {
   font-size: clamp(15px, 3.8vw, 16px);
-  color: #444;
+  color: var(--text-soft);
 }
 
 /* ==================================================
@@ -155,7 +212,7 @@ header h1 {
   color: #333;
 }
 
-/* Health Score */
+/* Health */
 
 .health-score-box {
   padding: 8px 12px;
@@ -170,61 +227,8 @@ header h1 {
 .health-mid { background:#fff3d6; border-left:6px solid #ffb347; color:#e67e22; }
 .health-bad { background:#ffecec; border-left:6px solid #e74c3c; color:#e74c3c; }
 
-/* Industrie-Score */
-
-.process-bar-bg {
-  width: 100%;
-  max-width: 200px;
-  height: 10px;
-  background: #eee;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.process-bar-fill {
-  height: 100%;
-}
-
-.process-bar-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #555;
-}
-
 /* ==================================================
-   SHARE-BUTTONS
-================================================== */
-
-.share-box {
-  margin-top: 30px;
-  padding-top: 15px;
-  border-top: 1px solid #ddd;
-}
-
-.share-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.share-btn {
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  background: #2e7d32;
-  color: #ffffff;
-  transition: background 0.2s ease;
-}
-
-.share-btn:hover {
-  background: #256628;
-}
-
-/* ==================================================
-   FOOTER – FULL WIDTH
+   FOOTER
 ================================================== */
 
 footer {
@@ -233,28 +237,35 @@ footer {
   font-size: 13px;
   padding: 20px;
   background: #ffffff;
+  border-top: 1px solid var(--border-soft);
   margin-top: 40px;
 }
 
+.bottom-link {
+  text-align: center;
+  font-size: 14px;
+  margin: 20px 0 30px;
+}
+
+.bottom-link a {
+  color: var(--green-main);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.bottom-link a:hover {
+  text-decoration: underline;
+}
+
 /* ==================================================
-   RESPONSIVE BREAKPOINTS
+   RESPONSIVE
 ================================================== */
 
 @media (max-width: 600px) {
-
   .metric-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
-  }
-
-  .share-buttons {
-    flex-direction: column;
-  }
-
-  .share-btn {
-    width: 100%;
-    text-align: center;
   }
 }
 
