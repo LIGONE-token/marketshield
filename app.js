@@ -134,17 +134,28 @@ function renderShareButtons(entry) {
 
 // ░░░░░░░░░░░░░  SUCHFUNKTION  
 document.getElementById("searchInput").addEventListener("input", async function () {
-    const q = this.value.trim();
+    const raw = this.value.trim();
     const results = document.getElementById("results");
 
-    if (q.length < 2) {
+    if (raw.length < 2) {
         results.innerHTML = "";
         return;
     }
 
     results.innerHTML = "<p>Suche...</p>";
 
-    const query = `entries?select=*&title=ilike.${q}*`;
+    // 🔐 Text selbst URL-sicher machen (Leerzeichen, Umlaute etc.)
+    const text = encodeURIComponent(raw);
+
+    // ✅ SQL-Wildcards korrekt + URL-korrekt
+    const query =
+        `entries?select=*` +
+        `&or=(` +
+        `title.ilike.%25${text}%25,` +
+        `summary.ilike.%25${text}%25,` +
+        `mechanism.ilike.%25${text}%25` +
+        `)`;
+
     const data = await supabase.select(query);
 
     if (!data || data.length === 0) {
@@ -152,21 +163,13 @@ document.getElementById("searchInput").addEventListener("input", async function 
         return;
     }
 
-    const ranked = data.sort((a, b) => (b.score || 0) - (a.score || 0));
-
     results.innerHTML = `
         <div class="search-hint">Für Details bitte antippen.</div>
-        ${ranked.map(entry => `
+        ${data.map(entry => `
             <div class="search-result" data-id="${entry.id}">
                 <div class="search-title">${entry.title}</div>
-
                 <div class="search-short">
                     ${entry.summary?.substring(0, 120) || ""}…
-                </div>
-
-                <div class="search-metrics">
-                    ${entry.score > 0 ? `<div class="health-mini">${getHealthIcons(entry.score)}</div>` : ""}
-                    ${entry.processing_score > 0 ? `<div class="process-bar-mini">${renderProcessBar(entry.processing_score)}</div>` : ""}
                 </div>
             </div>
         `).join("")}
