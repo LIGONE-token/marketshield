@@ -92,7 +92,7 @@ function copyEntry(title, summary, url) {
 
 // ░░░░░░░░░░░░░  SHARE-BUTTONS  
 function renderShareButtons(entry) {
-    const pageUrl = window.location.href;
+    const pageUrl = `${window.location.origin}${window.location.pathname}?id=${entry.id}`;
     const shareText =
         `Interessanter Beitrag auf MarketShield:\n${entry.title}\n${pageUrl}`;
 
