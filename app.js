@@ -144,7 +144,7 @@ document.getElementById("searchInput").addEventListener("input", async function 
 
     results.innerHTML = "<p>Suche...</p>";
 
-    const query = `entries?select=*&or=(title.ilike.*${q}*,summary.ilike.*${q}*,mechanism.ilike.*${q}*)`;
+    const query = `entries?select=*&title=ilike.${q}*`;
     const data = await supabase.select(query);
 
     if (!data || data.length === 0) {
