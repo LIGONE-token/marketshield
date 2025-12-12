@@ -455,3 +455,23 @@ footer {
 .entry-cta:active {
   transform: scale(0.96);
 }
+/* =========================
+   SUCH- & KATEGORIE-VORSCHAU
+   IMMER 1 ZEILE
+========================= */
+
+.search-one-line,
+.search-short,
+.entry-short {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;   /* 🔑 NUR 1 ZEILE */
+  overflow: hidden;
+
+  white-space: normal;     /* wichtig für Clamp */
+  text-overflow: ellipsis;
+
+  font-size: 14px;
+  line-height: 1.4;
+  color: #444;
+}
