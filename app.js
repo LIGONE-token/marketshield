@@ -6,15 +6,22 @@ document.addEventListener("DOMContentLoaded", function () {
     if (m === 12 && d >= 1 && d <= 26) {
         document.body.classList.add("christmas");
     }
+
+    // 🔗 Deep-Link direkt laden
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (id) {
+        loadFullEntry(id);
+    }
 });
 
 
-// ░░░░░░░░░░░░░  KONFIGURATION  
+// ░░░░░░░░░░░░░  KONFIGURATION
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 
-// ░░░░░░░░░░░░░  SUPABASE CLIENT  
+// ░░░░░░░░░░░░░  SUPABASE CLIENT
 const supabase = {
     async select(query) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
@@ -28,7 +35,7 @@ const supabase = {
 };
 
 
-// ░░░░░░░░░░░░░  KATEGORIEN LADEN  
+// ░░░░░░░░░░░░░  KATEGORIEN LADEN
 fetch("categories.json")
     .then(r => r.json())
     .then(data => {
@@ -45,10 +52,9 @@ fetch("categories.json")
     });
 
 
-// ░░░░░░░░░░░░░  HEALTH SCORE (Icon-System)
+// ░░░░░░░░░░░░░  HEALTH SCORE
 function getHealthIcons(score) {
     if (!score || score === 0) return "";
-
     if (score >= 80) return `<div class="health-score-box health-3">💚💚💚</div>`;
     if (score >= 60) return `<div class="health-score-box health-2">💚💚</div>`;
     if (score >= 40) return `<div class="health-score-box health-1">💚</div>`;
@@ -57,7 +63,7 @@ function getHealthIcons(score) {
 }
 
 
-// ░░░░░░░░░░░░░  INDUSTRIE SCORE (Balken)
+// ░░░░░░░░░░░░░  INDUSTRIE SCORE
 function renderProcessBar(score) {
     if (score === null || score === undefined) return "";
 
@@ -78,61 +84,7 @@ function renderProcessBar(score) {
 }
 
 
-
-// ░░░░░░░░░░░░░  KOPIERFUNKTION  
-function copyEntry(title, summary, url) {
-    const text =
-        `${title}\n\n${summary}\n\nMehr Infos:\n${url}`;
-
-    navigator.clipboard.writeText(text)
-        .then(() => alert("✔ Eintrag wurde kopiert!"))
-        .catch(() => alert("❌ Kopieren fehlgeschlagen."));
-}
-
-
-// ░░░░░░░░░░░░░  SHARE-BUTTONS  
-function renderShareButtons(entry) {
-    const pageUrl = `${window.location.origin}${window.location.pathname}?id=${entry.id}`;
-    const shareText =
-        `Interessanter Beitrag auf MarketShield:\n${entry.title}\n${pageUrl}`;
-
-    return `
-        <div class="share-box">
-            <h3 class="share-title">Teilen & Export</h3>
-
-            <div class="share-buttons">
-
-                <button class="share-btn" onclick="window.open('https://wa.me/?text=${encodeURIComponent(shareText)}', '_blank')">
-                    📱 WhatsApp
-                </button>
-
-                <button class="share-btn" onclick="window.open('https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(shareText)}', '_blank')">
-                    ✈️ Telegram
-                </button>
-
-                <button class="share-btn" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}', '_blank')">
-                    📘 Facebook
-                </button>
-
-                <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}', '_blank')">
-                    🐦 X (Twitter)
-                </button>
-
-                <button class="share-btn" onclick="copyEntry('${entry.title.replace(/'/g, "\\'")}', \`${(entry.summary || "").replace(/`/g, "\\`")}\`, '${pageUrl}')">
-                    📋 Kopieren
-                </button>
-
-                <button class="share-btn" onclick="window.print()">
-                    🖨 Drucken / PDF
-                </button>
-
-            </div>
-        </div>
-    `;
-}
-
-
-// ░░░░░░░░░░░░░  SUCHFUNKTION  
+// ░░░░░░░░░░░░░  SUCHFUNKTION
 document.getElementById("searchInput").addEventListener("input", async function () {
     const raw = this.value.trim();
     const results = document.getElementById("results");
@@ -144,16 +96,14 @@ document.getElementById("searchInput").addEventListener("input", async function 
 
     results.innerHTML = "<p>Suche...</p>";
 
-    // 🔐 Text selbst URL-sicher machen (Leerzeichen, Umlaute etc.)
-    const text = encodeURIComponent(raw);
+    const q = encodeURIComponent(raw);
 
-    // ✅ SQL-Wildcards korrekt + URL-korrekt
     const query =
         `entries?select=*` +
         `&or=(` +
-        `title.ilike.%25${text}%25,` +
-        `summary.ilike.%25${text}%25,` +
-        `mechanism.ilike.%25${text}%25` +
+        `title.ilike.%25${q}%25,` +
+        `summary.ilike.%25${q}%25,` +
+        `mechanism.ilike.%25${q}%25` +
         `)`;
 
     const data = await supabase.select(query);
@@ -164,7 +114,6 @@ document.getElementById("searchInput").addEventListener("input", async function 
     }
 
     results.innerHTML = `
-        <div class="search-hint">Für Details bitte antippen.</div>
         ${data.map(entry => `
             <div class="search-result" data-id="${entry.id}">
                 <div class="search-title">${entry.title}</div>
@@ -177,7 +126,7 @@ document.getElementById("searchInput").addEventListener("input", async function 
 });
 
 
-// ░░░░░░░░░░░░░  KATEGORIE-ANSICHT  
+// ░░░░░░░░░░░░░  KATEGORIE-ANSICHT
 async function loadCategory(categoryName) {
     const results = document.getElementById("results");
     results.innerHTML = "<p>Lade Daten...</p>";
@@ -186,28 +135,20 @@ async function loadCategory(categoryName) {
     const data = await supabase.select(query);
 
     if (!data || data.length === 0) {
-        results.innerHTML = "<p>Noch keine Einträge in dieser Kategorie.</p>";
+        results.innerHTML = "<p>Noch keine Einträge.</p>";
         return;
     }
 
     results.innerHTML = data.map(entry => `
         <div class="entry-card" data-id="${entry.id}">
-            <h3 class="entry-title-small">${entry.title}</h3>
-
-            <p class="entry-short">
-                ${entry.summary ? entry.summary.substring(0, 120) + "…" : ""}
-            </p>
-
-            <div class="mini-metrics">
-                ${entry.score > 0 ? `<span class="mini-health">${getHealthIcons(entry.score)}</span>` : ""}
-                ${entry.processing_score > 0 ? `<span class="mini-process">${renderProcessBar(entry.processing_score)}</span>` : ""}
-            </div>
+            <h3>${entry.title}</h3>
+            <p>${entry.summary?.substring(0, 120) || ""}…</p>
         </div>
     `).join("");
 }
 
 
-// ░░░░░░░░░░░░░  EINZELANSICHT LADEN  
+// ░░░░░░░░░░░░░  EINZELANSICHT
 async function loadFullEntry(id) {
     const results = document.getElementById("results");
     results.innerHTML = "<p>Lade Eintrag...</p>";
@@ -216,81 +157,58 @@ async function loadFullEntry(id) {
     const data = await supabase.select(query);
 
     if (!data || !data[0]) {
-        results.innerHTML = "<p>Fehler beim Laden.</p>";
+        results.innerHTML = "<p>Fehler.</p>";
         return;
     }
 
-    results.innerHTML = renderEntryCard(data[0], true);
+    results.innerHTML = renderEntryCard(data[0]);
 }
 
 
-// ░░░░░░░░░░░░░  EINTRAG DARSTELLEN  
-function renderEntryCard(entry, full = false) {
-    const isInfo = (entry.score === 0 && entry.processing_score === 0);
-
-    if (isInfo) {
-        return `
-            <div class="entry-card">
-                <h2>${entry.title}</h2>
-                <p>${entry.summary || ""}</p>
-                ${renderShareButtons(entry)}
-            </div>
-        `;
-    }
-
+// ░░░░░░░░░░░░░  EINTRAG
+function renderEntryCard(entry) {
     return `
         <div class="entry-card">
-            <h2 class="entry-title">${entry.title}</h2>
-
-            <div class="metrics-icons">
-                ${entry.score > 0 ? `
-                    <div class="metric-row">
-                        ${getHealthIcons(entry.score)}
-                        <span class="metric-text">Gesundheitsindex</span>
-                    </div>` : ""}
-
-                ${entry.processing_score > 0 ? `
-                    <div class="metric-row">
-                        ${renderProcessBar(entry.processing_score)}
-                        <span class="metric-text">Industriescore</span>
-                    </div>` : ""}
-            </div>
-
+            <h2>${entry.title}</h2>
+            ${renderProcessBar(entry.processing_score)}
+            ${getHealthIcons(entry.score)}
             <p>${entry.summary || ""}</p>
-
-            ${full ? renderDetails(entry) : ""}
-            ${full ? renderShareButtons(entry) : ""}
         </div>
     `;
 }
 
 
-// ░░░░░░░░░░░░░  DETAILFELDER  
-function renderDetails(e) {
-    return `
-        ${renderList("Positive Effekte", e.effects_positive)}
-        ${renderList("Negative Effekte", e.effects_negative)}
-        ${renderList("Risikogruppen", e.risk_groups)}
-        ${renderList("Synergien", e.synergy)}
-        ${renderList("Natürliche Quellen", e.natural_sources)}
+// ░░░░░░░░░░░░░  VERGLEICH (DYNAMISCH)
+const compareBtn = document.getElementById("compareBtn");
 
-        ${e.scientific_note ? `
-            <h3>Wissenschaftlicher Hinweis</h3>
-            <p>${e.scientific_note}</p>
-        ` : ""}
-    `;
+if (compareBtn) {
+    compareBtn.addEventListener("click", async () => {
+        const results = document.getElementById("results");
+        results.innerHTML = "<p>Vergleich wird geladen...</p>";
+
+        const query =
+            `entries?select=title,score,processing_score` +
+            `&category=eq.Genussmittel` +
+            `&processing_score=gt.0` +
+            `&order=processing_score.desc`;
+
+        const data = await supabase.select(query);
+
+        results.innerHTML = `
+            <h2>Vergleich: Industriegrad</h2>
+            ${data.map(e => `
+                <div class="compare-card">
+                    <h3>${e.title}</h3>
+                    ${renderProcessBar(e.processing_score)}
+                    ${getHealthIcons(e.score)}
+                </div>
+            `).join("")}
+        `;
+    });
 }
 
-function renderList(title, arr) {
-    if (!arr || arr.length === 0) return "";
-    return `
-        <h3>${title}</h3>
-        <ul>${arr.map(v => `<li>• ${v}</li>`).join("")}</ul>
-    `;
-}
 
-
-// ░░░░░░░░░░░░░  GLOBALER CLICK-LISTENER 
+// ░░░░░░░░░░░░░  GLOBAL CLICK
 document.addEventListener("click", function (e) {
     const card = e.target.closest(".entry-card, .search-result");
     if (card && card.dataset.id) {
