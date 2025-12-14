@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // 🔗 Deep-Link direkt laden
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
-  if (id) loadFullEntry(id);
+  if (id) loadFullEntry(id, false);
 });
 
 // ░░░░░░░░░░░░░  KONFIGURATION
@@ -46,7 +46,7 @@ fetch("categories.json")
     });
   });
 
-// ░░░░░░░░░░░░░  HEALTH SCORE (Icon-System)
+// ░░░░░░░░░░░░░  HEALTH SCORE
 function getHealthIcons(score) {
   if (!score || score === 0) return "";
   if (score >= 80) return `<div class="health-score-box health-3">💚💚💚</div>`;
@@ -56,7 +56,7 @@ function getHealthIcons(score) {
   return `<div class="health-score-box health-bad">⚠️❗⚠️</div>`;
 }
 
-// ░░░░░░░░░░░░░  INDUSTRIE SCORE (Balken)
+// ░░░░░░░░░░░░░  INDUSTRIE SCORE
 function renderProcessBar(score) {
   if (score === null || score === undefined) return "";
   const s = Math.max(1, Math.min(10, Number(score)));
@@ -83,174 +83,38 @@ function copyEntry(title, summary, url) {
     .catch(() => alert("❌ Kopieren fehlgeschlagen."));
 }
 
-// ░░░░░░░░░░░░░  SHARE-BUTTONS
+// ░░░░░░░░░░░░░  SHARE-BUTTONS (FIX!)
 function renderShareButtons(entry) {
-  const pageUrl = `${window.location.origin}${window.location.pathname}?id=${entry.id}`;
+  const pageUrl = window.location.href;
   const shareText = `Interessanter Beitrag auf MarketShield:\n${entry.title}\n${pageUrl}`;
 
   return `
     <div class="share-box">
       <h3 class="share-title">Teilen & Export</h3>
-
       <div class="share-buttons">
 
-        <button class="share-btn" onclick="window.open('https://wa.me/?text=${encodeURIComponent(
-          shareText
-        )}', '_blank')">📱 WhatsApp</button>
+        <button class="share-btn" onclick="window.open('https://wa.me/?text=${encodeURIComponent(shareText)}','_blank')">📱 WhatsApp</button>
 
-        <button class="share-btn" onclick="window.open('https://t.me/share/url?url=${encodeURIComponent(
-          pageUrl
-        )}&text=${encodeURIComponent(shareText)}', '_blank')">✈️ Telegram</button>
+        <button class="share-btn" onclick="window.open('https://t.me/share/url?url=${encodeURIComponent(pageUrl)}','_blank')">✈️ Telegram</button>
 
-        <button class="share-btn" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-          pageUrl
-        )}', '_blank')">📘 Facebook</button>
+        <button class="share-btn" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}','_blank')">📘 Facebook</button>
 
-        <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(
-          shareText
-        )}', '_blank')">🐦 X</button>
+        <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}','_blank')">🐦 X</button>
 
-        <button class="share-btn" onclick="copyEntry('${entry.title.replace(
-          /'/g,
-          "\\'"
-        )}', \`${(entry.summary || "").replace(/`/g, "\\`")}\`, '${pageUrl}')">📋 Kopieren</button>
+        <button class="share-btn" onclick="copyEntry('${entry.title.replace(/'/g,"\\'")}', \`${(entry.summary||"").replace(/`/g,"\\`")}\`, '${pageUrl}')">📋 Kopieren</button>
 
         <button class="share-btn" onclick="window.print()">🖨 Drucken / PDF</button>
-
       </div>
     </div>
   `;
 }
 
-// ░░░░░░░░░░░░░  LISTEN-RENDERER (Details)
-function renderList(title, arr) {
-  if (!arr || arr.length === 0) return "";
-  return `
-    <h3>${title}</h3>
-    <ul>${arr.map((v) => `<li>• ${escapeHtml(String(v))}</li>`).join("")}</ul>
-  `;
-}
-
-function escapeHtml(str) {
-  return str
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function renderDetails(e) {
-  return `
-    ${e.mechanism ? `<h3>Was steckt dahinter?</h3><p>${escapeHtml(e.mechanism)}</p>` : ""}
-
-    ${renderList("Positive Effekte", e.effects_positive)}
-    ${renderList("Negative Effekte", e.effects_negative)}
-    ${renderList("Risikogruppen", e.risk_groups)}
-    ${renderList("Synergien", e.synergy)}
-    ${renderList("Natürliche Quellen", e.natural_sources)}
-
-    ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3><p>${escapeHtml(e.scientific_note)}</p>` : ""}
-  `;
-}
-
-// ░░░░░░░░░░░░░  SUCHFUNKTION (1 Zeile + Scores)
-const searchInput = document.getElementById("searchInput");
-if (searchInput) {
-  searchInput.addEventListener("input", async function () {
-    const raw = this.value.trim();
-    const results = document.getElementById("results");
-    if (!results) return;
-
-    if (raw.length < 2) {
-      results.innerHTML = "";
-      return;
-    }
-
-    results.innerHTML = "<p>Suche…</p>";
-
-    const q = encodeURIComponent(raw);
-    const query =
-      `entries?select=id,title,summary,score,processing_score` +
-      `&or=(` +
-      `title.ilike.%25${q}%25,` +
-      `summary.ilike.%25${q}%25,` +
-      `mechanism.ilike.%25${q}%25` +
-      `)`;
-
-    const data = await supabase.select(query);
-
-    if (!data || data.length === 0) {
-      results.innerHTML = "<p>Keine Treffer.</p>";
-      return;
-    }
-
-    results.innerHTML = `
-      ${data.map((entry) => `
-        <div class="search-result" data-id="${entry.id}">
-          <div class="search-title">
-            ${escapeHtml(entry.title || "")}
-            <span class="search-arrow">›</span>
-          </div>
-
-          <div class="search-one-line">
-            ${escapeHtml(entry.summary || "")}
-          </div>
-
-          <div class="search-metrics">
-            ${entry.processing_score > 0 ? `<div class="process-mini">${renderProcessBar(entry.processing_score)}</div>` : ""}
-            ${entry.score > 0 ? `<div class="health-mini">${getHealthIcons(entry.score)}</div>` : ""}
-          </div>
-
-          <div class="search-cta">Details ansehen</div>
-        </div>
-      `).join("")}
-    `;
-  });
-}
-
-// ░░░░░░░░░░░░░  KATEGORIE-ANSICHT (1 Zeile + Scores + klickbar)
-async function loadCategory(categoryName) {
-  const results = document.getElementById("results");
-  if (!results) return;
-
-  results.innerHTML = "<p>Lade Daten…</p>";
-
-  const query = `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(
-    categoryName
-  )}`;
-  const data = await supabase.select(query);
-
-  if (!data || data.length === 0) {
-    results.innerHTML = "<p>Noch keine Einträge.</p>";
-    return;
+// ░░░░░░░░░░░░░  EINZELANSICHT (FIX: echte URL!)
+async function loadFullEntry(id, push = true) {
+  if (push) {
+    history.pushState({ id }, "", `?id=${id}`);
   }
 
-  results.innerHTML = `
-    ${data.map((entry) => `
-      <div class="entry-card category-card" data-id="${entry.id}">
-        <div class="search-title">
-          ${escapeHtml(entry.title || "")}
-          <span class="search-arrow">›</span>
-        </div>
-
-        <div class="search-one-line">
-          ${escapeHtml(entry.summary || "")}
-        </div>
-
-        <div class="search-metrics">
-          ${entry.processing_score > 0 ? `<div class="process-mini">${renderProcessBar(entry.processing_score)}</div>` : ""}
-          ${entry.score > 0 ? `<div class="health-mini">${getHealthIcons(entry.score)}</div>` : ""}
-        </div>
-
-        <div class="search-cta">Details ansehen</div>
-      </div>
-    `).join("")}
-  `;
-}
-
-// ░░░░░░░░░░░░░  EINZELANSICHT (VOLLSTÄNDIG!)
-async function loadFullEntry(id) {
   const results = document.getElementById("results");
   if (!results) return;
 
@@ -268,7 +132,6 @@ async function loadFullEntry(id) {
 
   results.innerHTML = `
     <div class="entry-card full-entry">
-
       <h2 class="entry-title">${escapeHtml(e.title || "")}</h2>
 
       <div class="full-metrics">
@@ -276,56 +139,16 @@ async function loadFullEntry(id) {
         ${e.processing_score > 0 ? `<div class="full-process">${renderProcessBar(e.processing_score)}</div>` : ""}
       </div>
 
-      <p class="entry-summary">
-        ${escapeHtml(e.summary || "")}
-      </p>
-
+      <p class="entry-summary">${escapeHtml(e.summary || "")}</p>
       ${renderDetails(e)}
-
       ${renderShareButtons(e)}
     </div>
   `;
 }
 
-// ░░░░░░░░░░░░░  GLOBALER CLICK-LISTENER
-document.addEventListener("click", function (ev) {
-  const card = ev.target.closest(".search-result, .category-card, .entry-card");
-  if (card && card.dataset.id) {
-    loadFullEntry(card.dataset.id);
-  }
+// ░░░░░░░░░░░░░  BACK / FORWARD SUPPORT
+window.addEventListener("popstate", () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if (id) loadFullEntry(id, false);
 });
-
-// ░░░░░░░░░░░░░  VERGLEICH (optional – falls Button existiert)
-const compareBtn = document.getElementById("compareBtn");
-if (compareBtn) {
-  compareBtn.addEventListener("click", async () => {
-    const results = document.getElementById("results");
-    if (!results) return;
-
-    results.innerHTML = "<p>Vergleich wird geladen…</p>";
-
-    const query =
-      `entries?select=id,title,score,processing_score` +
-      `&processing_score=gt.0` +
-      `&order=processing_score.desc`;
-
-    const data = await supabase.select(query);
-
-    if (!data || data.length === 0) {
-      results.innerHTML = "<p>Keine vergleichbaren Einträge gefunden.</p>";
-      return;
-    }
-
-    results.innerHTML = `
-      <h2>Vergleich: Industriegrad</h2>
-      ${data.map((e) => `
-        <div class="compare-card">
-          <h3>${escapeHtml(e.title || "")}</h3>
-          ${e.processing_score > 0 ? renderProcessBar(e.processing_score) : ""}
-          ${e.score > 0 ? getHealthIcons(e.score) : ""}
-          <div class="search-cta">Details ansehen</div>
-        </div>
-      `).join("")}
-    `;
-  });
-}
