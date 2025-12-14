@@ -74,6 +74,16 @@ function renderProcessBar(score) {
   `;
 }
 
+// ░░░░░░░░░░░░░  HTML ESCAPE
+function escapeHtml(str) {
+  return str
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 // ░░░░░░░░░░░░░  KOPIERFUNKTION
 function copyEntry(title, summary, url) {
   const text = `${title}\n\n${summary}\n\nMehr Infos:\n${url}`;
@@ -83,7 +93,7 @@ function copyEntry(title, summary, url) {
     .catch(() => alert("❌ Kopieren fehlgeschlagen."));
 }
 
-// ░░░░░░░░░░░░░  SHARE-BUTTONS (FIX!)
+// ░░░░░░░░░░░░░  SHARE-BUTTONS
 function renderShareButtons(entry) {
   const pageUrl = window.location.href;
   const shareText = `Interessanter Beitrag auf MarketShield:\n${entry.title}\n${pageUrl}`;
@@ -92,37 +102,115 @@ function renderShareButtons(entry) {
     <div class="share-box">
       <h3 class="share-title">Teilen & Export</h3>
       <div class="share-buttons">
-
         <button class="share-btn" onclick="window.open('https://wa.me/?text=${encodeURIComponent(shareText)}','_blank')">📱 WhatsApp</button>
-
         <button class="share-btn" onclick="window.open('https://t.me/share/url?url=${encodeURIComponent(pageUrl)}','_blank')">✈️ Telegram</button>
-
         <button class="share-btn" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}','_blank')">📘 Facebook</button>
-
         <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}','_blank')">🐦 X</button>
-
         <button class="share-btn" onclick="copyEntry('${entry.title.replace(/'/g,"\\'")}', \`${(entry.summary||"").replace(/`/g,"\\`")}\`, '${pageUrl}')">📋 Kopieren</button>
-
         <button class="share-btn" onclick="window.print()">🖨 Drucken / PDF</button>
       </div>
     </div>
   `;
 }
 
-// ░░░░░░░░░░░░░  EINZELANSICHT (FIX: echte URL!)
-async function loadFullEntry(id, push = true) {
-  if (push) {
-    history.pushState({ id }, "", `?id=${id}`);
+// ░░░░░░░░░░░░░  DETAILS RENDERER
+function renderList(title, arr) {
+  if (!arr || arr.length === 0) return "";
+  return `
+    <h3>${title}</h3>
+    <ul>${arr.map(v => `<li>• ${escapeHtml(String(v))}</li>`).join("")}</ul>
+  `;
+}
+
+function renderDetails(e) {
+  return `
+    ${e.mechanism ? `<h3>Was steckt dahinter?</h3><p>${escapeHtml(e.mechanism)}</p>` : ""}
+    ${renderList("Positive Effekte", e.effects_positive)}
+    ${renderList("Negative Effekte", e.effects_negative)}
+    ${renderList("Risikogruppen", e.risk_groups)}
+    ${renderList("Synergien", e.synergy)}
+    ${renderList("Natürliche Quellen", e.natural_sources)}
+    ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3><p>${escapeHtml(e.scientific_note)}</p>` : ""}
+  `;
+}
+
+// ░░░░░░░░░░░░░  SUCHE
+const searchInput = document.getElementById("searchInput");
+if (searchInput) {
+  searchInput.addEventListener("input", async function () {
+    const raw = this.value.trim();
+    const results = document.getElementById("results");
+    if (!results) return;
+
+    if (raw.length < 2) {
+      results.innerHTML = "";
+      return;
+    }
+
+    results.innerHTML = "<p>Suche…</p>";
+
+    const q = encodeURIComponent(raw);
+    const query =
+      `entries?select=id,title,summary,score,processing_score` +
+      `&or=(title.ilike.%25${q}%25,summary.ilike.%25${q}%25,mechanism.ilike.%25${q}%25)`;
+
+    const data = await supabase.select(query);
+
+    if (!data || data.length === 0) {
+      results.innerHTML = "<p>Keine Treffer.</p>";
+      return;
+    }
+
+    results.innerHTML = data.map(entry => `
+      <div class="search-result" data-id="${entry.id}">
+        <div class="search-title">${escapeHtml(entry.title || "")} <span class="search-arrow">›</span></div>
+        <div class="search-one-line">${escapeHtml(entry.summary || "")}</div>
+      </div>
+    `).join("");
+
+    results.querySelectorAll(".search-result").forEach(card => {
+      card.addEventListener("click", () => loadFullEntry(card.dataset.id));
+    });
+  });
+}
+
+// ░░░░░░░░░░░░░  KATEGORIE
+async function loadCategory(categoryName) {
+  const results = document.getElementById("results");
+  if (!results) return;
+
+  results.innerHTML = "<p>Lade Daten…</p>";
+
+  const query = `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(categoryName)}`;
+  const data = await supabase.select(query);
+
+  if (!data || data.length === 0) {
+    results.innerHTML = "<p>Noch keine Einträge.</p>";
+    return;
   }
+
+  results.innerHTML = data.map(entry => `
+    <div class="entry-card category-card" data-id="${entry.id}">
+      <div class="search-title">${escapeHtml(entry.title || "")} <span class="search-arrow">›</span></div>
+      <div class="search-one-line">${escapeHtml(entry.summary || "")}</div>
+    </div>
+  `).join("");
+
+  results.querySelectorAll(".category-card").forEach(card => {
+    card.addEventListener("click", () => loadFullEntry(card.dataset.id));
+  });
+}
+
+// ░░░░░░░░░░░░░  EINZELANSICHT
+async function loadFullEntry(id, push = true) {
+  if (push) history.pushState({ id }, "", `?id=${id}`);
 
   const results = document.getElementById("results");
   if (!results) return;
 
   results.innerHTML = "<p>Lade Eintrag…</p>";
 
-  const query = `entries?select=*&id=eq.${encodeURIComponent(id)}`;
-  const data = await supabase.select(query);
-
+  const data = await supabase.select(`entries?select=*&id=eq.${encodeURIComponent(id)}`);
   if (!data || !data[0]) {
     results.innerHTML = "<p>Fehler beim Laden.</p>";
     return;
@@ -132,23 +220,16 @@ async function loadFullEntry(id, push = true) {
 
   results.innerHTML = `
     <div class="entry-card full-entry">
-      <h2 class="entry-title">${escapeHtml(e.title || "")}</h2>
-
-      <div class="full-metrics">
-        ${e.score > 0 ? `<div class="full-health">${getHealthIcons(e.score)}</div>` : ""}
-        ${e.processing_score > 0 ? `<div class="full-process">${renderProcessBar(e.processing_score)}</div>` : ""}
-      </div>
-
-      <p class="entry-summary">${escapeHtml(e.summary || "")}</p>
+      <h2>${escapeHtml(e.title || "")}</h2>
+      <p>${escapeHtml(e.summary || "")}</p>
       ${renderDetails(e)}
       ${renderShareButtons(e)}
     </div>
   `;
 }
 
-// ░░░░░░░░░░░░░  BACK / FORWARD SUPPORT
+// ░░░░░░░░░░░░░  BACK / FORWARD
 window.addEventListener("popstate", () => {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
+  const id = new URLSearchParams(window.location.search).get("id");
   if (id) loadFullEntry(id, false);
 });
