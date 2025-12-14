@@ -76,7 +76,7 @@ function renderProcessBar(score) {
 
 // ░░░░░░░░░░░░░  HTML ESCAPE
 function escapeHtml(str) {
-  return str
+  return String(str)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -113,12 +113,12 @@ function renderShareButtons(entry) {
   `;
 }
 
-// ░░░░░░░░░░░░░  DETAILS RENDERER
+// ░░░░░░░░░░░░░  DETAILS
 function renderList(title, arr) {
   if (!arr || arr.length === 0) return "";
   return `
     <h3>${title}</h3>
-    <ul>${arr.map(v => `<li>• ${escapeHtml(String(v))}</li>`).join("")}</ul>
+    <ul>${arr.map(v => `<li>• ${escapeHtml(v)}</li>`).join("")}</ul>
   `;
 }
 
@@ -163,8 +163,12 @@ if (searchInput) {
 
     results.innerHTML = data.map(entry => `
       <div class="search-result" data-id="${entry.id}">
-        <div class="search-title">${escapeHtml(entry.title || "")} <span class="search-arrow">›</span></div>
+        <div class="search-title">
+          ${escapeHtml(entry.title || "")}
+          <span class="search-arrow">›</span>
+        </div>
         <div class="search-one-line">${escapeHtml(entry.summary || "")}</div>
+        <div class="search-cta">Details ansehen</div>
       </div>
     `).join("");
 
@@ -191,8 +195,12 @@ async function loadCategory(categoryName) {
 
   results.innerHTML = data.map(entry => `
     <div class="entry-card category-card" data-id="${entry.id}">
-      <div class="search-title">${escapeHtml(entry.title || "")} <span class="search-arrow">›</span></div>
+      <div class="search-title">
+        ${escapeHtml(entry.title || "")}
+        <span class="search-arrow">›</span>
+      </div>
       <div class="search-one-line">${escapeHtml(entry.summary || "")}</div>
+      <div class="search-cta">Details ansehen</div>
     </div>
   `).join("");
 
