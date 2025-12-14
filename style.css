@@ -475,3 +475,18 @@ footer {
   line-height: 1.4;
   color: #444;
 }
+.ms-signature{
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+.ms-signature a{
+  font-weight: 600;
+  text-decoration: none;
+}
+.ms-signature a:hover{
+  text-decoration: underline;
+}
