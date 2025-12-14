@@ -59,5 +59,19 @@
 <!-- SCRIPT -->
 <script src="app.js"></script>
 
+    <div id="footer"></div>
+
+<script>
+  fetch("footer.html")
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById("footer").innerHTML = html;
+    });
+</script>
+
+<script src="app.js"></script>
+</body>
+</html>
+
 </body>
 </html>
