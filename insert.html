@@ -234,5 +234,15 @@ async function insertAll() {
 
 insertAll();
 </script>
+  <div id="footer"></div>
+
+<script>
+  fetch("footer.html")
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById("footer").innerHTML = html;
+    });
+</script>
+
 </body>
 </html>
