@@ -490,3 +490,13 @@ footer {
 .ms-signature a:hover{
   text-decoration: underline;
 }
+/* =====================================
+   EINTRAG – VOLLTEXT / LESBARKEIT
+===================================== */
+
+.entry-summary {
+  white-space: pre-line;   /* 🔑 Absätze aus DB anzeigen */
+  line-height: 1.7;
+  font-size: 16px;
+  color: #222;
+}
