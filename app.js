@@ -229,7 +229,10 @@ async function loadFullEntry(id, push = true) {
   results.innerHTML = `
     <div class="entry-card full-entry">
       <h2>${escapeHtml(e.title || "")}</h2>
-      <p>${escapeHtml(e.summary || "")}</p>
+      <div class="entry-summary">
+  ${escapeHtml(e.summary || "").replace(/\n/g, "<br>")}
+</div>
+
       ${renderDetails(e)}
       ${renderShareButtons(e)}
     </div>
