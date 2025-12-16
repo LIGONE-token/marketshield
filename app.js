@@ -32,13 +32,13 @@ const supabase = {
 
 // ░░░░░░░░░░░░░  KATEGORIEN LADEN
 fetch("categories.json")
-  .then((r) => r.json())
-  .then((data) => {
+  .then(r => r.json())
+  .then(data => {
     const grid = document.querySelector(".category-grid");
     if (!grid) return;
 
     grid.innerHTML = "";
-    data.categories.forEach((cat) => {
+    data.categories.forEach(cat => {
       const btn = document.createElement("button");
       btn.textContent = cat.title;
       btn.addEventListener("click", () => loadCategory(cat.title));
@@ -48,7 +48,7 @@ fetch("categories.json")
 
 // ░░░░░░░░░░░░░  HEALTH SCORE
 function getHealthIcons(score) {
-  if (!score || score === 0) return "";
+  if (score === null || score === undefined) return "";
   if (score >= 80) return `<div class="health-score-box health-3">💚💚💚</div>`;
   if (score >= 60) return `<div class="health-score-box health-2">💚💚</div>`;
   if (score >= 40) return `<div class="health-score-box health-1">💚</div>`;
@@ -76,7 +76,7 @@ function renderProcessBar(score) {
 
 // ░░░░░░░░░░░░░  HTML ESCAPE
 function escapeHtml(str) {
-  return String(str)
+  return String(str || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -87,8 +87,7 @@ function escapeHtml(str) {
 // ░░░░░░░░░░░░░  KOPIERFUNKTION
 function copyEntry(title, summary, url) {
   const text = `${title}\n\n${summary}\n\nMehr Infos:\n${url}`;
-  navigator.clipboard
-    .writeText(text)
+  navigator.clipboard.writeText(text)
     .then(() => alert("✔ Eintrag wurde kopiert!"))
     .catch(() => alert("❌ Kopieren fehlgeschlagen."));
 }
@@ -116,10 +115,7 @@ function renderShareButtons(entry) {
 // ░░░░░░░░░░░░░  DETAILS
 function renderList(title, arr) {
   if (!arr || arr.length === 0) return "";
-  return `
-    <h3>${title}</h3>
-    <ul>${arr.map(v => `<li>• ${escapeHtml(v)}</li>`).join("")}</ul>
-  `;
+  return `<h3>${title}</h3><ul>${arr.map(v => `<li>• ${escapeHtml(v)}</li>`).join("")}</ul>`;
 }
 
 function renderDetails(e) {
@@ -156,18 +152,15 @@ if (searchInput) {
 
     const data = await supabase.select(query);
 
-    if (!data || data.length === 0) {
-      results.innerHTML = "<p>Keine Treffer.</p>";
-      return;
-    }
-
     results.innerHTML = data.map(entry => `
       <div class="search-result" data-id="${entry.id}">
         <div class="search-title">
-          ${escapeHtml(entry.title || "")}
+          ${escapeHtml(entry.title)}
+          ${getHealthIcons(entry.score)}
           <span class="search-arrow">›</span>
         </div>
-        <div class="search-one-line">${escapeHtml(entry.summary || "")}</div>
+        ${renderProcessBar(entry.processing_score)}
+        <div class="search-one-line">${escapeHtml(entry.summary)}</div>
         <div class="search-cta">Details ansehen</div>
       </div>
     `).join("");
@@ -188,18 +181,15 @@ async function loadCategory(categoryName) {
   const query = `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(categoryName)}`;
   const data = await supabase.select(query);
 
-  if (!data || data.length === 0) {
-    results.innerHTML = "<p>Noch keine Einträge.</p>";
-    return;
-  }
-
   results.innerHTML = data.map(entry => `
     <div class="entry-card category-card" data-id="${entry.id}">
       <div class="search-title">
-        ${escapeHtml(entry.title || "")}
+        ${escapeHtml(entry.title)}
+        ${getHealthIcons(entry.score)}
         <span class="search-arrow">›</span>
       </div>
-      <div class="search-one-line">${escapeHtml(entry.summary || "")}</div>
+      ${renderProcessBar(entry.processing_score)}
+      <div class="search-one-line">${escapeHtml(entry.summary)}</div>
       <div class="search-cta">Details ansehen</div>
     </div>
   `).join("");
@@ -219,20 +209,14 @@ async function loadFullEntry(id, push = true) {
   results.innerHTML = "<p>Lade Eintrag…</p>";
 
   const data = await supabase.select(`entries?select=*&id=eq.${encodeURIComponent(id)}`);
-  if (!data || !data[0]) {
-    results.innerHTML = "<p>Fehler beim Laden.</p>";
-    return;
-  }
-
   const e = data[0];
 
   results.innerHTML = `
     <div class="entry-card full-entry">
-      <h2>${escapeHtml(e.title || "")}</h2>
-      <div class="entry-summary">
-  ${escapeHtml(e.summary || "").replace(/\n/g, "<br>")}
-</div>
-
+      <h2>${escapeHtml(e.title)}</h2>
+      ${getHealthIcons(e.score)}
+      ${renderProcessBar(e.processing_score)}
+      <div class="entry-summary">${escapeHtml(e.summary).replace(/\n/g,"<br>")}</div>
       ${renderDetails(e)}
       ${renderShareButtons(e)}
     </div>
