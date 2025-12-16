@@ -55,54 +55,6 @@
 
 <script>
 const MARKETSHIELD_LINK = "https://ligone-token.github.io/marketshield/";
-const SURVEY_LINK = window.location.href;
-
-function vote(answer) {
-  localStorage.setItem("ms_survey_1", answer);
-
-  document.getElementById("options").style.display = "none";
-  document.getElementById("result").innerHTML = `
-    <p><strong>Danke für deine Stimme:</strong> "${answer}"</p>
-
-    <p>
-      Viele Menschen treffen täglich Entscheidungen, ohne Risiken klar einschätzen zu können.
-      Transparente Informationen helfen, bewusster zu wählen.
-    </p>
-
-    <div style="margin:24px 0;">
-  <button onclick="shareWhatsApp()">🟢 WhatsApp</button>
-  <button onclick="shareTelegram()">🔵 Telegram</button>
-  <button onclick="shareX()">❌ X</button>
-  <button onclick="shareFacebook()">🔵 Facebook</button>
-  <button onclick="goMarketShield()">Zu MarketShield</button>
-</div>
-
-  `;
-}
-
-function shareSurvey() {
-  const link = window.location.href;
-
-  const text =
-`Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt.
-
-Was denkst DU – sollten problematische Stoffe klarer gekennzeichnet werden?
-
-👉 Jetzt abstimmen:
-${link}`;
-
-  if (navigator.share) {
-    navigator.share({
-      text: text
-    });
-  } else {
-    window.open(
-      "https://wa.me/?text=" + encodeURIComponent(text),
-      "_blank"
-    );
-  }
-}
-
 
 function goMarketShield() {
   window.location.href = MARKETSHIELD_LINK;
@@ -114,7 +66,10 @@ function shareWhatsApp() {
 Wie siehst du das?
 
 ${window.location.href}`;
-  window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+  window.open(
+    "https://wa.me/?text=" + encodeURIComponent(text),
+    "_blank"
+  );
 }
 
 function shareTelegram() {
@@ -145,8 +100,8 @@ function shareFacebook() {
     "_blank"
   );
 }
-
 </script>
+
 
 
 </body>
