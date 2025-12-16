@@ -54,7 +54,8 @@
 </div>
 
 <script>
-const LINK = "https://ligone-token.github.io/marketshield/";
+const MARKETSHIELD_LINK = "https://ligone-token.github.io/marketshield/";
+const SURVEY_LINK = "https://ligone-token.github.io/marketshield/surveys/umfrage-zusatzstoffe.html";
 
 function vote(answer) {
   localStorage.setItem("ms_survey_1", answer);
@@ -68,21 +69,40 @@ function vote(answer) {
       Transparente Informationen helfen, bewusster zu wählen.
     </p>
 
-    <p>
-      👉 <a href="${LINK}">Zurück zu MarketShield – Bewertungen & Infos</a>
-    </p>
-
-    <p><strong>Teilen hilft, ein realistisches Bild zu zeigen:</strong></p>
-
-    <textarea readonly>
-Sollten problematische Zusatzstoffe klarer gekennzeichnet werden?
-Ich habe abgestimmt – wie siehst du das?
-
-${LINK}
-    </textarea>
+    <div style="margin:24px 0;">
+      <button onclick="shareSurvey()">📢 Umfrage teilen</button>
+      <br><br>
+      <button onclick="goMarketShield()">🔍 Zu MarketShield</button>
+    </div>
   `;
 }
+
+function shareSurvey() {
+  const text =
+`Sollten problematische Zusatzstoffe klarer gekennzeichnet werden?
+Ich habe abgestimmt – wie siehst du das?
+
+${SURVEY_LINK}`;
+
+  if (navigator.share) {
+    navigator.share({
+      title: "MarketShield Umfrage",
+      text: text,
+      url: SURVEY_LINK
+    });
+  } else {
+    window.open(
+      "https://wa.me/?text=" + encodeURIComponent(text),
+      "_blank"
+    );
+  }
+}
+
+function goMarketShield() {
+  window.location.href = MARKETSHIELD_LINK;
+}
 </script>
+
 
 </body>
 </html>
