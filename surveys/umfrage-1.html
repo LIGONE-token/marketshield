@@ -78,20 +78,19 @@ function vote(answer) {
 }
 
 function shareSurvey() {
+  const link = window.location.href;
+
   const text =
 `Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt.
 
 Was denkst DU – sollten problematische Stoffe klarer gekennzeichnet werden?
 
 👉 Jetzt abstimmen:
-${SURVEY_LINK}`;
-
+${link}`;
 
   if (navigator.share) {
     navigator.share({
-      title: "MarketShield Umfrage",
-      text: text,
-      url: SURVEY_LINK
+      text: text
     });
   } else {
     window.open(
@@ -100,6 +99,7 @@ ${SURVEY_LINK}`;
     );
   }
 }
+
 
 function goMarketShield() {
   window.location.href = MARKETSHIELD_LINK;
