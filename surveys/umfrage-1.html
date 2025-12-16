@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="widthwidth=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Die Mehrheit denkt anders als erwartet. | MarketShield</title>
 
 <meta name="description" content="Kurze Umfrage zu Zusatzstoffen in Lebensmitteln. Deine Meinung zählt.">
@@ -49,37 +49,36 @@
     <button onclick="vote('Nein, aktuelle Kennzeichnung reicht')">Nein, aktuelle Kennzeichnung reicht</button>
   </div>
 
-  <!-- RESULT -->
+  <!-- RESULT + SHARE (ERST NACH VOTE) -->
   <div id="result"></div>
+</div>
 
-  <hr>
+<script>
+const MARKETSHIELD_LINK = "https://ligone-token.github.io/marketshield/";
 
-  <!-- SOCIAL + ACTION BUTTONS (SICHTBAR, STABIL) -->
-  <div id="share">
+function vote(answer) {
+  document.getElementById("options").style.display = "none";
+
+  document.getElementById("result").innerHTML = `
+    <p><strong>Danke für deine Stimme:</strong> ${answer}</p>
+
+    <hr>
+
     <button onclick="shareWhatsApp()">🟢 WhatsApp</button>
     <button onclick="shareTelegram()">🔵 Telegram</button>
     <button onclick="shareX()">❌ X</button>
     <button onclick="shareFacebook()">🔵 Facebook</button>
     <button onclick="copySurvey()">📋 Link & Text kopieren</button>
     <button onclick="goMarketShield()">Zu MarketShield</button>
-  </div>
-</div>
-
-<script>
-const MARKETSHIELD_LINK = "https://ligone-token.github.io/marketshield/";
-
-/* ---------- VOTE ---------- */
-function vote(answer) {
-  document.getElementById("result").innerHTML =
-    `<p><strong>Danke für deine Stimme:</strong> ${answer}</p>`;
+  `;
 }
 
-/* ---------- NAVIGATION ---------- */
+/* -------- NAVIGATION -------- */
 function goMarketShield() {
   window.location.href = MARKETSHIELD_LINK;
 }
 
-/* ---------- SHARE TEXT ---------- */
+/* -------- SHARE TEXT -------- */
 function getShareText() {
   return `Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt.
 Wie siehst du das?
@@ -87,7 +86,7 @@ Wie siehst du das?
 ${window.location.href}`;
 }
 
-/* ---------- SHARE BUTTONS ---------- */
+/* -------- SHARE BUTTONS -------- */
 function shareWhatsApp() {
   window.open(
     "https://wa.me/?text=" + encodeURIComponent(getShareText()),
@@ -118,7 +117,7 @@ function shareFacebook() {
   );
 }
 
-/* ---------- COPY ---------- */
+/* -------- COPY -------- */
 function copySurvey() {
   const text = getShareText();
 
