@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="widthwidth=device-width, initial-scale=1.0">
 <title>Die Mehrheit denkt anders als erwartet. | MarketShield</title>
 
 <meta name="description" content="Kurze Umfrage zu Zusatzstoffen in Lebensmitteln. Deine Meinung zählt.">
@@ -30,10 +30,8 @@
     font-size: 16px;
     cursor: pointer;
   }
-  textarea {
-    width: 100%;
-    height: 90px;
-    margin-top: 12px;
+  hr {
+    margin: 24px 0;
   }
 </style>
 </head>
@@ -43,6 +41,7 @@
 <div class="box">
   <h1>Sollten problematische Zusatzstoffe klarer gekennzeichnet werden?</h1>
 
+  <!-- VOTE BUTTONS -->
   <div id="options">
     <button onclick="vote('Ja, unbedingt')">Ja, unbedingt</button>
     <button onclick="vote('Teilweise, je nach Risiko')">Teilweise, je nach Risiko</button>
@@ -50,59 +49,93 @@
     <button onclick="vote('Nein, aktuelle Kennzeichnung reicht')">Nein, aktuelle Kennzeichnung reicht</button>
   </div>
 
+  <!-- RESULT -->
   <div id="result"></div>
+
+  <hr>
+
+  <!-- SOCIAL + ACTION BUTTONS (SICHTBAR, STABIL) -->
+  <div id="share">
+    <button onclick="shareWhatsApp()">🟢 WhatsApp</button>
+    <button onclick="shareTelegram()">🔵 Telegram</button>
+    <button onclick="shareX()">❌ X</button>
+    <button onclick="shareFacebook()">🔵 Facebook</button>
+    <button onclick="copySurvey()">📋 Link & Text kopieren</button>
+    <button onclick="goMarketShield()">Zu MarketShield</button>
+  </div>
 </div>
 
 <script>
 const MARKETSHIELD_LINK = "https://ligone-token.github.io/marketshield/";
 
+/* ---------- VOTE ---------- */
+function vote(answer) {
+  document.getElementById("result").innerHTML =
+    `<p><strong>Danke für deine Stimme:</strong> ${answer}</p>`;
+}
+
+/* ---------- NAVIGATION ---------- */
 function goMarketShield() {
   window.location.href = MARKETSHIELD_LINK;
 }
 
-function shareWhatsApp() {
-  const text =
-`Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt.
+/* ---------- SHARE TEXT ---------- */
+function getShareText() {
+  return `Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt.
 Wie siehst du das?
 
 ${window.location.href}`;
+}
+
+/* ---------- SHARE BUTTONS ---------- */
+function shareWhatsApp() {
   window.open(
-    "https://wa.me/?text=" + encodeURIComponent(text),
+    "https://wa.me/?text=" + encodeURIComponent(getShareText()),
     "_blank"
   );
 }
 
 function shareTelegram() {
-  const text = "Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt. Wie siehst du das?";
-  const url = window.location.href;
   window.open(
-    "https://t.me/share/url?url=" + encodeURIComponent(url) +
-    "&text=" + encodeURIComponent(text),
+    "https://t.me/share/url?url=" + encodeURIComponent(window.location.href) +
+    "&text=" + encodeURIComponent("Ich habe bei einer Umfrage abgestimmt. Wie siehst du das?"),
     "_blank"
   );
 }
 
 function shareX() {
-  const text =
-`Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt.
-Wie siehst du das?
-${window.location.href}`;
   window.open(
-    "https://x.com/intent/post?text=" + encodeURIComponent(text),
+    "https://x.com/intent/post?text=" + encodeURIComponent(getShareText()),
     "_blank"
   );
 }
 
 function shareFacebook() {
-  const url = window.location.href;
   window.open(
-    "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url),
+    "https://www.facebook.com/sharer/sharer.php?u=" +
+    encodeURIComponent(window.location.href),
     "_blank"
   );
 }
+
+/* ---------- COPY ---------- */
+function copySurvey() {
+  const text = getShareText();
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text);
+    alert("Text & Link kopiert ✔️");
+  } else {
+    const t = document.createElement("textarea");
+    t.value = text;
+    document.body.appendChild(t);
+    t.select();
+    document.execCommand("copy");
+    document.body.removeChild(t);
+    alert("Text & Link kopiert ✔️");
+  }
+}
 </script>
-
-
 
 </body>
 </html>
