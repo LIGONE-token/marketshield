@@ -70,10 +70,13 @@ function vote(answer) {
     </p>
 
     <div style="margin:24px 0;">
-      <button onclick="shareSurvey()">📢 Umfrage teilen</button>
-      <br><br>
-      <button onclick="goMarketShield()">🔍 Zu MarketShield - Fair informiert!</button>
-    </div>
+  <button onclick="shareWhatsApp()">🟢 WhatsApp</button>
+  <button onclick="shareTelegram()">🔵 Telegram</button>
+  <button onclick="shareX()">❌ X</button>
+  <button onclick="shareFacebook()">🔵 Facebook</button>
+  <button onclick="goMarketShield()">Zu MarketShield</button>
+</div>
+
   `;
 }
 
@@ -104,6 +107,45 @@ ${link}`;
 function goMarketShield() {
   window.location.href = MARKETSHIELD_LINK;
 }
+
+function shareWhatsApp() {
+  const text =
+`Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt.
+Wie siehst du das?
+
+${window.location.href}`;
+  window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+}
+
+function shareTelegram() {
+  const text = "Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt. Wie siehst du das?";
+  const url = window.location.href;
+  window.open(
+    "https://t.me/share/url?url=" + encodeURIComponent(url) +
+    "&text=" + encodeURIComponent(text),
+    "_blank"
+  );
+}
+
+function shareX() {
+  const text =
+`Ich habe gerade bei einer Umfrage zu Zusatzstoffen abgestimmt.
+Wie siehst du das?
+${window.location.href}`;
+  window.open(
+    "https://x.com/intent/post?text=" + encodeURIComponent(text),
+    "_blank"
+  );
+}
+
+function shareFacebook() {
+  const url = window.location.href;
+  window.open(
+    "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url),
+    "_blank"
+  );
+}
+
 </script>
 
 
