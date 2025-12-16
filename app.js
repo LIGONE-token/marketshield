@@ -49,12 +49,15 @@ fetch("categories.json")
 // ░░░░░░░░░░░░░  HEALTH SCORE
 function getHealthIcons(score) {
   if (score === null || score === undefined) return "";
-  if (score >= 80) return `<div class="health-score-box health-3">💚💚💚</div>`;
-  if (score >= 60) return `<div class="health-score-box health-2">💚💚</div>`;
-  if (score >= 40) return `<div class="health-score-box health-1">💚</div>`;
-  if (score >= 20) return `<div class="health-score-box health-mid">🧡🧡</div>`;
-  return `<div class="health-score-box health-bad">⚠️❗⚠️</div>`;
+  const label = `<div class="score-label">Gesundheits-Score</div>`;
+
+  if (score >= 80) return `<div class="score-block">${label}<div class="health-score-box health-3">💚💚💚</div></div>`;
+  if (score >= 60) return `<div class="score-block">${label}<div class="health-score-box health-2">💚💚</div></div>`;
+  if (score >= 40) return `<div class="score-block">${label}<div class="health-score-box health-1">💚</div></div>`;
+  if (score >= 20) return `<div class="score-block">${label}<div class="health-score-box health-mid">🧡🧡</div></div>`;
+  return `<div class="score-block">${label}<div class="health-score-box health-bad">⚠️❗⚠️</div></div>`;
 }
+
 
 // ░░░░░░░░░░░░░  INDUSTRIE SCORE
 function renderProcessBar(score) {
@@ -65,14 +68,18 @@ function renderProcessBar(score) {
   if (s >= 7) color = "#e74c3c";
 
   return `
-    <div class="process-wrapper">
-      <div class="process-bar-bg">
-        <div class="process-bar-fill" style="width:${s * 10}%; background:${color};"></div>
+    <div class="score-block">
+      <div class="score-label">Industrie-Verarbeitung</div>
+      <div class="process-wrapper">
+        <div class="process-bar-bg">
+          <div class="process-bar-fill" style="width:${s * 10}%; background:${color};"></div>
+        </div>
+        <div class="process-bar-label">${s}/10</div>
       </div>
-      <div class="process-bar-label">${s}/10</div>
     </div>
   `;
 }
+
 
 // ░░░░░░░░░░░░░  HTML ESCAPE
 function escapeHtml(str) {
