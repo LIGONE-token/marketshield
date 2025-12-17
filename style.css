@@ -684,3 +684,38 @@ html, body {
   line-height: 1.65;
   margin-top: 10px;
 }
+.entry-section {
+  margin: 28px 0;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.entry-section h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #111;
+}
+
+.entry-text {
+  font-size: 18px;
+  line-height: 1.75;
+  white-space: pre-wrap;   /* echte Absätze */
+}
+
+.entry-section ul {
+  margin: 10px 0 0 20px;
+  padding: 0;
+}
+
+.entry-section ul li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+/* Risiken visuell klar abheben */
+.entry-section.risk {
+  background: #fff6f6;
+  border-left: 4px solid #c62828;
+  padding-left: 16px;
+}
