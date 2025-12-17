@@ -170,8 +170,14 @@ async function loadFullEntry(id, push = true) {
       <div>${getHealthIcons(e.score)}</div>
       ${renderProcessBar(e.processing_score)}
       <div class="entry-summary">
-        ${escapeHtml(e.summary).replace(/\n/g, "<br>")}
-      </div>
+  ${
+    escapeHtml(e.summary)
+      .split(/\n\s*\n/)
+      .map(p => `<p>${p.trim()}</p>`)
+      .join("")
+  }
+</div>
+
     </div>
   `;
 }
