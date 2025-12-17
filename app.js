@@ -99,10 +99,30 @@ async function loadEntry(id) {
   }
 
   results.innerHTML = `
-    <h2 class="entry-title">${e.title}</h2>
-    <div class="entry-score detail">Score: ${e.score ?? "–"}</div>
-    <div class="entry-summary-full">
-      ${e.summary.replace(/\n/g, "<br><br>")}
-    </div>
-  `;
-}
+  <h2 class="entry-title">${e.title}</h2>
+
+  <div class="entry-score detail">Score: ${e.score ?? "–"}</div>
+
+  ${e.summary ? `
+    <section class="entry-section">
+      <h3>Zusammenfassung</h3>
+      <div class="entry-text">${escapeHtml(e.summary)}</div>
+    </section>
+  ` : ""}
+
+  ${e.mechanism ? `
+    <section class="entry-section">
+      <h3>Wirkmechanismus</h3>
+      <div class="entry-text">${escapeHtml(e.mechanism)}</div>
+    </section>
+  ` : ""}
+
+  ${e.risk_groups ? `
+    <section class="entry-section risk">
+      <h3>Risiken & Risikogruppen</h3>
+      <ul>
+        ${JSON.parse(e.risk_groups).map(r => `<li>${r}</li>`).join("")}
+      </ul>
+    </section>
+  ` : ""}
+`;
