@@ -535,3 +535,37 @@ footer {
   opacity: .8;
   margin-top: 4px;
 }
+/* 🎄 Weihnachtsmodus sichtbar */
+body.christmas::before {
+  content: "🎄";
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  font-size: 28px;
+  z-index: 9999;
+}
+
+/* Ergebnislisten */
+.search-result {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.teaser {
+  color: #444;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+/* Detail */
+.entry-summary {
+  line-height: 1.7;
+  margin-top: 12px;
+}
