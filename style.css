@@ -635,3 +635,52 @@ body.christmas::before {
 .entry-summary ol {
   margin: 0 0 1.2em 1.2em;
 }
+/* TYPO */
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #222;
+}
+
+/* LISTE */
+.search-result {
+  padding: 14px 0;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+
+.entry-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* SCORE */
+.entry-score {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 2px;
+}
+
+.entry-score.detail {
+  margin: 10px 0 16px 0;
+}
+
+/* SUMMARY */
+.entry-summary.preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;   /* 🔥 MAXIMAL 2 ZEILEN */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.entry-summary-full {
+  font-size: 18px;
+  line-height: 1.65;
+  margin-top: 10px;
+}
