@@ -111,18 +111,31 @@ if (searchInput) {
 
     const data = await supabase.select(query);
 
-    results.innerHTML = data.map(entry => `
-      <div class="search-result" data-id="${entry.id}">
-        <div class="search-title">
-          ${escapeHtml(entry.title)}
-          ${getHealthIcons(entry.score)}
-          <span class="search-arrow">›</span>
-        </div>
-        ${renderProcessBar(entry.processing_score)}
-        <div class="search-one-line">${escapeHtml(entry.summary)}</div>
-        <div class="search-cta">Details ansehen</div>
-      </div>
-    `).join("");
+// 🔔 KEINE TREFFER
+if (!data || data.length === 0) {
+  results.innerHTML = `
+    <div class="no-results">
+      <strong>Keine Treffer gefunden</strong><br>
+      <span>Dieser Begriff ist (noch) nicht erfasst.</span>
+    </div>
+  `;
+  return;
+}
+
+// ✅ TREFFER
+results.innerHTML = data.map(entry => `
+  <div class="search-result" data-id="${entry.id}">
+    <div class="search-title">
+      ${escapeHtml(entry.title)}
+      ${getHealthIcons(entry.score)}
+      <span class="search-arrow">›</span>
+    </div>
+    ${renderProcessBar(entry.processing_score)}
+    <div class="search-one-line">${escapeHtml(entry.summary)}</div>
+    <div class="search-cta">Details ansehen</div>
+  </div>
+`).join("");
+
 
     results.querySelectorAll(".search-result").forEach(card => {
       card.addEventListener("click", () => loadFullEntry(card.dataset.id));
