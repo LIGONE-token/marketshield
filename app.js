@@ -1,34 +1,33 @@
 /* =====================================================
-   MarketShield – app.js FINAL (KONSISTENT & STABIL)
-   - Health: 3 Herzen / Warnsymbol (keine Zahlen)
-   - Industrie: schmaler Balken (120px), farbcodiert
-   - Absätze: \n\n aus Supabase robust erkannt
-   - Kurzansichten: 1 Zeile + Scores, klar klickbar
+   MarketShield – app.js (FINAL / STABIL / WIE VORHER)
 ===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
 });
 
-/* ---------- GLOBALER KLICK ---------- */
+/* ================= GLOBAL CLICK ================= */
 document.addEventListener("click", (e) => {
-  const card = e.target.closest(".search-result, .entry-card");
-  if (!card || !card.dataset.id) return;
+  const card = e.target.closest("[data-id]");
+  if (!card) return;
   loadEntry(card.dataset.id);
 });
 
-/* ---------- SUPABASE ---------- */
+/* ================= SUPABASE ================= */
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
   });
   return r.json();
 }
 
-/* ---------- HELPERS ---------- */
+/* ================= HELPERS ================= */
 function escapeHtml(s) {
   return String(s || "")
     .replace(/&/g, "&amp;")
@@ -41,104 +40,64 @@ function toNum(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-/* ---------- HEALTH SCORE (FINAL) ---------- */
-function healthIcons(score) {
-  const s = Math.max(0, Math.min(100, Number(score)));
-  if (s >= 80) return "💚💚💚";
-  if (s >= 60) return "💚💚";
-  if (s >= 40) return "💚";
-  if (s >= 20) return "🧡";
-  return "⚠️❗⚠️";
-}
-
-function healthHtml(score) {
-  if (score === null) return "";
-  return `
-    <span style="display:inline-flex; align-items:center; gap:6px;">
-      <span style="font-weight:800;">Gesundheit</span>
-      <span style="font-size:18px;">${healthIcons(score)}</span>
-    </span>
-  `;
-}
-
-function warningHtml() {
-  return `
-    <div style="
-      margin:16px 0;
-      padding:14px;
-      border-radius:10px;
-      background:#fff0f0;
-      border:2px solid #c62828;
-      color:#7a0b0b;
-      font-weight:900;
-      font-size:16px;
-    ">
-      ⚠️ DEUTLICHE WARNUNG: gesundheitlich kritisch
-    </div>
-  `;
-}
-
-/* ---------- INDUSTRIE SCORE (FINAL) ---------- */
-function renderIndustryBar(score) {
-  const n0 = toNum(score);
-  if (n0 === null || n0 <= 0) return "";
-
-  const n = Math.max(1, Math.min(10, Math.round(n0)));
-  let color = "#2e7d32";       // grün
-  if (n >= 4) color = "#f9a825"; // gelb
-  if (n >= 7) color = "#c62828"; // rot
-
-  const widthPx = Math.round((n / 10) * 120); // FIX: max 120px
-
-  return `
-    <span style="display:inline-flex; align-items:center; gap:8px;">
-      <span style="font-size:13px; font-weight:700; opacity:.85;">
-        Industrie-Verarbeitungsgrad
-      </span>
-      <span style="
-        width:120px; height:8px; background:#e6e6e6;
-        border-radius:999px; overflow:hidden;
-      ">
-        <span style="
-          display:block; width:${widthPx}px; height:8px;
-          background:${color};
-        "></span>
-      </span>
-      <span style="font-size:12px; font-weight:700; opacity:.7;">
-        ${n}/10
-      </span>
-    </span>
-  `;
-}
-
-/* ---------- TEXTFORMATIERUNG (ABSÄTZE) ---------- */
+/* ================= TEXT (ABSÄTZE!) ================= */
 function formatText(text) {
   if (!text) return "";
   const normalized = text.replace(/\r\n/g, "\n").trim();
-  const paragraphs = normalized.split(/\n\s*\n+/);
+  const parts = normalized.split(/\n\s*\n+/);
 
-  return paragraphs.map(p => `
+  return parts.map(p => `
     <p style="
-      margin:0 0 18px 0;
-      padding-left:12px;
-      border-left:3px solid #e0e0e0;
+      margin:0 0 20px 0;
       line-height:1.75;
       font-size:16px;
-      color:#222;
     ">
       ${escapeHtml(p.trim())}
     </p>
   `).join("");
 }
 
-/* ---------- KATEGORIEN ---------- */
+/* ================= HEALTH SCORE ================= */
+function renderHealth(score) {
+  if (score >= 80) return "💚💚💚";
+  if (score >= 60) return "💚💚";
+  if (score >= 40) return "💚";
+  if (score >= 20) return "🧡";
+  return "⚠️❗⚠️";
+}
+
+/* ================= INDUSTRIE SCORE ================= */
+function renderIndustry(score) {
+  const n = toNum(score);
+  if (!n || n <= 0) return "";
+
+  const s = Math.max(1, Math.min(10, Math.round(n)));
+  let color = "#2e7d32";
+  if (s >= 4) color = "#f9a825";
+  if (s >= 7) color = "#c62828";
+
+  const w = Math.round((s / 10) * 120);
+
+  return `
+    <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+      <strong>Industrie-Verarbeitungsgrad</strong>
+      <div style="width:120px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
+        <div style="width:${w}px;height:8px;background:${color};"></div>
+      </div>
+      <span style="font-size:12px;">${s}/10</span>
+    </div>
+  `;
+}
+
+/* ================= KATEGORIEN ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
 
-  const cats = await fetch("categories.json").then(r => r.json());
+  const data = await fetch("categories.json").then(r => r.json());
   grid.innerHTML = "";
-  cats.categories.forEach(c => {
+
+  data.categories.forEach(c => {
     const b = document.createElement("button");
     b.textContent = c.title;
     b.onclick = () => loadCategory(c.title);
@@ -146,24 +105,27 @@ async function loadCategories() {
   });
 }
 
-/* ---------- SUCHE ---------- */
+/* ================= SUCHE ================= */
 const input = document.getElementById("searchInput");
 const results = document.getElementById("results");
 
 if (input) {
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) { results.innerHTML = ""; return; }
+    if (q.length < 2) {
+      results.innerHTML = "";
+      return;
+    }
 
     const enc = encodeURIComponent(q);
     const data = await supa(
-      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25,mechanism.ilike.%25${enc}%25)`
+      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
     );
     renderList(data);
   });
 }
 
-/* ---------- KATEGORIE ---------- */
+/* ================= KATEGORIE ================= */
 async function loadCategory(cat) {
   const data = await supa(
     `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
@@ -171,87 +133,106 @@ async function loadCategory(cat) {
   renderList(data);
 }
 
-/* ---------- LISTE (KURZANSICHT: 1 ZEILE) ---------- */
+/* ================= LISTE (KURZANSICHT) ================= */
 function renderList(data) {
-  results.innerHTML = data.map(e => {
-    const hs = toNum(e.score);
-    const ind = toNum(e.processing_score);
-
-    return `
-      <div class="search-result" data-id="${e.id}" style="
-        padding:14px 12px; border-bottom:1px solid #e0e0e0; cursor:pointer;
-      ">
-        <div style="display:flex; gap:12px; align-items:center; margin-bottom:6px;">
-          ${hs !== null ? healthHtml(hs) : ""}
-          ${ind !== null && ind > 0 ? renderIndustryBar(ind) : ""}
-        </div>
-
-        <div style="font-size:20px; font-weight:800; margin:0 0 4px 0;">
-          ${escapeHtml(e.title)}
-        </div>
-
-        <div style="
-          display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:1;
-          overflow:hidden; font-size:15px; line-height:1.4; color:#333;
-        ">
-          ${escapeHtml(e.summary || "").replace(/\s+/g, " ").trim()}
-        </div>
-
-        <div style="margin-top:6px; font-size:14px; font-weight:900; color:#1e88e5;">
-          Öffnen →
-        </div>
+  results.innerHTML = data.map(e => `
+    <div class="entry-card" data-id="${e.id}" style="
+      padding:14px;
+      border-bottom:1px solid #ddd;
+      cursor:pointer;
+    ">
+      <div style="margin-bottom:6px;">
+        <strong>Gesundheitsscore</strong>
+        <span style="margin-left:6px;font-size:18px;">
+          ${renderHealth(toNum(e.score) || 0)}
+        </span>
       </div>
-    `;
-  }).join("");
+
+      ${renderIndustry(e.processing_score)}
+
+      <div style="font-size:20px;font-weight:800;margin:8px 0 4px 0;">
+        ${escapeHtml(e.title)}
+      </div>
+
+      <div style="
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:1;
+        overflow:hidden;
+        font-size:15px;
+      ">
+        ${escapeHtml(e.summary || "")}
+      </div>
+
+      <div style="margin-top:6px;color:#1e88e5;font-weight:700;">
+        Öffnen →
+      </div>
+    </div>
+  `).join("");
 }
 
-/* ---------- DETAILANSICHT ---------- */
+/* ================= DETAIL ================= */
 async function loadEntry(id) {
   const data = await supa(`entries?select=*&id=eq.${id}`);
   const e = data[0];
-  if (!e) { results.innerHTML = "Eintrag nicht gefunden"; return; }
+  if (!e) {
+    results.innerHTML = "Eintrag nicht gefunden";
+    return;
+  }
 
-  const hs = toNum(e.score);
-  const ind = toNum(e.processing_score);
+  const hs = toNum(e.score) || 0;
 
   results.innerHTML = `
-    <h2 style="font-size:22px; font-weight:900; margin:6px 0 10px 0;">
+    <h2 style="font-size:22px;font-weight:900;margin:6px 0 10px 0;">
       ${escapeHtml(e.title)}
     </h2>
 
-    <div style="display:flex; gap:14px; align-items:center; margin-bottom:10px;">
-      ${hs !== null ? healthHtml(hs) : ""}
-      ${ind !== null && ind > 0 ? renderIndustryBar(ind) : ""}
+    <div style="margin-bottom:10px;">
+      <strong>Gesundheitsscore</strong>
+      <span style="margin-left:6px;font-size:20px;">
+        ${renderHealth(hs)}
+      </span>
     </div>
 
-    ${hs !== null && hs < 20 ? warningHtml() : ""}
+    ${renderIndustry(e.processing_score)}
 
-    ${e.summary ? `
-      <section style="margin:22px 0;">
-        <h3 style="font-size:20px; font-weight:900; margin:0 0 18px 0;">
-          Zusammenfassung
-        </h3>
-        ${formatText(e.summary)}
-      </section>` : ""}
+    ${hs < 20 ? `
+      <div style="
+        margin:16px 0;
+        padding:14px;
+        border:2px solid #c62828;
+        background:#fff0f0;
+        font-weight:900;
+      ">
+        ⚠️ DEUTLICHE WARNUNG
+      </div>` : ""}
 
-    ${e.mechanism ? `
-      <section style="margin:22px 0;">
-        <h3 style="font-size:20px; font-weight:900; margin:0 0 18px 0;">
-          Wirkmechanismus
-        </h3>
-        ${formatText(e.mechanism)}
-      </section>` : ""}
+    ${e.summary ? `<h3>Zusammenfassung</h3>${formatText(e.summary)}` : ""}
+    ${e.mechanism ? `<h3>Wirkmechanismus</h3>${formatText(e.mechanism)}` : ""}
 
-    ${e.risk_groups ? `
-      <section style="margin:22px 0;">
-        <h3 style="font-size:20px; font-weight:900; margin:0 0 18px 0;">
-          Risiken & Risikogruppen
-        </h3>
-        <ul style="margin:0 0 0 22px; padding:0; line-height:1.7;">
-          ${JSON.parse(e.risk_groups).map(r => `
-            <li style="margin-bottom:10px;">${escapeHtml(r)}</li>
-          `).join("")}
-        </ul>
-      </section>` : ""}
+    ${renderListSection("Risiken & Risikogruppen", e.risk_groups)}
+    ${renderListSection("Negative Effekte", e.effects_negative)}
+    ${renderListSection("Positive Effekte", e.effects_positive)}
+    ${renderListSection("Synergien", e.synergy)}
+    ${renderListSection("Natürliche Quellen", e.natural_sources)}
+  `;
+}
+
+/* ================= JSON LISTEN ================= */
+function renderListSection(title, data) {
+  if (!data) return "";
+
+  let arr = data;
+  if (typeof data === "string") {
+    try { arr = JSON.parse(data); } catch { return ""; }
+  }
+
+  if (!Array.isArray(arr) || arr.length === 0) return "";
+
+  return `
+    <h3>${title}</h3>
+    <ul style="margin-left:20px;line-height:1.7;">
+      ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
+    </ul>
   `;
 }
