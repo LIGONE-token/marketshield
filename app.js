@@ -1,10 +1,18 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / EINHEITLICH)
+   MarketShield – app.js (FINAL / 1:1 SUPABASE RENDER)
+   ✔ Absätze exakt wie in Supabase (white-space: pre-wrap)
+   ✔ Keine Umformatierung, kein Split, kein Replace
+   ✔ Kurzansicht ruhig, Detailansicht vollständig
 ===================================================== */
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
+
+  // Deep-Link ?id=...
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if (id) loadEntry(id);
 });
 
 /* ================= GLOBAL CLICK ================= */
@@ -37,7 +45,7 @@ function toNum(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-/* ================= EINHEITLICHE SCORE-LABEL ================= */
+/* ================= SCORE LABEL STYLE (EINHEITLICH) ================= */
 const SCORE_LABEL_STYLE = `
   font-size:13px;
   font-weight:700;
@@ -45,22 +53,24 @@ const SCORE_LABEL_STYLE = `
   color:#222;
 `;
 
-/* ================= TEXT (ABSÄTZE KORREKT) ================= */
-function formatText(text) {
+/* ================= TEXT: 1:1 AUS SUPABASE =================
+   WICHTIG:
+   - KEIN Split
+   - KEIN Replace
+   - KEIN <p>-Bau
+   - Nur Anzeige mit white-space: pre-wrap
+=========================================================== */
+function renderTextFromSupabase(text) {
   if (!text) return "";
-  const normalized = text
-    .replace(/\r\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-
-  return normalized
-    .split(/\n\s*\n/)
-    .map(p => `
-      <p style="margin:0 0 22px 0; line-height:1.8; font-size:16px;">
-        ${escapeHtml(p.trim())}
-      </p>
-    `)
-    .join("");
+  return `
+    <pre style="
+      white-space:pre-wrap;
+      font-family:inherit;
+      font-size:16px;
+      line-height:1.8;
+      margin:0;
+    ">${escapeHtml(text)}</pre>
+  `;
 }
 
 /* ================= HEALTH SCORE ================= */
@@ -89,54 +99,11 @@ function renderIndustry(score) {
       <div style="width:120px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
         <div style="width:${w}px;height:8px;background:${color};"></div>
       </div>
-      <div style="${SCORE_LABEL_STYLE}; margin-top:4px;">
-        Industrie-Verarbeitungsgrad
-      </div>
     </div>
   `;
 }
 
-/* ================= SCORE-BLOCK (DETAIL) ================= */
-function renderScoreBlock(score, processing) {
-  return `
-    <div style="display:grid;grid-template-columns:56px 1fr;column-gap:12px;margin:14px 0 18px 0;">
-      <div style="font-size:18px;line-height:1.1;white-space:nowrap;">
-        ${renderHealth(score)}
-      </div>
-      <div>
-        <div style="${SCORE_LABEL_STYLE}; margin-bottom:6px;">
-          Gesundheitsscore
-        </div>
-        ${renderIndustry(processing)}
-      </div>
-    </div>
-  `;
-}
-
-/* ================= SCORE-BLOCK (KURZANSICHT – RESPONSIV) ================= */
-function renderScoreBlockCompact(score, processing) {
-  const isMobile = window.innerWidth <= 600;
-  const heartSize = isMobile ? 12 : 13;
-  const colLeft   = isMobile ? 36 : 44;
-  const gap       = isMobile ? 8  : 10;
-  const barW      = isMobile ? 60 : 70;
-  const barH      = isMobile ? 4  : 5;
-
-  return `
-    <div style="display:grid;grid-template-columns:${colLeft}px 1fr;column-gap:${gap}px;margin-bottom:6px;">
-      <div style="font-size:${heartSize}px;line-height:1;white-space:nowrap;">
-        ${renderHealth(score)}
-      </div>
-      <div>
-        <div style="${SCORE_LABEL_STYLE}; margin-bottom:2px;">
-          Gesundheitsscore
-        </div>
-        ${renderIndustryCompact(processing, barW, barH)}
-      </div>
-    </div>
-  `;
-}
-
+/* ================= INDUSTRIE (KURZ – RESPONSIV) ================= */
 function renderIndustryCompact(score, barW, barH) {
   const n0 = toNum(score);
   if (!n0 || n0 <= 0) return "";
@@ -148,8 +115,51 @@ function renderIndustryCompact(score, barW, barH) {
       <div style="width:${barW}px;height:${barH}px;background:#e0e0e0;border-radius:4px;overflow:hidden;">
         <div style="width:${w}px;height:${barH}px;background:#777;"></div>
       </div>
-      <div style="${SCORE_LABEL_STYLE}; margin-top:3px;">
-        Industrie-Verarbeitungsgrad
+    </div>
+  `;
+}
+
+/* ================= SCORE-BLOCK (DETAIL)
+   LINKS: Herzen + Balken (Balken direkt unter Herzen)
+   RECHTS: Labels, exakt ausgerichtet
+=========================================================== */
+function renderScoreBlock(score, processing) {
+  return `
+    <div style="display:grid;grid-template-columns:64px 1fr;column-gap:12px;margin:14px 0 18px 0;">
+      <div>
+        <div style="font-size:18px;line-height:1.1;white-space:nowrap;">
+          ${renderHealth(score)}
+        </div>
+        ${renderIndustry(processing)}
+      </div>
+      <div>
+        <div style="${SCORE_LABEL_STYLE}; margin-bottom:6px;">Gesundheitsscore</div>
+        <div style="${SCORE_LABEL_STYLE}; opacity:.75;">Industrie Verarbeitungsgrad</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ================= SCORE-BLOCK (KURZ) ================= */
+function renderScoreBlockCompact(score, processing) {
+  const isMobile = window.innerWidth <= 600;
+  const heartSize = isMobile ? 12 : 13;
+  const colLeft   = isMobile ? 36 : 44;
+  const gap       = isMobile ? 8  : 10;
+  const barW      = isMobile ? 60 : 70;
+  const barH      = isMobile ? 4  : 5;
+
+  return `
+    <div style="display:grid;grid-template-columns:${colLeft}px 1fr;column-gap:${gap}px;margin-bottom:6px;">
+      <div>
+        <div style="font-size:${heartSize}px;line-height:1;white-space:nowrap;">
+          ${renderHealth(score)}
+        </div>
+        ${renderIndustryCompact(processing, barW, barH)}
+      </div>
+      <div>
+        <div style="${SCORE_LABEL_STYLE}; margin-bottom:2px;">Gesundheitsscore</div>
+        <div style="${SCORE_LABEL_STYLE}; opacity:.7;">Industrie Verarbeitungsgrad</div>
       </div>
     </div>
   `;
@@ -220,10 +230,17 @@ async function loadEntry(id) {
     <h2 style="font-size:22px;font-weight:900;margin:6px 0 10px 0;">
       ${escapeHtml(e.title)}
     </h2>
+
     ${renderScoreBlock(hs, e.processing_score)}
-    ${hs < 20 ? `<div style="margin:16px 0;padding:14px;border:2px solid #c62828;background:#fff0f0;font-weight:900;">⚠️ DEUTLICHE WARNUNG</div>` : ""}
-    ${e.summary ? `<h3>Zusammenfassung</h3>${formatText(e.summary)}` : ""}
-    ${e.mechanism ? `<h3>Wirkmechanismus</h3>${formatText(e.mechanism)}` : ""}
+
+    ${hs < 20 ? `
+      <div style="margin:16px 0;padding:14px;border:2px solid #c62828;background:#fff0f0;font-weight:900;">
+        ⚠️ DEUTLICHE WARNUNG
+      </div>` : ""}
+
+    ${e.summary ? `<h3>Zusammenfassung</h3>${renderTextFromSupabase(e.summary)}` : ""}
+    ${e.mechanism ? `<h3>Wirkmechanismus</h3>${renderTextFromSupabase(e.mechanism)}` : ""}
+
     ${renderListSection("Risiken & Risikogruppen", e.risk_groups)}
     ${renderListSection("Negative Effekte", e.effects_negative)}
     ${renderListSection("Positive Effekte", e.effects_positive)}
