@@ -172,11 +172,12 @@ async function loadFullEntry(id, push = true) {
       <div class="entry-summary">
   ${
     escapeHtml(e.summary)
-      .split(/\n\s*\n/)
+      .split(/\n\s*\n/)   // echte Absätze aus der DB
       .map(p => `<p>${p.trim()}</p>`)
       .join("")
   }
 </div>
+
 
     </div>
   `;
