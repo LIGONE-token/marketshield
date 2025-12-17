@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / WIE VORHER)
+   MarketShield – app.js (FINAL / STABIL / GEORDNET)
 ===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -19,10 +19,7 @@ const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    }
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   });
   return r.json();
 }
@@ -34,24 +31,18 @@ function escapeHtml(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
-
 function toNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
 
-/* ================= TEXT (ABSÄTZE!) ================= */
+/* ================= TEXT (ABSÄTZE AUS SUPABASE) ================= */
 function formatText(text) {
   if (!text) return "";
-  const normalized = text.replace(/\r\n/g, "\n").trim();
+  const normalized = text.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
   const parts = normalized.split(/\n\s*\n+/);
-
   return parts.map(p => `
-    <p style="
-      margin:0 0 20px 0;
-      line-height:1.75;
-      font-size:16px;
-    ">
+    <p style="margin:0 0 20px 0; line-height:1.75; font-size:16px;">
       ${escapeHtml(p.trim())}
     </p>
   `).join("");
@@ -66,12 +57,12 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
-/* ================= INDUSTRIE SCORE ================= */
+/* ================= INDUSTRIE SCORE (SCHMAL) ================= */
 function renderIndustry(score) {
-  const n = toNum(score);
-  if (!n || n <= 0) return "";
+  const n0 = toNum(score);
+  if (!n0 || n0 <= 0) return "";
 
-  const s = Math.max(1, Math.min(10, Math.round(n)));
+  const s = Math.max(1, Math.min(10, Math.round(n0)));
   let color = "#2e7d32";
   if (s >= 4) color = "#f9a825";
   if (s >= 7) color = "#c62828";
@@ -79,12 +70,43 @@ function renderIndustry(score) {
   const w = Math.round((s / 10) * 120);
 
   return `
-    <div style="display:flex; align-items:center; gap:8px; margin-top:6px;">
-      <strong>Industrie-Verarbeitungsgrad</strong>
-      <div style="width:120px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
-        <div style="width:${w}px;height:8px;background:${color};"></div>
+    <div style="margin-top:6px;">
+      <div style="
+        width:120px; height:8px;
+        background:#e0e0e0; border-radius:6px; overflow:hidden;
+      ">
+        <div style="
+          width:${w}px; height:8px; background:${color};
+        "></div>
       </div>
-      <span style="font-size:12px;">${s}/10</span>
+      <div style="font-size:12px; color:#666; margin-top:4px;">
+        Industrie-Verarbeitungsgrad
+      </div>
+    </div>
+  `;
+}
+
+/* ================= SCORE-BLOCK (TEXT EXAKT UNTEREINANDER) ================= */
+function renderScoreBlock(score, processing) {
+  return `
+    <div style="
+      display:grid;
+      grid-template-columns: 64px auto;
+      column-gap: 12px;
+      margin-bottom: 12px;
+    ">
+      <!-- ICON-SPALTE -->
+      <div style="font-size:18px; line-height:1.2;">
+        ${renderHealth(score)}
+      </div>
+
+      <!-- TEXT-SPALTE (STARTBUCHSTABEN GLEICH) -->
+      <div>
+        <div style="font-weight:800; line-height:1.2;">
+          Gesundheitsscore
+        </div>
+        ${renderIndustry(processing)}
+      </div>
     </div>
   `;
 }
@@ -96,7 +118,6 @@ async function loadCategories() {
 
   const data = await fetch("categories.json").then(r => r.json());
   grid.innerHTML = "";
-
   data.categories.forEach(c => {
     const b = document.createElement("button");
     b.textContent = c.title;
@@ -112,14 +133,11 @@ const results = document.getElementById("results");
 if (input) {
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) {
-      results.innerHTML = "";
-      return;
-    }
+    if (q.length < 2) { results.innerHTML = ""; return; }
 
     const enc = encodeURIComponent(q);
     const data = await supa(
-      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25,mechanism.ilike.%25${enc}%25)`
     );
     renderList(data);
   });
@@ -137,34 +155,22 @@ async function loadCategory(cat) {
 function renderList(data) {
   results.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}" style="
-      padding:14px;
-      border-bottom:1px solid #ddd;
-      cursor:pointer;
+      padding:14px; border-bottom:1px solid #ddd; cursor:pointer;
     ">
-      <div style="margin-bottom:6px;">
-        <strong>Gesundheitsscore</strong>
-        <span style="margin-left:6px;font-size:18px;">
-          ${renderHealth(toNum(e.score) || 0)}
-        </span>
-      </div>
+      ${renderScoreBlock(toNum(e.score) || 0, e.processing_score)}
 
-      ${renderIndustry(e.processing_score)}
-
-      <div style="font-size:20px;font-weight:800;margin:8px 0 4px 0;">
+      <div style="font-size:20px; font-weight:800; margin:6px 0 4px 0;">
         ${escapeHtml(e.title)}
       </div>
 
       <div style="
-        display:-webkit-box;
-        -webkit-box-orient:vertical;
-        -webkit-line-clamp:1;
-        overflow:hidden;
-        font-size:15px;
+        display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:1;
+        overflow:hidden; font-size:15px; line-height:1.4;
       ">
-        ${escapeHtml(e.summary || "")}
+        ${escapeHtml(e.summary || "").replace(/\s+/g, " ").trim()}
       </div>
 
-      <div style="margin-top:6px;color:#1e88e5;font-weight:700;">
+      <div style="margin-top:6px; color:#1e88e5; font-weight:700;">
         Öffnen →
       </div>
     </div>
@@ -175,34 +181,21 @@ function renderList(data) {
 async function loadEntry(id) {
   const data = await supa(`entries?select=*&id=eq.${id}`);
   const e = data[0];
-  if (!e) {
-    results.innerHTML = "Eintrag nicht gefunden";
-    return;
-  }
+  if (!e) { results.innerHTML = "Eintrag nicht gefunden"; return; }
 
   const hs = toNum(e.score) || 0;
 
   results.innerHTML = `
-    <h2 style="font-size:22px;font-weight:900;margin:6px 0 10px 0;">
+    <h2 style="font-size:22px; font-weight:900; margin:6px 0 10px 0;">
       ${escapeHtml(e.title)}
     </h2>
 
-    <div style="margin-bottom:10px;">
-      <strong>Gesundheitsscore</strong>
-      <span style="margin-left:6px;font-size:20px;">
-        ${renderHealth(hs)}
-      </span>
-    </div>
-
-    ${renderIndustry(e.processing_score)}
+    ${renderScoreBlock(hs, e.processing_score)}
 
     ${hs < 20 ? `
       <div style="
-        margin:16px 0;
-        padding:14px;
-        border:2px solid #c62828;
-        background:#fff0f0;
-        font-weight:900;
+        margin:16px 0; padding:14px;
+        border:2px solid #c62828; background:#fff0f0; font-weight:900;
       ">
         ⚠️ DEUTLICHE WARNUNG
       </div>` : ""}
@@ -218,20 +211,18 @@ async function loadEntry(id) {
   `;
 }
 
-/* ================= JSON LISTEN ================= */
+/* ================= JSON-LISTEN ================= */
 function renderListSection(title, data) {
   if (!data) return "";
-
   let arr = data;
   if (typeof data === "string") {
     try { arr = JSON.parse(data); } catch { return ""; }
   }
-
   if (!Array.isArray(arr) || arr.length === 0) return "";
 
   return `
     <h3>${title}</h3>
-    <ul style="margin-left:20px;line-height:1.7;">
+    <ul style="margin-left:20px; line-height:1.7;">
       ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
     </ul>
   `;
