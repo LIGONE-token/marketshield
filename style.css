@@ -574,3 +574,36 @@ body.christmas::before {
   margin: 0 0 1em 0;
   display: block;
 }
+/* 🔒 ABSÄTZE ENDGÜLTIG SICHTBAR */
+.entry-summary p {
+  display: block;
+  margin: 0 0 1.2em 0;
+  line-height: 1.7;
+}
+
+/* 🔒 LISTEN NUR KURZ (Suche & Kategorie) */
+.search-one-line,
+.search-short,
+.entry-short,
+.teaser {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 🎄 WEIHNACHTSMODUS – WIE FRÜHER */
+body.christmas::before {
+  content: "❄ ❄ ❄ ❄ ❄ ❄ ❄ ❄ ❄";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  font-size: 20px;
+  text-align: center;
+  padding: 6px 0;
+  background: linear-gradient(to right, #c62828, #ffffff, #2e7d32);
+  color: #c62828;
+  z-index: 9999;
+}
+
