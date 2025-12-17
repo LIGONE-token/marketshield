@@ -1,19 +1,18 @@
 /* =====================================================
-   MarketShield – app.js FINAL
-   ✔ Health-Score korrekt + grüne Herzen
-   ✔ Industrie-Score 0–10 (0 = nicht anzeigen) KOMPAKT
-   ✔ Warnung bei Health-Score = 1 (DEUTLICH)
-   ✔ Alles klickbar (globaler Klick-Fix)
-   ✔ Kein CSS hier nötig (inline styles für die neuen UI-Teile)
+   MarketShield – app.js FINAL (KONSISTENT & STABIL)
+   - Health: 3 Herzen / Warnsymbol (keine Zahlen)
+   - Industrie: schmaler Balken (120px), farbcodiert
+   - Absätze: \n\n aus Supabase robust erkannt
+   - Kurzansichten: 1 Zeile + Scores, klar klickbar
 ===================================================== */
 
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
 });
 
-/* ---------- GLOBALER KLICK-FIX ---------- */
+/* ---------- GLOBALER KLICK ---------- */
 document.addEventListener("click", (e) => {
-  const card = e.target.closest(".search-result");
+  const card = e.target.closest(".search-result, .entry-card");
   if (!card || !card.dataset.id) return;
   loadEntry(card.dataset.id);
 });
@@ -42,53 +41,22 @@ function toNum(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-function showIndustry(v) {
-  const n = toNum(v);
-  return n !== null && n > 0 && n <= 10;   // 0 = nicht anzeigen
+/* ---------- HEALTH SCORE (FINAL) ---------- */
+function healthIcons(score) {
+  const s = Math.max(0, Math.min(100, Number(score)));
+  if (s >= 80) return "💚💚💚";
+  if (s >= 60) return "💚💚";
+  if (s >= 40) return "💚";
+  if (s >= 20) return "🧡";
+  return "⚠️❗⚠️";
 }
 
-function formatText(text) {
-  if (!text) return "";
-  return escapeHtml(text)
-    .split(/\n\s*\n/)
-    .map(p => `<p style="margin:0 0 14px 0; line-height:1.75;">${p.trim()}</p>`)
-    .join("");
-}
-
-/* ---------- UI SNIPPETS (INLINE, KOMPAKT) ---------- */
-function heartsHtml(score100) {
-  const s = Math.max(0, Math.min(100, score100));
-  const filled = Math.round(s / 20); // 0..5
-  let out = `<span style="display:inline-flex; gap:2px; vertical-align:middle;">`;
-  for (let i = 1; i <= 5; i++) {
-    out += `<span style="font-size:16px; line-height:1; color:${i <= filled ? "#2e7d32" : "#cfcfcf"};">♥</span>`;
-  }
-  out += `</span>`;
-  return out;
-}
-
-function industryCompactHtml(ind10) {
-  const n = Math.max(1, Math.min(10, ind10)); // nur 1..10 hier
-  // kompakter Balken: max 90px, NICHT full width
-  const w = Math.round((n / 10) * 90);
+function healthHtml(score) {
+  if (score === null) return "";
   return `
-    <span style="display:inline-flex; align-items:center; gap:8px; vertical-align:middle;">
-      <span style="font-weight:700;">Industrie:</span>
-      <span style="display:inline-block; width:90px; height:10px; background:#e9e9e9; border-radius:999px; overflow:hidden;">
-        <span style="display:block; width:${w}px; height:10px; background:#666;"></span>
-      </span>
-      <span style="font-weight:700;">${n}/10</span>
-    </span>
-  `;
-}
-
-function healthLineHtml(score100) {
-  const s = score100;
-  return `
-    <span style="display:inline-flex; align-items:center; gap:10px; vertical-align:middle;">
-      <span style="font-weight:700;">Health:</span>
-      ${heartsHtml(s)}
-      <span style="font-weight:800;">${s}</span>
+    <span style="display:inline-flex; align-items:center; gap:6px;">
+      <span style="font-weight:800;">Gesundheit</span>
+      <span style="font-size:18px;">${healthIcons(score)}</span>
     </span>
   `;
 }
@@ -96,19 +64,71 @@ function healthLineHtml(score100) {
 function warningHtml() {
   return `
     <div style="
-      margin:14px 0 18px 0;
-      padding:14px 14px;
+      margin:16px 0;
+      padding:14px;
       border-radius:10px;
       background:#fff0f0;
       border:2px solid #c62828;
       color:#7a0b0b;
       font-weight:900;
       font-size:16px;
-      letter-spacing:0.2px;
     ">
-      ⚠️ EXTREME WARNUNG: Gesundheits-Score = 1
+      ⚠️ DEUTLICHE WARNUNG: gesundheitlich kritisch
     </div>
   `;
+}
+
+/* ---------- INDUSTRIE SCORE (FINAL) ---------- */
+function renderIndustryBar(score) {
+  const n0 = toNum(score);
+  if (n0 === null || n0 <= 0) return "";
+
+  const n = Math.max(1, Math.min(10, Math.round(n0)));
+  let color = "#2e7d32";       // grün
+  if (n >= 4) color = "#f9a825"; // gelb
+  if (n >= 7) color = "#c62828"; // rot
+
+  const widthPx = Math.round((n / 10) * 120); // FIX: max 120px
+
+  return `
+    <span style="display:inline-flex; align-items:center; gap:8px;">
+      <span style="font-size:13px; font-weight:700; opacity:.85;">
+        Industrie-Verarbeitungsgrad
+      </span>
+      <span style="
+        width:120px; height:8px; background:#e6e6e6;
+        border-radius:999px; overflow:hidden;
+      ">
+        <span style="
+          display:block; width:${widthPx}px; height:8px;
+          background:${color};
+        "></span>
+      </span>
+      <span style="font-size:12px; font-weight:700; opacity:.7;">
+        ${n}/10
+      </span>
+    </span>
+  `;
+}
+
+/* ---------- TEXTFORMATIERUNG (ABSÄTZE) ---------- */
+function formatText(text) {
+  if (!text) return "";
+  const normalized = text.replace(/\r\n/g, "\n").trim();
+  const paragraphs = normalized.split(/\n\s*\n+/);
+
+  return paragraphs.map(p => `
+    <p style="
+      margin:0 0 18px 0;
+      padding-left:12px;
+      border-left:3px solid #e0e0e0;
+      line-height:1.75;
+      font-size:16px;
+      color:#222;
+    ">
+      ${escapeHtml(p.trim())}
+    </p>
+  `).join("");
 }
 
 /* ---------- KATEGORIEN ---------- */
@@ -137,7 +157,7 @@ if (input) {
 
     const enc = encodeURIComponent(q);
     const data = await supa(
-      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25,mechanism.ilike.%25${enc}%25)`
     );
     renderList(data);
   });
@@ -151,42 +171,34 @@ async function loadCategory(cat) {
   renderList(data);
 }
 
-/* ---------- LISTE (KURZANSICHT) ---------- */
+/* ---------- LISTE (KURZANSICHT: 1 ZEILE) ---------- */
 function renderList(data) {
   results.innerHTML = data.map(e => {
     const hs = toNum(e.score);
     const ind = toNum(e.processing_score);
 
-    // Health immer anzeigen, aber korrekt (fallback "–")
-    const healthPart = (hs !== null)
-      ? healthLineHtml(Math.max(0, Math.min(100, Math.round(hs))))
-      : `<span style="font-weight:800;">Health: –</span>`;
-
-    // Industrie nur anzeigen wenn 1..10
-    const industryPart = (ind !== null && showIndustry(ind))
-      ? `<span style="margin-left:14px;">${industryCompactHtml(Math.round(ind))}</span>`
-      : ``;
-
     return `
-      <div class="search-result" data-id="${e.id}" style="padding:14px 12px; border-bottom:1px solid #e0e0e0; cursor:pointer;">
-        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:8px;">
-          ${healthPart}
-          ${industryPart}
+      <div class="search-result" data-id="${e.id}" style="
+        padding:14px 12px; border-bottom:1px solid #e0e0e0; cursor:pointer;
+      ">
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:6px;">
+          ${hs !== null ? healthHtml(hs) : ""}
+          ${ind !== null && ind > 0 ? renderIndustryBar(ind) : ""}
         </div>
 
-        <div class="entry-title" style="font-size:20px; font-weight:800; margin:0 0 6px 0;">
+        <div style="font-size:20px; font-weight:800; margin:0 0 4px 0;">
           ${escapeHtml(e.title)}
         </div>
 
-        <div class="entry-summary preview" style="
-          display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
-          overflow:hidden; font-size:16px; line-height:1.5; color:#333;
+        <div style="
+          display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:1;
+          overflow:hidden; font-size:15px; line-height:1.4; color:#333;
         ">
           ${escapeHtml(e.summary || "").replace(/\s+/g, " ").trim()}
         </div>
 
-        <div class="entry-cta" style="margin-top:8px; font-size:14px; font-weight:900; color:#1e88e5;">
-          Mehr anzeigen →
+        <div style="margin-top:6px; font-size:14px; font-weight:900; color:#1e88e5;">
+          Öffnen →
         </div>
       </div>
     `;
@@ -199,45 +211,46 @@ async function loadEntry(id) {
   const e = data[0];
   if (!e) { results.innerHTML = "Eintrag nicht gefunden"; return; }
 
-  const hsRaw = toNum(e.score);
-  const hs = (hsRaw !== null) ? Math.max(0, Math.min(100, Math.round(hsRaw))) : null;
-
-  const indRaw = toNum(e.processing_score);
-  const ind = (indRaw !== null) ? Math.round(indRaw) : null;
+  const hs = toNum(e.score);
+  const ind = toNum(e.processing_score);
 
   results.innerHTML = `
-    <h2 class="entry-title" style="font-size:22px; font-weight:900; margin:6px 0 10px 0;">
+    <h2 style="font-size:22px; font-weight:900; margin:6px 0 10px 0;">
       ${escapeHtml(e.title)}
     </h2>
 
-    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:10px;">
-      ${hs !== null ? healthLineHtml(hs) : `<span style="font-weight:900;">Health: –</span>`}
-      ${ind !== null && showIndustry(ind) ? `<span style="margin-left:14px;">${industryCompactHtml(ind)}</span>` : ``}
+    <div style="display:flex; gap:14px; align-items:center; margin-bottom:10px;">
+      ${hs !== null ? healthHtml(hs) : ""}
+      ${ind !== null && ind > 0 ? renderIndustryBar(ind) : ""}
     </div>
 
-    ${hs === 1 ? warningHtml() : ""}
+    ${hs !== null && hs < 20 ? warningHtml() : ""}
 
     ${e.summary ? `
-      <section class="entry-section" style="margin:22px 0; padding-top:10px; border-top:1px solid #e0e0e0;">
-        <h3 style="font-size:20px; font-weight:900; margin:0 0 12px 0;">Zusammenfassung</h3>
-        <div class="entry-text" style="white-space:normal;">
-          ${formatText(e.summary)}
-        </div>
+      <section style="margin:22px 0;">
+        <h3 style="font-size:20px; font-weight:900; margin:0 0 18px 0;">
+          Zusammenfassung
+        </h3>
+        ${formatText(e.summary)}
       </section>` : ""}
 
     ${e.mechanism ? `
-      <section class="entry-section" style="margin:22px 0; padding-top:10px; border-top:1px solid #e0e0e0;">
-        <h3 style="font-size:20px; font-weight:900; margin:0 0 12px 0;">Wirkmechanismus</h3>
-        <div class="entry-text" style="white-space:normal;">
-          ${formatText(e.mechanism)}
-        </div>
+      <section style="margin:22px 0;">
+        <h3 style="font-size:20px; font-weight:900; margin:0 0 18px 0;">
+          Wirkmechanismus
+        </h3>
+        ${formatText(e.mechanism)}
       </section>` : ""}
 
     ${e.risk_groups ? `
-      <section class="entry-section" style="margin:22px 0; padding-top:10px; border-top:1px solid #e0e0e0;">
-        <h3 style="font-size:20px; font-weight:900; margin:0 0 12px 0;">Risiken & Risikogruppen</h3>
-        <ul style="margin:0 0 0 18px; padding:0; line-height:1.65;">
-          ${JSON.parse(e.risk_groups).map(r => `<li style="margin:0 0 8px 0;">${escapeHtml(r)}</li>`).join("")}
+      <section style="margin:22px 0;">
+        <h3 style="font-size:20px; font-weight:900; margin:0 0 18px 0;">
+          Risiken & Risikogruppen
+        </h3>
+        <ul style="margin:0 0 0 22px; padding:0; line-height:1.7;">
+          ${JSON.parse(e.risk_groups).map(r => `
+            <li style="margin-bottom:10px;">${escapeHtml(r)}</li>
+          `).join("")}
         </ul>
       </section>` : ""}
   `;
