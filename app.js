@@ -7,81 +7,46 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.classList.add("christmas");
   }
 
-  // 🔗 Deep-Link direkt laden
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
   if (id) loadFullEntry(id, false);
 });
 
-// ░░░░░░░░░░░░░  KONFIGURATION
+// ░░░░░░░░░░░░░ KONFIGURATION
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-// ░░░░░░░░░░░░░  SUPABASE CLIENT
+// ░░░░░░░░░░░░░ SUPABASE CLIENT
 const supabase = {
   async select(query) {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`,
       },
     });
-    return await response.json();
+    return await r.json();
   },
 };
 
-// ░░░░░░░░░░░░░  KATEGORIEN LADEN
+// ░░░░░░░░░░░░░ KATEGORIEN
 fetch("categories.json")
   .then(r => r.json())
   .then(data => {
     const grid = document.querySelector(".category-grid");
     if (!grid) return;
-
     grid.innerHTML = "";
     data.categories.forEach(cat => {
-      const btn = document.createElement("button");
-      btn.textContent = cat.title;
-      btn.addEventListener("click", () => loadCategory(cat.title));
-      grid.appendChild(btn);
+      const b = document.createElement("button");
+      b.textContent = cat.title;
+      b.onclick = () => loadCategory(cat.title);
+      grid.appendChild(b);
     });
   });
 
-// ░░░░░░░░░░░░░  HEALTH SCORE
-function getHealthIcons(score) {
-  if (score === null || score === undefined) return "";
-  const label = `<div class="score-label">Gesundheits-Score</div>`;
-
-  if (score >= 80) return `<div class="score-block">${label}<div class="health-score-box health-3">💚💚💚</div></div>`;
-  if (score >= 60) return `<div class="score-block">${label}<div class="health-score-box health-2">💚💚</div></div>`;
-  if (score >= 40) return `<div class="score-block">${label}<div class="health-score-box health-1">💚</div></div>`;
-  if (score >= 20) return `<div class="score-block">${label}<div class="health-score-box health-mid">🧡🧡</div></div>`;
-  return `<div class="score-block">${label}<div class="health-score-box health-bad">⚠️❗⚠️</div></div>`;
-}
-
-// ░░░░░░░░░░░░░  INDUSTRIE SCORE
-function renderProcessBar(score) {
-  if (score === null || score === undefined) return "";
-  const s = Math.max(1, Math.min(10, Number(score)));
-  let color = "#2ecc71";
-  if (s >= 4 && s <= 6) color = "#f1c40f";
-  if (s >= 7) color = "#e74c3c";
-
-  return `
-    <div class="score-block">
-      <div class="score-label">Industrie-Verarbeitung</div>
-      <div class="process-wrapper">
-        <div class="process-bar-bg">
-          <div class="process-bar-fill" style="width:${s * 10}%; background:${color};"></div>
-        </div>
-        <div class="process-bar-label">${s}/10</div>
-      </div>
-    </div>
-  `;
-}
-
-// ░░░░░░░░░░░░░  HTML ESCAPE
-function escapeHtml(str) {
-  return String(str || "")
+// ░░░░░░░░░░░░░ UI HELFER
+function escapeHtml(s) {
+  return String(s || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -89,53 +54,158 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
-// ░░░░░░░░░░░░░  SUCHE (Live)
-const searchInput = document.getElementById("searchInput");
-if (searchInput) {
-  searchInput.addEventListener("input", async function () {
-    const raw = this.value.trim();
-    const results = document.getElementById("results");
-    if (!results) return;
-
-    if (raw.length < 2) {
-      results.innerHTML = "";
-      return;
-    }
-
-    results.innerHTML = "<p>Suche…</p>";
-
-    const q = encodeURIComponent(raw);
-    const query =
-      `entries?select=id,title,summary,score,processing_score` +
-      `&or=(title.ilike.%25${q}%25,summary.ilike.%25${q}%25,mechanism.ilike.%25${q}%25)`;
-
-    const data = await supabase.select(query);
-
-// 🔔 KEINE TREFFER
-if (!data || data.length === 0) {
-  results.innerHTML = `
-    <div class="no-results">
-      <strong>Keine Treffer gefunden</strong><br>
-      <span>Dieser Begriff ist (noch) nicht erfasst.</span>
-    </div>
-  `;
-  return;
+function getHealthIcons(score) {
+  if (score == null) return "";
+  if (score >= 80) return "💚💚💚";
+  if (score >= 60) return "💚💚";
+  if (score >= 40) return "💚";
+  if (score >= 20) return "🧡🧡";
+  return "⚠️❗⚠️";
 }
 
-// ✅ TREFFER
-results.innerHTML = data.map(entry => `
-  <div class="search-result" data-id="${entry.id}">
-    <div class="search-title">
-      ${escapeHtml(entry.title)}
-      ${getHealthIcons(entry.score)}
-      <span class="search-arrow">›</span>
-    </div>
-    ${renderProcessBar(entry.processing_score)}
-    <div class="search-one-line">${escapeHtml(entry.summary)}</div>
-    <div class="search-cta">Details ansehen</div>
-  </div>
-`).join("");
+function renderProcessBar(score) {
+  if (score == null) return "";
+  const s = Math.max(1, Math.min(10, Number(score)));
+  return `<div class="process-bar"><div style="width:${s * 10}%"></div></div>`;
+}
 
+// ░░░░░░░░░░░░░ SUCHE
+const searchInput = document.getElementById("searchInput");
+
+if (searchInput) {
+  // Live-Suche
+  searchInput.addEventListener("input", runSearch);
+
+  // Enter = Suche + Logging
+  searchInput.addEventListener("keydown", async e => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    await logSearch(searchInput.value);
+    runSearch();
+  });
+}
+
+async function runSearch() {
+  const qRaw = searchInput.value.trim();
+  const results = document.getElementById("results");
+  if (!results) return;
+
+  if (qRaw.length < 2) {
+    results.innerHTML = "";
+    return;
+  }
+
+  results.innerHTML = "<p>Suche…</p>";
+  const q = encodeURIComponent(qRaw);
+
+  const data = await supabase.select(
+    `entries?select=id,title,summary,score,processing_score&or=` +
+    `(title.ilike.%25${q}%25,summary.ilike.%25${q}%25,mechanism.ilike.%25${q}%25)`
+  );
+
+  if (!data || data.length === 0) {
+    results.innerHTML = `
+      <div class="no-results">
+        <strong>Keine Treffer gefunden</strong><br>
+        Dieser Begriff ist noch nicht erfasst.
+      </div>`;
+    return;
+  }
+
+  results.innerHTML = data.map(e => `
+    <div class="search-result" data-id="${e.id}">
+      <strong>${escapeHtml(e.title)}</strong>
+      <span>${getHealthIcons(e.score)}</span>
+      ${renderProcessBar(e.processing_score)}
+      <div>${escapeHtml(e.summary)}</div>
+    </div>
+  `).join("");
+
+  results.querySelectorAll(".search-result").forEach(el => {
+    el.onclick = () => loadFullEntry(el.dataset.id);
+  });
+}
+
+// ░░░░░░░░░░░░░ SUCHLOG
+async function logSearch(query) {
+  const q = query.trim();
+  if (q.length < 2) return;
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query: q,
+        page: location.pathname,
+        user_agent: navigator.userAgent,
+      }),
+    });
+  } catch (_) {}
+}
+
+// ░░░░░░░░░░░░░ KATEGORIE
+async function loadCategory(cat) {
+  const results = document.getElementById("results");
+  if (!results) return;
+
+  results.innerHTML = "<p>Lade…</p>";
+  const data = await supabase.select(
+    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
+  );
+
+  if (!data || data.length === 0) {
+    results.innerHTML = "<p>Keine Einträge.</p>";
+    return;
+  }
+
+  results.innerHTML = data.map(e => `
+    <div class="search-result" data-id="${e.id}">
+      <strong>${escapeHtml(e.title)}</strong>
+      <span>${getHealthIcons(e.score)}</span>
+      ${renderProcessBar(e.processing_score)}
+      <div>${escapeHtml(e.summary)}</div>
+    </div>
+  `).join("");
+
+  results.querySelectorAll(".search-result").forEach(el => {
+    el.onclick = () => loadFullEntry(el.dataset.id);
+  });
+}
+
+// ░░░░░░░░░░░░░ EINZELANSICHT
+async function loadFullEntry(id, push = true) {
+  if (push) history.pushState({ id }, "", `?id=${id}`);
+
+  const results = document.getElementById("results");
+  if (!results) return;
+
+  results.innerHTML = "<p>Lade Eintrag…</p>";
+  const data = await supabase.select(`entries?select=*&id=eq.${id}`);
+
+  if (!data || !data[0]) {
+    results.innerHTML = "<p>Eintrag nicht gefunden.</p>";
+    return;
+  }
+
+  const e = data[0];
+  results.innerHTML = `
+    <h2>${escapeHtml(e.title)}</h2>
+    <div>${getHealthIcons(e.score)}</div>
+    ${renderProcessBar(e.processing_score)}
+    <p>${escapeHtml(e.summary).replace(/\n/g, "<br>")}</p>
+  `;
+}
+
+// ░░░░░░░░░░░░░ NAVIGATION
+window.addEventListener("popstate", () => {
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) loadFullEntry(id, false);
+});
 
     results.querySelectorAll(".search-result").forEach(card => {
       card.addEventListener("click", () => loadFullEntry(card.dataset.id));
