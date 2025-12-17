@@ -607,3 +607,22 @@ body.christmas::before {
   z-index: 9999;
 }
 
+/* ===============================
+   🔧 REPARATUR: VOLLTEXT & ABSÄTZE
+   NICHT ENTFERNEN
+================================ */
+
+.entry-summary {
+  white-space: normal !important;
+}
+
+.entry-summary p {
+  display: block !important;
+  margin: 0 0 1.2em 0 !important;
+}
+
+/* Sicherheit: Listen im Volltext */
+.entry-summary ul,
+.entry-summary ol {
+  margin: 0 0 1.2em 1.2em;
+}
