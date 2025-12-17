@@ -168,7 +168,8 @@ async function loadCategory(cat) {
       <strong>${escapeHtml(e.title)}</strong>
       <span>${getHealthIcons(e.score)}</span>
       ${renderProcessBar(e.processing_score)}
-      <div>${escapeHtml(e.summary)}</div>
+      <div>${escapeHtml(e.summary).replace(/\n/g, "<br>")
+}</div>
     </div>
   `).join("");
 
