@@ -15,7 +15,9 @@ async function supa(query) {
   return r.json();
 }
 
-// ---------- KATEGORIEN ----------
+// ===============================
+// KATEGORIEN
+// ===============================
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
@@ -31,7 +33,9 @@ async function loadCategories() {
   });
 }
 
-// ---------- SUCHE ----------
+// ===============================
+// SUCHE
+// ===============================
 const input = document.getElementById("searchInput");
 const results = document.getElementById("results");
 
@@ -45,32 +49,35 @@ if (input) {
 
     const enc = encodeURIComponent(q);
     const data = await supa(
-      `entries?select=id,title,summary&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+      `entries?select=id,title,summary,score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
     );
 
-    results.innerHTML = data.map(e => `
-      <div class="search-result" data-id="${e.id}">
-        <strong>${e.title}</strong>
-        <div>${e.summary}</div>
-      </div>
-    `).join("");
-
-    document.querySelectorAll(".search-result").forEach(el => {
-      el.onclick = () => loadEntry(el.dataset.id);
-    });
+    renderList(data);
   });
 }
 
-// ---------- KATEGORIE ----------
+// ===============================
+// KATEGORIE
+// ===============================
 async function loadCategory(cat) {
   const data = await supa(
-    `entries?select=id,title,summary&category=eq.${encodeURIComponent(cat)}`
+    `entries?select=id,title,summary,score&category=eq.${encodeURIComponent(cat)}`
   );
 
+  renderList(data);
+}
+
+// ===============================
+// LISTENANSICHT (KURZ)
+// ===============================
+function renderList(data) {
   results.innerHTML = data.map(e => `
     <div class="search-result" data-id="${e.id}">
-      <strong>${e.title}</strong>
-      <div>${e.summary}</div>
+      <div class="entry-score">Score: ${e.score ?? "–"}</div>
+      <div class="entry-title">${e.title}</div>
+      <div class="entry-summary preview">
+        ${e.summary.replace(/\n/g, " ")}
+      </div>
     </div>
   `).join("");
 
@@ -79,17 +86,23 @@ async function loadCategory(cat) {
   });
 }
 
-// ---------- EINTRAG ----------
+// ===============================
+// DETAILANSICHT (VOLL)
+// ===============================
 async function loadEntry(id) {
   const data = await supa(`entries?select=*&id=eq.${id}`);
   const e = data[0];
+
   if (!e) {
     results.innerHTML = "Eintrag nicht gefunden";
     return;
   }
 
   results.innerHTML = `
-    <h2>${e.title}</h2>
-    <pre style="white-space:pre-wrap">${e.summary}</pre>
+    <h2 class="entry-title">${e.title}</h2>
+    <div class="entry-score detail">Score: ${e.score ?? "–"}</div>
+    <div class="entry-summary-full">
+      ${e.summary.replace(/\n/g, "<br><br>")}
+    </div>
   `;
 }
