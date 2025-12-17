@@ -719,3 +719,19 @@ html, body {
   border-left: 4px solid #c62828;
   padding-left: 16px;
 }
+/* === FIX: ALLE KURZANSICHTEN IMMER KLICKBAR === */
+.search-result {
+  position: relative;
+  cursor: pointer;
+}
+
+.search-result * {
+  pointer-events: none;   /* 🔥 DAS IST DER FIX */
+}
+
+/* Deutlich klickbar */
+.search-result:hover {
+  background: #f4f7f4;
+  transform: translateY(-1px);
+}
+
