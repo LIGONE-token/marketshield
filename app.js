@@ -1,8 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / 1:1 SUPABASE RENDER)
-   ✔ Absätze exakt wie in Supabase (white-space: pre-wrap)
-   ✔ Keine Umformatierung, kein Split, kein Replace
-   ✔ Kurzansicht ruhig, Detailansicht vollständig
+   MarketShield – app.js (FINAL / STABIL / SUPABASE-LOGISCH)
 ===================================================== */
 
 /* ================= INIT ================= */
@@ -28,7 +25,10 @@ const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
   });
   return r.json();
 }
@@ -45,7 +45,7 @@ function toNum(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-/* ================= SCORE LABEL STYLE (EINHEITLICH) ================= */
+/* ================= SCORE LABEL STYLE ================= */
 const SCORE_LABEL_STYLE = `
   font-size:13px;
   font-weight:700;
@@ -54,22 +54,27 @@ const SCORE_LABEL_STYLE = `
 `;
 
 /* ================= TEXT: 1:1 AUS SUPABASE =================
-   WICHTIG:
-   - KEIN Split
-   - KEIN Replace
-   - KEIN <p>-Bau
-   - Nur Anzeige mit white-space: pre-wrap
+   - unterstützt echte \n\n
+   - unterstützt gespeicherte \\n\\n
+   - KEINE inhaltliche Veränderung
 =========================================================== */
 function renderTextFromSupabase(text) {
   if (!text) return "";
+
+  let normalized = text
+    .replace(/\\n/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+
   return `
-    <pre style="
-      white-space:pre-wrap;
-      font-family:inherit;
-      font-size:16px;
-      line-height:1.8;
-      margin:0;
-    ">${escapeHtml(text)}</pre>
+    <div style="
+      white-space: pre-wrap;
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1.8;
+    ">
+      ${escapeHtml(normalized)}
+    </div>
   `;
 }
 
@@ -82,12 +87,12 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
-/* ================= INDUSTRIE (DETAIL – SCHMAL) ================= */
+/* ================= INDUSTRIE (DETAIL) ================= */
 function renderIndustry(score) {
-  const n0 = toNum(score);
-  if (!n0 || n0 <= 0) return "";
+  const n = toNum(score);
+  if (!n || n <= 0) return "";
 
-  const s = Math.max(1, Math.min(10, Math.round(n0)));
+  const s = Math.max(1, Math.min(10, Math.round(n)));
   let color = "#2e7d32";
   if (s >= 4) color = "#f9a825";
   if (s >= 7) color = "#c62828";
@@ -95,53 +100,93 @@ function renderIndustry(score) {
   const w = Math.round((s / 10) * 120);
 
   return `
-    <div style="margin-top:6px;">
-      <div style="width:120px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
-        <div style="width:${w}px;height:8px;background:${color};"></div>
+    <div style="margin-top:8px;">
+      <div style="
+        width:120px;
+        height:8px;
+        background:#e0e0e0;
+        border-radius:6px;
+        overflow:hidden;
+      ">
+        <div style="
+          width:${w}px;
+          height:8px;
+          background:${color};
+        "></div>
       </div>
     </div>
   `;
 }
 
-/* ================= INDUSTRIE (KURZ – RESPONSIV) ================= */
+/* ================= INDUSTRIE (KURZ) ================= */
 function renderIndustryCompact(score, barW, barH) {
-  const n0 = toNum(score);
-  if (!n0 || n0 <= 0) return "";
-  const s = Math.max(1, Math.min(10, Math.round(n0)));
+  const n = toNum(score);
+  if (!n || n <= 0) return "";
+
+  const s = Math.max(1, Math.min(10, Math.round(n)));
   const w = Math.round((s / 10) * barW);
 
   return `
-    <div style="margin-top:2px;">
-      <div style="width:${barW}px;height:${barH}px;background:#e0e0e0;border-radius:4px;overflow:hidden;">
-        <div style="width:${w}px;height:${barH}px;background:#777;"></div>
+    <div style="margin-top:6px;">
+      <div style="
+        width:${barW}px;
+        height:${barH}px;
+        background:#e0e0e0;
+        border-radius:4px;
+        overflow:hidden;
+      ">
+        <div style="
+          width:${w}px;
+          height:${barH}px;
+          background:#777;
+        "></div>
       </div>
     </div>
   `;
 }
 
-/* ================= SCORE-BLOCK (DETAIL)
-   LINKS: Herzen + Balken (Balken direkt unter Herzen)
-   RECHTS: Labels, exakt ausgerichtet
-=========================================================== */
+/* ================= SCORE BLOCK (DETAIL) ================= */
 function renderScoreBlock(score, processing) {
+  const showHealth = score > 0;
+  const showIndustry = processing > 0;
+  if (!showHealth && !showIndustry) return "";
+
   return `
-    <div style="display:grid;grid-template-columns:64px 1fr;column-gap:12px;margin:14px 0 18px 0;">
+    <div style="
+      display:grid;
+      grid-template-columns:64px 1fr;
+      column-gap:16px;
+      margin:16px 0 22px 0;
+      align-items:start;
+    ">
       <div>
-        <div style="font-size:18px;line-height:1.1;white-space:nowrap;">
-          ${renderHealth(score)}
-        </div>
-        ${renderIndustry(processing)}
+        ${showHealth ? `
+          <div style="font-size:18px;line-height:1.1;white-space:nowrap;">
+            ${renderHealth(score)}
+          </div>` : ""}
+        ${showIndustry ? renderIndustry(processing) : ""}
       </div>
-      <div>
-        <div style="${SCORE_LABEL_STYLE}; margin-bottom:6px;">Gesundheitsscore</div>
-        <div style="${SCORE_LABEL_STYLE}; opacity:.75;">Industrie Verarbeitungsgrad</div>
+
+      <div style="padding-left:6px;">
+        ${showHealth ? `
+          <div style="${SCORE_LABEL_STYLE}; margin-bottom:${showIndustry ? "10px" : "0"};">
+            Gesundheitsscore
+          </div>` : ""}
+        ${showIndustry ? `
+          <div style="${SCORE_LABEL_STYLE};">
+            Industrie Verarbeitungsgrad
+          </div>` : ""}
       </div>
     </div>
   `;
 }
 
-/* ================= SCORE-BLOCK (KURZ) ================= */
+/* ================= SCORE BLOCK (KURZ) ================= */
 function renderScoreBlockCompact(score, processing) {
+  const showHealth = score > 0;
+  const showIndustry = processing > 0;
+  if (!showHealth && !showIndustry) return "";
+
   const isMobile = window.innerWidth <= 600;
   const heartSize = isMobile ? 12 : 13;
   const colLeft   = isMobile ? 36 : 44;
@@ -150,16 +195,30 @@ function renderScoreBlockCompact(score, processing) {
   const barH      = isMobile ? 4  : 5;
 
   return `
-    <div style="display:grid;grid-template-columns:${colLeft}px 1fr;column-gap:${gap}px;margin-bottom:6px;">
+    <div style="
+      display:grid;
+      grid-template-columns:${colLeft}px 1fr;
+      column-gap:${gap}px;
+      margin-bottom:6px;
+      align-items:start;
+    ">
       <div>
-        <div style="font-size:${heartSize}px;line-height:1;white-space:nowrap;">
-          ${renderHealth(score)}
-        </div>
-        ${renderIndustryCompact(processing, barW, barH)}
+        ${showHealth ? `
+          <div style="font-size:${heartSize}px;line-height:1;white-space:nowrap;">
+            ${renderHealth(score)}
+          </div>` : ""}
+        ${showIndustry ? renderIndustryCompact(processing, barW, barH) : ""}
       </div>
+
       <div>
-        <div style="${SCORE_LABEL_STYLE}; margin-bottom:2px;">Gesundheitsscore</div>
-        <div style="${SCORE_LABEL_STYLE}; opacity:.7;">Industrie Verarbeitungsgrad</div>
+        ${showHealth ? `
+          <div style="${SCORE_LABEL_STYLE}; margin-bottom:${showIndustry ? "4px" : "0"};">
+            Gesundheitsscore
+          </div>` : ""}
+        ${showIndustry ? `
+          <div style="${SCORE_LABEL_STYLE}; opacity:.7;">
+            Industrie Verarbeitungsgrad
+          </div>` : ""}
       </div>
     </div>
   `;
@@ -169,6 +228,7 @@ function renderScoreBlockCompact(score, processing) {
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
+
   const data = await fetch("categories.json").then(r => r.json());
   grid.innerHTML = "";
   data.categories.forEach(c => {
@@ -187,6 +247,7 @@ if (input) {
   input.addEventListener("input", async () => {
     const q = input.value.trim();
     if (q.length < 2) { results.innerHTML = ""; return; }
+
     const enc = encodeURIComponent(q);
     const data = await supa(
       `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25,mechanism.ilike.%25${enc}%25)`
@@ -206,14 +267,24 @@ async function loadCategory(cat) {
 function renderList(data) {
   results.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}" style="padding:14px;border-bottom:1px solid #ddd;cursor:pointer;">
-      ${renderScoreBlockCompact(toNum(e.score) || 0, e.processing_score)}
+      ${renderScoreBlockCompact(toNum(e.score) || 0, toNum(e.processing_score) || 0)}
       <div style="font-size:20px;font-weight:800;margin:6px 0 4px 0;">
         ${escapeHtml(e.title)}
       </div>
-      <div style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;font-size:15px;line-height:1.4;color:#333;">
+      <div style="
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:1;
+        overflow:hidden;
+        font-size:15px;
+        line-height:1.4;
+        color:#333;
+      ">
         ${escapeHtml(e.summary || "").replace(/\s+/g, " ").trim()}
       </div>
-      <div style="margin-top:6px;color:#1e88e5;font-weight:700;">Öffnen →</div>
+      <div style="margin-top:6px;color:#1e88e5;font-weight:700;">
+        Öffnen →
+      </div>
     </div>
   `).join("");
 }
@@ -224,17 +295,24 @@ async function loadEntry(id) {
   const e = data[0];
   if (!e) { results.innerHTML = "Eintrag nicht gefunden"; return; }
 
-  const hs = toNum(e.score) || 0;
+  const score = toNum(e.score) || 0;
+  const processing = toNum(e.processing_score) || 0;
 
   results.innerHTML = `
     <h2 style="font-size:22px;font-weight:900;margin:6px 0 10px 0;">
       ${escapeHtml(e.title)}
     </h2>
 
-    ${renderScoreBlock(hs, e.processing_score)}
+    ${renderScoreBlock(score, processing)}
 
-    ${hs < 20 ? `
-      <div style="margin:16px 0;padding:14px;border:2px solid #c62828;background:#fff0f0;font-weight:900;">
+    ${score > 0 && score < 20 ? `
+      <div style="
+        margin:16px 0;
+        padding:14px;
+        border:2px solid #c62828;
+        background:#fff0f0;
+        font-weight:900;
+      ">
         ⚠️ DEUTLICHE WARNUNG
       </div>` : ""}
 
