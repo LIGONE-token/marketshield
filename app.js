@@ -58,7 +58,6 @@ function getHealthIcons(score) {
   return `<div class="score-block">${label}<div class="health-score-box health-bad">⚠️❗⚠️</div></div>`;
 }
 
-
 // ░░░░░░░░░░░░░  INDUSTRIE SCORE
 function renderProcessBar(score) {
   if (score === null || score === undefined) return "";
@@ -80,7 +79,6 @@ function renderProcessBar(score) {
   `;
 }
 
-
 // ░░░░░░░░░░░░░  HTML ESCAPE
 function escapeHtml(str) {
   return String(str || "")
@@ -91,53 +89,7 @@ function escapeHtml(str) {
     .replaceAll("'", "&#039;");
 }
 
-// ░░░░░░░░░░░░░  KOPIERFUNKTION
-function copyEntry(title, summary, url) {
-  const text = `${title}\n\n${summary}\n\nMehr Infos:\n${url}`;
-  navigator.clipboard.writeText(text)
-    .then(() => alert("✔ Eintrag wurde kopiert!"))
-    .catch(() => alert("❌ Kopieren fehlgeschlagen."));
-}
-
-// ░░░░░░░░░░░░░  SHARE-BUTTONS
-function renderShareButtons(entry) {
-  const pageUrl = window.location.href;
-  const shareText = `Interessanter Beitrag auf MarketShield:\n${entry.title}\n${pageUrl}`;
-
-  return `
-    <div class="share-box">
-      <h3 class="share-title">Teilen & Export</h3>
-      <div class="share-buttons">
-        <button class="share-btn" onclick="window.open('https://wa.me/?text=${encodeURIComponent(shareText)}','_blank')">📱 WhatsApp</button>
-        <button class="share-btn" onclick="window.open('https://t.me/share/url?url=${encodeURIComponent(pageUrl)}','_blank')">✈️ Telegram</button>
-        <button class="share-btn" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}','_blank')">📘 Facebook</button>
-        <button class="share-btn" onclick="window.open('https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}','_blank')">🐦 X</button>
-        <button class="share-btn" onclick="copyEntry('${entry.title.replace(/'/g,"\\'")}', \`${(entry.summary||"").replace(/`/g,"\\`")}\`, '${pageUrl}')">📋 Kopieren</button>
-        <button class="share-btn" onclick="window.print()">🖨 Drucken / PDF</button>
-      </div>
-    </div>
-  `;
-}
-
-// ░░░░░░░░░░░░░  DETAILS
-function renderList(title, arr) {
-  if (!arr || arr.length === 0) return "";
-  return `<h3>${title}</h3><ul>${arr.map(v => `<li>• ${escapeHtml(v)}</li>`).join("")}</ul>`;
-}
-
-function renderDetails(e) {
-  return `
-    ${e.mechanism ? `<h3>Was steckt dahinter?</h3><p>${escapeHtml(e.mechanism)}</p>` : ""}
-    ${renderList("Positive Effekte", e.effects_positive)}
-    ${renderList("Negative Effekte", e.effects_negative)}
-    ${renderList("Risikogruppen", e.risk_groups)}
-    ${renderList("Synergien", e.synergy)}
-    ${renderList("Natürliche Quellen", e.natural_sources)}
-    ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3><p>${escapeHtml(e.scientific_note)}</p>` : ""}
-  `;
-}
-
-// ░░░░░░░░░░░░░  SUCHE
+// ░░░░░░░░░░░░░  SUCHE (Live)
 const searchInput = document.getElementById("searchInput");
 if (searchInput) {
   searchInput.addEventListener("input", async function () {
@@ -175,6 +127,32 @@ if (searchInput) {
     results.querySelectorAll(".search-result").forEach(card => {
       card.addEventListener("click", () => loadFullEntry(card.dataset.id));
     });
+  });
+
+  // ░░░░░░░░░░░░░  SUCHANFRAGE SPEICHERN (nur bei Enter)
+  searchInput.addEventListener("keydown", async function (e) {
+    if (e.key !== "Enter") return;
+
+    const query = this.value.trim();
+    if (query.length < 2) return;
+
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: query,
+          page: location.pathname,
+          user_agent: navigator.userAgent
+        })
+      });
+    } catch (_) {
+      // bewusst leer – darf niemals die Suche beeinflussen
+    }
   });
 }
 
@@ -224,8 +202,6 @@ async function loadFullEntry(id, push = true) {
       ${getHealthIcons(e.score)}
       ${renderProcessBar(e.processing_score)}
       <div class="entry-summary">${escapeHtml(e.summary).replace(/\n/g,"<br>")}</div>
-      ${renderDetails(e)}
-      ${renderShareButtons(e)}
     </div>
   `;
 }
