@@ -569,3 +569,8 @@ body.christmas::before {
   line-height: 1.7;
   margin-top: 12px;
 }
+/* 🔒 ABSATZ-FIX – NICHT ENTFERNEN */
+.entry-summary p {
+  margin: 0 0 1em 0;
+  display: block;
+}
