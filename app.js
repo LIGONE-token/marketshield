@@ -189,6 +189,33 @@ async function loadFullEntry(id, push = true) {
     ` : ""}
 
     ${Array.isArray(e.effects_negative) && e.effects_negative.length ? `
+      <h3>Risiken</h3>
+      <ul>
+        ${e.effects_negative.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
+      </ul>
+    ` : ""}
+
+    ${Array.isArray(e.risk_groups) && e.risk_groups.length ? `
+      <h3>Risikogruppen</h3>
+      <ul>
+        ${e.risk_groups.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
+      </ul>
+    ` : ""}
+
+    ${e.scientific_note ? `
+      <h3>Wissenschaftlicher Hinweis</h3>
+      <p>${escapeHtml(e.scientific_note)}</p>
+    ` : ""}
+  </div>
+`;
+
+
+    ${e.mechanism ? `
+      <h3>Was steckt dahinter?</h3>
+      <p>${escapeHtml(e.mechanism)}</p>
+    ` : ""}
+
+    ${Array.isArray(e.effects_negative) && e.effects_negative.length ? `
       <h3>Risiken & mögliche Nebenwirkungen</h3>
       <ul>
         ${e.effects_negative.map(r => `<li>${escapeHtml(r)}</li>`).join("")}
