@@ -165,18 +165,50 @@ async function loadFullEntry(id, push = true) {
   const e = data[0];
 
   results.innerHTML = `
-    <div class="entry-card full-entry">
-      <h2>${escapeHtml(e.title)}</h2>
-      <div>${getHealthIcons(e.score)}</div>
-      ${renderProcessBar(e.processing_score)}
-      <div class="entry-summary">
-  ${
-    escapeHtml(e.summary)
-      .split(/\n\s*\n/)   // echte Absätze aus der DB
-      .map(p => `<p>${p.trim()}</p>`)
-      .join("")
-  }
-</div>
+  <div class="entry-card full-entry">
+    <h2>${escapeHtml(e.title)}</h2>
+
+    <div class="score-block">
+      ${getHealthIcons(e.score)}
+    </div>
+
+    ${renderProcessBar(e.processing_score)}
+
+    <div class="entry-summary">
+      ${
+        escapeHtml(e.summary)
+          .split(/\n\s*\n/)
+          .map(p => `<p>${p.trim()}</p>`)
+          .join("")
+      }
+    </div>
+
+    ${e.mechanism ? `
+      <h3>Was steckt dahinter?</h3>
+      <p>${escapeHtml(e.mechanism)}</p>
+    ` : ""}
+
+    ${Array.isArray(e.effects_negative) && e.effects_negative.length ? `
+      <h3>Risiken & mögliche Nebenwirkungen</h3>
+      <ul>
+        ${e.effects_negative.map(r => `<li>${escapeHtml(r)}</li>`).join("")}
+      </ul>
+    ` : ""}
+
+    ${Array.isArray(e.risk_groups) && e.risk_groups.length ? `
+      <h3>Besonders betroffen</h3>
+      <ul>
+        ${e.risk_groups.map(r => `<li>${escapeHtml(r)}</li>`).join("")}
+      </ul>
+    ` : ""}
+
+    ${e.scientific_note ? `
+      <h3>Wissenschaftlicher Hinweis</h3>
+      <p>${escapeHtml(e.scientific_note)}</p>
+    ` : ""}
+  </div>
+`;
+
 
 
     </div>
