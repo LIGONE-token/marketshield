@@ -9,11 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (id) loadFullEntry(id, false);
 });
 
-// ───────────────── CONFIG
+// ───── CONFIG
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-// ───────────────── SUPABASE CLIENT
+// ───── SUPABASE
 const supabase = {
   async select(query) {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
@@ -26,7 +26,7 @@ const supabase = {
   },
 };
 
-// ───────────────── HILFSFUNKTIONEN
+// ───── HILFSFUNKTIONEN
 function escapeHtml(s) {
   return String(s || "")
     .replaceAll("&", "&amp;")
@@ -34,6 +34,12 @@ function escapeHtml(s) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function truncate(text, max = 160) {
+  if (!text) return "";
+  const t = text.replace(/\s+/g, " ").trim();
+  return t.length > max ? t.slice(0, max) + "…" : t;
 }
 
 function getHealthIcons(score) {
@@ -51,7 +57,7 @@ function renderProcessBar(score) {
   return `<div class="process-bar"><div style="width:${s * 10}%"></div></div>`;
 }
 
-// ───────────────── KATEGORIEN
+// ───── KATEGORIEN
 fetch("categories.json")
   .then(r => r.json())
   .then(data => {
@@ -66,11 +72,9 @@ fetch("categories.json")
     });
   });
 
-// ───────────────── SUCHE
+// ───── SUCHE
 const searchInput = document.getElementById("searchInput");
-if (searchInput) {
-  searchInput.addEventListener("input", runSearch);
-}
+if (searchInput) searchInput.addEventListener("input", runSearch);
 
 async function runSearch() {
   const q = searchInput.value.trim();
@@ -83,24 +87,26 @@ async function runSearch() {
   }
 
   results.innerHTML = "<p>Suche…</p>";
-
   const enc = encodeURIComponent(q);
+
   const data = await supabase.select(
     `entries?select=id,title,summary,score,processing_score&or=` +
     `(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25,mechanism.ilike.%25${enc}%25)`
   );
 
   if (!data || data.length === 0) {
-    results.innerHTML = "<p>Keine Treffer gefunden.</p>";
+    results.innerHTML = "<p>Keine Treffer.</p>";
     return;
   }
 
   results.innerHTML = data.map(e => `
     <div class="search-result" data-id="${e.id}">
-      <strong>${escapeHtml(e.title)}</strong>
-      <span>${getHealthIcons(e.score)}</span>
+      <div class="title-row">
+        <strong>${escapeHtml(e.title)}</strong>
+        <span>${getHealthIcons(e.score)}</span>
+      </div>
       ${renderProcessBar(e.processing_score)}
-      <div>${escapeHtml(e.summary)}</div>
+      <div class="teaser">${escapeHtml(truncate(e.summary))}</div>
     </div>
   `).join("");
 
@@ -109,7 +115,7 @@ async function runSearch() {
   });
 }
 
-// ───────────────── KATEGORIE
+// ───── KATEGORIE
 async function loadCategory(cat) {
   const results = document.getElementById("results");
   if (!results) return;
@@ -127,10 +133,12 @@ async function loadCategory(cat) {
 
   results.innerHTML = data.map(e => `
     <div class="search-result" data-id="${e.id}">
-      <strong>${escapeHtml(e.title)}</strong>
-      <span>${getHealthIcons(e.score)}</span>
+      <div class="title-row">
+        <strong>${escapeHtml(e.title)}</strong>
+        <span>${getHealthIcons(e.score)}</span>
+      </div>
       ${renderProcessBar(e.processing_score)}
-      <div>${escapeHtml(e.summary)}</div>
+      <div class="teaser">${escapeHtml(truncate(e.summary))}</div>
     </div>
   `).join("");
 
@@ -139,7 +147,7 @@ async function loadCategory(cat) {
   });
 }
 
-// ───────────────── EINZELANSICHT (ABSÄTZE FIX)
+// ───── DETAILANSICHT
 async function loadFullEntry(id, push = true) {
   if (push) history.pushState({ id }, "", `?id=${id}`);
 
@@ -147,8 +155,8 @@ async function loadFullEntry(id, push = true) {
   if (!results) return;
 
   results.innerHTML = "<p>Lade Eintrag…</p>";
-
   const data = await supabase.select(`entries?select=*&id=eq.${id}`);
+
   if (!data || !data[0]) {
     results.innerHTML = "<p>Eintrag nicht gefunden.</p>";
     return;
@@ -168,7 +176,7 @@ async function loadFullEntry(id, push = true) {
   `;
 }
 
-// ───────────────── NAVIGATION
+// ───── NAVIGATION
 window.addEventListener("popstate", () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadFullEntry(id, false);
