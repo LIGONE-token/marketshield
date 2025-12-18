@@ -4,10 +4,8 @@
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  // Kategorien laden
   loadCategories();
 
-  // Deep-Link ?id=...
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
   if (id) loadEntry(id);
@@ -44,9 +42,19 @@ function escapeHtml(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
+
 function toNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
+}
+
+/* === Kurztext für Suchergebnisse === */
+function shortText(text, max = 160) {
+  if (!text) return "";
+  const clean = text.replace(/\s+/g, " ").trim();
+  return clean.length > max
+    ? clean.slice(0, max).replace(/\s+\S*$/, "") + " …"
+    : clean;
 }
 
 /* ================= SCORE LABEL STYLE ================= */
@@ -57,7 +65,7 @@ const SCORE_LABEL_STYLE = `
   color:#222;
 `;
 
-/* ================= TEXT: 1:1 AUS SUPABASE ================= */
+/* ================= TEXT (DETAIL) ================= */
 function renderTextFromSupabase(text) {
   if (!text) return "";
 
@@ -82,7 +90,7 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
-/* ================= INDUSTRIE (DETAIL) ================= */
+/* ================= INDUSTRIE SCORE ================= */
 function renderIndustry(score) {
   const n = toNum(score);
   if (!n || n <= 0) return "";
@@ -101,7 +109,7 @@ function renderIndustry(score) {
   `;
 }
 
-/* ================= SCORE BLOCK (DETAIL) ================= */
+/* ================= SCORE BLOCK ================= */
 function renderScoreBlock(score, processing) {
   const showHealth = score > 0;
   const showIndustry = processing > 0;
@@ -119,7 +127,9 @@ function renderScoreBlock(score, processing) {
       ${showIndustry ? `
       <div style="display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;margin-top:8px;">
         <div>${renderIndustry(processing)}</div>
-        <div style="${SCORE_LABEL_STYLE};opacity:.85;">Industrie Verarbeitungsgrad</div>
+        <div style="${SCORE_LABEL_STYLE};opacity:.85;">
+          Industrie Verarbeitungsgrad
+        </div>
       </div>` : ""}
 
     </div>
@@ -149,12 +159,16 @@ const results = document.getElementById("results");
 if (input) {
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) { results.innerHTML = ""; return; }
+    if (q.length < 2) {
+      results.innerHTML = "";
+      return;
+    }
 
     const enc = encodeURIComponent(q);
     const data = await supa(
       `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
     );
+
     renderList(data);
   });
 }
@@ -166,13 +180,16 @@ async function loadCategory(cat) {
   renderList(data);
 }
 
-/* ================= LISTE ================= */
+/* ================= LISTE (Snippet!) ================= */
 function renderList(data) {
   results.innerHTML = data.map(e => `
-    <div class="entry-card" data-id="${e.id}" style="padding:14px;border-bottom:1px solid #ddd;cursor:pointer;">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
-      <div style="font-size:15px;color:#333;">
-        ${escapeHtml(e.summary || "")}
+    <div class="entry-card" data-id="${e.id}"
+         style="padding:14px;border-bottom:1px solid #ddd;cursor:pointer;">
+      <div style="font-size:20px;font-weight:800;">
+        ${escapeHtml(e.title)}
+      </div>
+      <div style="font-size:15px;color:#333;line-height:1.4;">
+        ${escapeHtml(shortText(e.summary, 160))}
       </div>
     </div>
   `).join("");
