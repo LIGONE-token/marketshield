@@ -3,14 +3,15 @@
 ===================================================== */
 
 /* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
+document.addEventListener("click", (e) => {
+  const card = e.target.closest("[data-id]");
+  if (!card) return;
 
-  // Deep-Link ?id=...
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-  if (id) loadEntry(id);
+  const id = card.dataset.id;
+  history.pushState(null, "", "?id=" + id);
+  loadEntry(id);
 });
+
 
 /* ================= GLOBAL CLICK ================= */
 document.addEventListener("click", (e) => {
