@@ -147,13 +147,13 @@ function renderIndustryCompact(score, barW, barH) {
 
 /* ================= SCORE BLOCK (DETAIL) ================= */
 /* ================= SCORE BLOCK (DETAIL) ================= */
+/* ================= SCORE BLOCK (DETAIL) ================= */
 function renderScoreBlock(score, processing) {
   const showHealth = score > 0;
   const showIndustry = processing > 0;
 
   if (!showHealth && !showIndustry) return "";
 
-  // einheitliche Einrückung der Labels nach rechts
   const labelPad = "8px";
 
   return `
@@ -166,13 +166,17 @@ function renderScoreBlock(score, processing) {
           grid-template-columns:64px 1fr;
           column-gap:16px;
           align-items:center;
-          margin-bottom:${showIndustry ? "10px" : "0"};
+          margin-bottom:${showIndustry ? "8px" : "0"};
         ">
           <div style="font-size:18px;line-height:1;white-space:nowrap;">
             ${renderHealth(score)}
           </div>
 
-          <div style="padding-left:${labelPad}; font-size:13px; font-weight:700;">
+          <div style="
+            padding-left:${labelPad};
+            font-size:13px;
+            font-weight:700;
+          ">
             Gesundheitsscore
           </div>
         </div>
@@ -190,7 +194,12 @@ function renderScoreBlock(score, processing) {
             ${renderIndustry(processing)}
           </div>
 
-          <div style="padding-left:${labelPad}; font-size:13px; font-weight:700; opacity:.85;">
+          <div style="
+            padding-left:${labelPad};
+            font-size:13px;
+            font-weight:700;
+            opacity:.85;
+          ">
             Industrie Verarbeitungsgrad
           </div>
         </div>
@@ -199,6 +208,7 @@ function renderScoreBlock(score, processing) {
     </div>
   `;
 }
+
 
 
 
