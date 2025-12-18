@@ -186,7 +186,7 @@ function renderScoreBlock(score, processing) {
         <!-- ZEILE 2: BALKEN | TEXT -->
         <div style="
           display:grid;
-          grid-template-columns:64px 1fr;
+          grid-template-columns:140px 1fr;
           column-gap:16px;
           align-items:center;
         ">
