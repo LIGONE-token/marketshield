@@ -156,26 +156,47 @@ function renderScoreBlock(score, processing) {
       display:grid;
       grid-template-columns:64px 1fr;
       column-gap:16px;
-      margin:16px 0 22px 0;
-      align-items:start;
+      margin:18px 0 24px 0;
+      align-items:flex-start;
     ">
+      <!-- LINKS: ICONS / BALKEN -->
       <div>
         ${showHealth ? `
-          <div style="font-size:18px;line-height:1.1;white-space:nowrap;">
+          <div style="
+            font-size:18px;
+            line-height:1.1;
+            margin-bottom:${showIndustry ? "10px" : "0"};
+            white-space:nowrap;
+          ">
             ${renderHealth(score)}
-          </div>` : ""}
+          </div>
+        ` : ""}
+
         ${showIndustry ? renderIndustry(processing) : ""}
       </div>
 
+      <!-- RECHTS: TEXTE (SAUBER UNTEREINANDER) -->
       <div style="padding-left:6px;">
         ${showHealth ? `
-          <div style="${SCORE_LABEL_STYLE}; margin-bottom:${showIndustry ? "10px" : "0"};">
+          <div style="
+            font-size:13px;
+            font-weight:700;
+            line-height:1.2;
+            margin-bottom:${showIndustry ? "12px" : "0"};
+          ">
             Gesundheitsscore
-          </div>` : ""}
+          </div>
+        ` : ""}
+
         ${showIndustry ? `
-          <div style="${SCORE_LABEL_STYLE};">
+          <div style="
+            font-size:13px;
+            font-weight:700;
+            line-height:1.2;
+          ">
             Industrie Verarbeitungsgrad
-          </div>` : ""}
+          </div>
+        ` : ""}
       </div>
     </div>
   `;
