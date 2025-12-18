@@ -89,7 +89,7 @@ function renderHealth(score) {
 
 /* ================= INDUSTRIE (DETAIL) ================= */
 function renderIndustry(score) {
-  const n = toNum(score);
+  const n = Number(score);
   if (!n || n <= 0) return "";
 
   const s = Math.max(1, Math.min(10, Math.round(n)));
@@ -100,20 +100,19 @@ function renderIndustry(score) {
   const w = Math.round((s / 10) * 120);
 
   return `
-    <div style="margin-top:10px; margin-bottom:6px;">
+    <div style="
+      width:120px;
+      height:8px;
+      background:#e0e0e0;
+      border-radius:6px;
+      overflow:hidden;
+      margin-top:6px;
+    ">
       <div style="
-        width:120px;
+        width:${w}px;
         height:8px;
-        background:#e0e0e0;
-        border-radius:6px;
-        overflow:hidden;
-      ">
-        <div style="
-          width:${w}px;
-          height:8px;
-          background:${color};
-        "></div>
-      </div>
+        background:${color};
+      "></div>
     </div>
   `;
 }
