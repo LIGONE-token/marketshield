@@ -217,9 +217,10 @@ function renderScoreBlockCompact(score, processing) {
             Gesundheitsscore
           </div>` : ""}
         ${showIndustry ? `
-          <div style="${SCORE_LABEL_STYLE}; opacity:.7;">
-            Industrie Verarbeitungsgrad
-          </div>` : ""}
+          <div style="${SCORE_LABEL_STYLE}; margin-top:4px;">
+  Industrie Verarbeitungsgrad
+</div>
+` : ""}
       </div>
     </div>
   `;
