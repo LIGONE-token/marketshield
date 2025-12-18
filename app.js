@@ -89,7 +89,7 @@ function renderHealth(score) {
 
 /* ================= INDUSTRIE (DETAIL) ================= */
 function renderIndustry(score) {
-  const n = Number(score);
+  const n = toNum(score);
   if (!n || n <= 0) return "";
 
   const s = Math.max(1, Math.min(10, Math.round(n)));
@@ -106,7 +106,6 @@ function renderIndustry(score) {
       background:#e0e0e0;
       border-radius:6px;
       overflow:hidden;
-      margin-top:6px;
     ">
       <div style="
         width:${w}px;
@@ -116,6 +115,7 @@ function renderIndustry(score) {
     </div>
   `;
 }
+
 
 
 /* ================= INDUSTRIE (KURZ) ================= */
@@ -146,61 +146,61 @@ function renderIndustryCompact(score, barW, barH) {
 }
 
 /* ================= SCORE BLOCK (DETAIL) ================= */
+/* ================= SCORE BLOCK (DETAIL) ================= */
 function renderScoreBlock(score, processing) {
   const showHealth = score > 0;
   const showIndustry = processing > 0;
+
   if (!showHealth && !showIndustry) return "";
 
+  // einheitliche Einrückung der Labels nach rechts
+  const labelPad = "8px";
+
   return `
-    <div style="
-      display:grid;
-      grid-template-columns:64px 1fr;
-      column-gap:16px;
-      margin:18px 0 24px 0;
-      align-items:flex-start;
-    ">
-      <!-- LINKS: ICONS / BALKEN -->
-      <div>
-        ${showHealth ? `
-          <div style="
-            font-size:18px;
-            line-height:1.1;
-            margin-bottom:${showIndustry ? "10px" : "0"};
-            white-space:nowrap;
-          ">
+    <div style="margin:16px 0 22px 0;">
+
+      ${showHealth ? `
+        <!-- ZEILE 1: HERZEN | TEXT -->
+        <div style="
+          display:grid;
+          grid-template-columns:64px 1fr;
+          column-gap:16px;
+          align-items:center;
+          margin-bottom:${showIndustry ? "10px" : "0"};
+        ">
+          <div style="font-size:18px;line-height:1;white-space:nowrap;">
             ${renderHealth(score)}
           </div>
-        ` : ""}
 
-        ${showIndustry ? renderIndustry(processing) : ""}
-      </div>
-
-      <!-- RECHTS: TEXTE (SAUBER UNTEREINANDER) -->
-      <div style="padding-left:6px;">
-        ${showHealth ? `
-          <div style="
-            font-size:13px;
-            font-weight:700;
-            line-height:1.2;
-            margin-bottom:${showIndustry ? "12px" : "0"};
-          ">
+          <div style="padding-left:${labelPad}; font-size:13px; font-weight:700;">
             Gesundheitsscore
           </div>
-        ` : ""}
+        </div>
+      ` : ""}
 
-        ${showIndustry ? `
-          <div style="
-            font-size:13px;
-            font-weight:700;
-            line-height:1.2;
-          ">
+      ${showIndustry ? `
+        <!-- ZEILE 2: BALKEN | TEXT -->
+        <div style="
+          display:grid;
+          grid-template-columns:64px 1fr;
+          column-gap:16px;
+          align-items:center;
+        ">
+          <div>
+            ${renderIndustry(processing)}
+          </div>
+
+          <div style="padding-left:${labelPad}; font-size:13px; font-weight:700; opacity:.85;">
             Industrie Verarbeitungsgrad
           </div>
-        ` : ""}
-      </div>
+        </div>
+      ` : ""}
+
     </div>
   `;
 }
+
+
 
 /* ================= SCORE BLOCK (KURZ) ================= */
 function renderScoreBlockCompact(score, processing) {
