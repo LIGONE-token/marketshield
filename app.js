@@ -117,7 +117,7 @@ function renderScoreBlock(score, processing) {
       </div>` : ""}
 
       ${showIndustry ? `
-      <div style="display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;margin-top:8px;">
+      <div style="display:grid;grid-template-columns:85px 1fr;gap:16px;align-items:center;margin-top:8px;">
         <div>${renderIndustry(processing)}</div>
         <div style="${SCORE_LABEL_STYLE};opacity:.85;">Industrie Verarbeitungsgrad</div>
       </div>` : ""}
