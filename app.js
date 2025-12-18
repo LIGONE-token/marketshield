@@ -100,7 +100,7 @@ function renderIndustry(score) {
   const w = Math.round((s / 10) * 120);
 
   return `
-    <div style="margin-top:8px;">
+    <div style="margin-top:10px; margin-bottom:6px;">
       <div style="
         width:120px;
         height:8px;
@@ -117,6 +117,7 @@ function renderIndustry(score) {
     </div>
   `;
 }
+
 
 /* ================= INDUSTRIE (KURZ) ================= */
 function renderIndustryCompact(score, barW, barH) {
