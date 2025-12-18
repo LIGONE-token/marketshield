@@ -92,7 +92,7 @@ function renderIndustry(score) {
   if (s >= 4) color = "#f9a825";
   if (s >= 7) color = "#c62828";
 
-  const w = Math.round((s / 10) * 80);
+  const w = Math.round((s / 10) * 85);
 
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
