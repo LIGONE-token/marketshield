@@ -90,11 +90,11 @@ function renderIndustry(score) {
   if (s >= 4) color = "#f9a825";
   if (s >= 7) color = "#c62828";
 
-  const w = Math.round((s / 10) * 90);
+  const w = Math.round((s / 10) * 80);
 
   return `
     <div style="
-      width:90px;
+      width:80px;
       height:8px;
       background:#e0e0e0;
       border-radius:6px;
@@ -179,7 +179,7 @@ function renderScoreBlock(score, processing) {
         <!-- ZEILE 2: BALKEN | TEXT -->
         <div style="
           display:grid;
-          grid-template-columns:140px 1fr;
+          grid-template-columns:64px 1fr;
           column-gap:16px;
           align-items:center;
         ">
