@@ -163,7 +163,7 @@ function renderScoreBlock(score, processing) {
         <!-- ZEILE 1: HERZEN | TEXT -->
         <div style="
           display:grid;
-          grid-template-columns:64px 1fr;
+          grid-template-columns:140px 1fr;
           column-gap:16px;
           align-items:center;
           margin-bottom:${showIndustry ? "8px" : "0"};
