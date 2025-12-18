@@ -111,7 +111,7 @@ function renderScoreBlock(score, processing) {
     <div style="margin:16px 0 22px 0;">
 
       ${showHealth ? `
-      <div style="display:grid;grid-template-columns:64px 1fr;gap:16px;align-items:center;">
+      <div style="display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;">
         <div style="font-size:18px;">${renderHealth(score)}</div>
         <div style="${SCORE_LABEL_STYLE}">Gesundheitsscore</div>
       </div>` : ""}
