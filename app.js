@@ -12,14 +12,6 @@ document.addEventListener("click", (e) => {
   loadEntry(id);
 });
 
-
-/* ================= GLOBAL CLICK ================= */
-document.addEventListener("click", (e) => {
-  const card = e.target.closest("[data-id]");
-  if (!card) return;
-  loadEntry(card.dataset.id);
-});
-
 /* ================= SUPABASE ================= */
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
