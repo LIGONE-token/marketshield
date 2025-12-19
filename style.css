@@ -90,16 +90,20 @@ header h1 {
 }
 
 .ligone-links a,
-.bottom-link a {
+.bottom-link a,
+.footer-links a {
   color: #2e7d32;
   text-decoration: none;
   font-weight: 600;
 }
 
+
 .ligone-links a:hover,
-.bottom-link a:hover {
+.bottom-link a:hover,
+.footer-links a:hover {
   text-decoration: underline;
 }
+
 
 /* =====================================
    KATEGORIEN – REFERENZ (6 NEBENEINANDER)
