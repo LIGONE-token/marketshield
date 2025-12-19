@@ -734,4 +734,44 @@ html, body {
   background: #f4f7f4;
   transform: translateY(-1px);
 }
+/* ==============================
+   MarketShield – Tooltip Badge
+============================== */
 
+.ms-tooltip {
+  position: relative;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2c3e50;
+  background: #f1f3f5;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  outline: none;
+}
+
+.ms-tooltip .ms-tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  width: 260px;
+  background-color: #1f2933;
+  color: #ffffff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ms-tooltip:hover .ms-tooltip-text,
+.ms-tooltip:focus-within .ms-tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
