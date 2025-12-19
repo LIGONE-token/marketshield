@@ -1,52 +1,45 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Market Shield – Fair informiert</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Shield – Fair informiert</title>
 
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="icon.png" type="image/png">
 
-    <!-- Favicon -->
-    <link rel="icon" href="icon.png" type="image/png">
-    <meta property="og:title" content="Market Shield – Fair informiert">
-<meta property="og:description" content="Transparente Infos zu Inhaltsstoffen, Risiken und Verbraucherschutz.">
-<meta property="og:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
-<meta property="og:url" content="https://ligone-token.github.io/marketshield/">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
+  <meta property="og:title" content="Market Shield – Fair informiert">
+  <meta property="og:description" content="Transparente Infos zu Inhaltsstoffen, Risiken und Verbraucherschutz.">
+  <meta property="og:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
+  <meta property="og:url" content="https://ligone-token.github.io/marketshield/">
+  <meta property="og:type" content="website">
 
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
 </head>
 
 <body>
 
 <header>
-    <h1>Market Shield</h1>
-    <p class="subtitle">Fair informiert.</p>
+  <h1>Market Shield</h1>
+  <p class="subtitle">Fair informiert.</p>
 </header>
 
-<!-- SUCHFELD -->
 <div class="search-container">
-    <input id="searchInput" type="text" placeholder="Produkt, Stoff oder Kategorie eingeben ...">
+  <input id="searchInput" type="text" placeholder="Produkt, Stoff oder Kategorie eingeben ...">
 </div>
 
-<!-- 🔥 SUCHERGEBNISSE JETZT DIREKT HIER -->
 <div id="results"></div>
 
-<!-- INFO ÜBER DER KATEGORIENLISTE -->
 <div class="sub-info">
-    Über <strong>100.000 Einträge</strong> – fair informiert.
+  Über <strong>100.000 Einträge</strong> – fair informiert.
 </div>
 
-<!-- LINKS -->
 <div class="ligone-links">
-    <a href="https://ligone.ch" target="_blank">Offizielle Seite</a> |
-    <a href="https://ligone-token.github.io/ligone-web/" target="_blank">Token App</a>
+  <a href="https://ligone.ch" target="_blank">Offizielle Seite</a> |
+  <a href="https://ligone-token.github.io/ligone-web/" target="_blank">Token App</a>
 </div>
 
-<!-- KATEGORIEN-GRID -->
 <div class="category-grid"></div>
 
 <!-- FOOTER -->
@@ -56,37 +49,23 @@
   </div>
 
   <div class="footer-links">
+    <a href="about.html">Über MarketShield</a> ·
+    <a href="stiftung.html">Über die LIGONE Stiftung</a> ·
     <a href="impressum.html">Impressum</a> ·
-    <a href="datenschutz.html">Datenschutz</a> ·
-    <a href="stiftung.html">Über die LIGONE Stiftung</a>
+    <a href="datenschutz.html">Datenschutz</a>
   </div>
 </footer>
 
-<!-- SCRIPT -->
 <script src="app.js"></script>
 
-    <div id="footer"></div>
-
-<script>
-  fetch("footer.html")
-    .then(r => r.text())
-    .then(html => {
-      document.getElementById("footer").innerHTML = html;
-    });
-</script>
-
-<script src="app.js"></script>
-</body>
-</html>
-
-</body>
-<!-- Google tag (gtag.js) -->
+<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-QBT1L9DKNW"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-QBT1L9DKNW');
 </script>
+
+</body>
 </html>
