@@ -821,3 +821,6 @@ footer {
   color: #555;
   z-index: 50;
 }
+body {
+  padding-bottom: 60px;
+}
