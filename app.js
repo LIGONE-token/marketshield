@@ -185,12 +185,21 @@ function renderList(data) {
   results.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}"
          style="padding:14px;border-bottom:1px solid #ddd;cursor:pointer;">
-      <div style="font-size:20px;font-weight:800;">
-        ${escapeHtml(e.title)}
-      </div>
-      <div style="font-size:15px;color:#333;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary, 160))}
-      </div>
+     <div style="font-size:20px;font-weight:800;">
+  ${escapeHtml(e.title)}
+</div>
+
+${(e.score || e.processing_score) ? `
+  <div style="margin:6px 0 4px 0;display:flex;gap:10px;align-items:center;">
+    ${e.score ? `<span style="font-size:15px;">${renderHealth(e.score)}</span>` : ""}
+    ${e.processing_score ? renderIndustry(e.processing_score) : ""}
+  </div>
+` : ""}
+
+<div style="font-size:15px;color:#333;line-height:1.4;">
+  ${escapeHtml(shortText(e.summary, 160))}
+</div>
+
     </div>
   `).join("");
 }
