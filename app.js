@@ -73,7 +73,7 @@ function renderTextFromSupabase(text) {
   `;
 }
 
-/* ================= HEALTH SCORE ================= */
+/* ================= SCORE RENDER ================= */
 function renderHealth(score) {
   if (score >= 80) return "💚💚💚";
   if (score >= 60) return "💚💚";
@@ -82,7 +82,6 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
-/* ================= INDUSTRIE SCORE ================= */
 function renderIndustry(score) {
   const n = toNum(score);
   if (!n || n <= 0) return "";
@@ -101,7 +100,6 @@ function renderIndustry(score) {
   `;
 }
 
-/* ================= SCORE BLOCK ================= */
 function renderScoreBlock(score, processing) {
   const showHealth = score > 0;
   const showIndustry = processing > 0;
@@ -126,14 +124,32 @@ function renderScoreBlock(score, processing) {
   `;
 }
 
+/* ================= ARRAY NORMALIZER ================= */
+/* Wandelt JSON-Strings ODER echte Arrays zuverlässig um */
+function asArray(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 /* ================= EXTRA DETAILS (Wirkung → Risiken) ================= */
 function renderExtraDetails(e) {
   let out = "";
 
-  const list = (title, arr) =>
-    Array.isArray(arr) && arr.length
+  const list = (title, raw) => {
+    const arr = asArray(raw);
+    return arr.length
       ? `<h3>${title}</h3><ul>${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}</ul>`
       : "";
+  };
 
   if (e.mechanism)
     out += `<h3>Wirkmechanismus</h3><p>${escapeHtml(e.mechanism)}</p>`;
