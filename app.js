@@ -203,22 +203,9 @@ async function loadEntry(id) {
 
   history.replaceState(null, "", "?id=" + id);
 
- results.innerHTML = `
-  <h2>${escapeHtml(e.title)}</h2>
-
-  <div style="margin:4px 0 10px 0;">
-    <span class="ms-tooltip" tabindex="0" style="font-size:12px;opacity:.85;">
-      🛡️ Rechtssicher eingeordnet
-      <span class="ms-tooltip-text">
-        MarketShield informiert faktenbasiert und unabhängig.
-        Wirkungen werden transparent beschrieben, ohne Heilversprechen,
-        da Lebensmittel und Naturstoffe rechtlich nicht als Heilmittel
-        dargestellt werden dürfen.
-      </span>
-    </span>
-  </div>
-
-  ${renderScoreBlock(toNum(e.score), toNum(e.processing_score))}
-  ${e.summary ? `<h3>Zusammenfassung</h3>${renderTextFromSupabase(e.summary)}` : ""}
-`};
-
+  results.innerHTML = `
+    <h2>${escapeHtml(e.title)}</h2>
+    ${renderScoreBlock(toNum(e.score), toNum(e.processing_score))}
+    ${e.summary ? `<h3>Zusammenfassung</h3>${renderTextFromSupabase(e.summary)}` : ""}
+  `;
+}
