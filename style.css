@@ -828,3 +828,38 @@ footer {
 body {
   padding-bottom: 60px;
 }
+/* ==============================
+   Tooltip – Fix (sichtbar & stabil)
+============================== */
+
+.ms-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.ms-tooltip-text {
+  display: none;
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2933;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  width: 260px;
+  z-index: 99999; /* WICHTIG */
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+
+/* Hover Desktop */
+.ms-tooltip:hover .ms-tooltip-text {
+  display: block;
+}
+
+/* Touch / Keyboard */
+.ms-tooltip:focus-within .ms-tooltip-text {
+  display: block;
+}
