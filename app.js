@@ -220,5 +220,5 @@ async function loadEntry(id) {
 
   ${renderScoreBlock(toNum(e.score), toNum(e.processing_score))}
   ${e.summary ? `<h3>Zusammenfassung</h3>${renderTextFromSupabase(e.summary)}` : ""}
-`;
+`};
 
