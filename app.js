@@ -57,14 +57,6 @@ function shortText(text, max = 160) {
     : clean;
 }
 
-/* ================= SCORE LABEL STYLE ================= */
-const SCORE_LABEL_STYLE = `
-  font-size:13px;
-  font-weight:700;
-  line-height:1.2;
-  color:#222;
-`;
-
 /* ================= TEXT (DETAIL) ================= */
 function renderTextFromSupabase(text) {
   if (!text) return "";
@@ -117,23 +109,46 @@ function renderScoreBlock(score, processing) {
 
   return `
     <div style="margin:16px 0 22px 0;">
-
       ${showHealth ? `
-      <div style="display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;">
-        <div style="font-size:18px;">${renderHealth(score)}</div>
-        <div style="${SCORE_LABEL_STYLE}">Gesundheitsscore</div>
-      </div>` : ""}
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;">
+          <div style="font-size:18px;">${renderHealth(score)}</div>
+          <div style="font-size:13px;font-weight:700;">Gesundheitsscore</div>
+        </div>` : ""}
 
       ${showIndustry ? `
-      <div style="display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;margin-top:8px;">
-        <div>${renderIndustry(processing)}</div>
-        <div style="${SCORE_LABEL_STYLE};opacity:.85;">
-          Industrie Verarbeitungsgrad
-        </div>
-      </div>` : ""}
-
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;margin-top:8px;">
+          <div>${renderIndustry(processing)}</div>
+          <div style="font-size:13px;font-weight:700;opacity:.85;">
+            Industrie Verarbeitungsgrad
+          </div>
+        </div>` : ""}
     </div>
   `;
+}
+
+/* ================= EXTRA DETAILS (Wirkung → Risiken) ================= */
+function renderExtraDetails(e) {
+  let out = "";
+
+  const list = (title, arr) =>
+    Array.isArray(arr) && arr.length
+      ? `<h3>${title}</h3><ul>${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}</ul>`
+      : "";
+
+  if (e.mechanism)
+    out += `<h3>Wirkmechanismus</h3><p>${escapeHtml(e.mechanism)}</p>`;
+
+  out += list("Positive Effekte", e.effects_positive);
+  out += list("Synergien", e.synergy);
+
+  if (e.scientific_note)
+    out += `<h3>Wissenschaftliche Einordnung</h3><p>${escapeHtml(e.scientific_note)}</p>`;
+
+  out += list("Mögliche Nachteile", e.effects_negative);
+  out += list("Risikogruppen", e.risk_groups);
+  out += list("Natürliche Quellen", e.natural_sources);
+
+  return out;
 }
 
 /* ================= KATEGORIEN ================= */
@@ -180,26 +195,25 @@ async function loadCategory(cat) {
   renderList(data);
 }
 
-/* ================= LISTE (Snippet!) ================= */
+/* ================= LISTE (Kurzansicht mit Scores) ================= */
 function renderList(data) {
   results.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}"
          style="padding:14px;border-bottom:1px solid #ddd;cursor:pointer;">
-     <div style="font-size:20px;font-weight:800;">
-  ${escapeHtml(e.title)}
-</div>
+      <div style="font-size:20px;font-weight:800;">
+        ${escapeHtml(e.title)}
+      </div>
 
-${(e.score || e.processing_score) ? `
-  <div style="margin:6px 0 4px 0;display:flex;gap:10px;align-items:center;">
-    ${e.score ? `<span style="font-size:15px;">${renderHealth(e.score)}</span>` : ""}
-    ${e.processing_score ? renderIndustry(e.processing_score) : ""}
-  </div>
-` : ""}
+      ${(e.score || e.processing_score) ? `
+        <div style="margin:6px 0 4px 0;display:flex;gap:10px;align-items:center;">
+          ${e.score ? `<span style="font-size:15px;">${renderHealth(e.score)}</span>` : ""}
+          ${e.processing_score ? renderIndustry(e.processing_score) : ""}
+        </div>
+      ` : ""}
 
-<div style="font-size:15px;color:#333;line-height:1.4;">
-  ${escapeHtml(shortText(e.summary, 160))}
-</div>
-
+      <div style="font-size:15px;color:#333;line-height:1.4;">
+        ${escapeHtml(shortText(e.summary, 160))}
+      </div>
     </div>
   `).join("");
 }
@@ -214,7 +228,21 @@ async function loadEntry(id) {
 
   results.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
+
+    <div style="margin:4px 0 10px 0;">
+      <span class="ms-tooltip" tabindex="0" style="font-size:12px;opacity:.85;">
+        🛡️ Rechtssicher eingeordnet
+        <span class="ms-tooltip-text">
+          MarketShield informiert faktenbasiert und unabhängig.
+          Wirkungen werden transparent beschrieben, ohne Heilversprechen,
+          da Lebensmittel und Naturstoffe rechtlich nicht als Heilmittel
+          dargestellt werden dürfen.
+        </span>
+      </span>
+    </div>
+
     ${renderScoreBlock(toNum(e.score), toNum(e.processing_score))}
     ${e.summary ? `<h3>Zusammenfassung</h3>${renderTextFromSupabase(e.summary)}` : ""}
+    ${renderExtraDetails(e)}
   `;
 }
