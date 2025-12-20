@@ -300,3 +300,30 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 });
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("reportForm");
+  const modal = document.getElementById("reportModal");
+
+  if (!form || !modal) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const description = form.description.value.trim();
+    if (!description) return;
+
+    const { error } = await supabase
+      .from("reports")
+      .insert([{ description }]);
+
+    if (error) {
+      alert("Fehler beim Senden.");
+      console.error(error);
+      return;
+    }
+
+    alert("Danke! Deine Meldung wurde gespeichert.");
+    form.reset();
+    modal.style.display = "none";
+  });
+});
