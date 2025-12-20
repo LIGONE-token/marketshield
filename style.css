@@ -887,3 +887,40 @@ body {
 .ms-tooltip:focus-within .ms-tooltip-text {
   display: block;
 }
+/* ===============================
+   COMMUNITY REPORT BUTTON
+=============================== */
+
+.report-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 420px;
+  padding: 18px 22px;
+  background: #0b5ed7;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.report-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+}
+
+.report-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.report-sub {
+  font-size: 13px;
+  opacity: 0.9;
+}
