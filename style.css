@@ -940,3 +940,6 @@ body {
   position: relative;
   z-index: 50;
 }
+#reportModal {
+  display: none;   /* AUSGEBLENDET */
+}
