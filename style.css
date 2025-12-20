@@ -943,3 +943,9 @@ body {
 #reportModal {
   display: none;   /* AUSGEBLENDET */
 }
+/* FIX: Button immer klickbar */
+#reportBtn {
+  position: relative;
+  z-index: 10001;
+  pointer-events: auto;
+}
