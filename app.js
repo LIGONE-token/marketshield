@@ -280,3 +280,23 @@ async function loadEntry(id) {
     ${renderExtraDetails(e)}
   `;
 }
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("reportBtn");
+  const modal = document.getElementById("reportModal");
+  const close = document.getElementById("closeReportModal");
+
+  if (!btn || !modal) {
+    console.log("Report-Button oder Modal fehlt");
+    return;
+  }
+
+  btn.onclick = () => {
+    modal.style.display = "block";
+  };
+
+  if (close) {
+    close.onclick = () => {
+      modal.style.display = "none";
+    };
+  }
+});
