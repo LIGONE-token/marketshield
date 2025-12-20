@@ -234,6 +234,24 @@ function renderList(data) {
   `).join("");
 }
 
+/* ===============================
+   COMMUNITY REPORT BUTTON
+=============================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const reportBtn = document.getElementById("reportBtn");
+  if (!reportBtn) return;
+
+  reportBtn.addEventListener("click", () => {
+    // TEMPORÄR: Flow-Start
+    console.log("Community-Report gestartet");
+
+    // Platzhalter – gleich ersetzen wir das durch Modal oder Seite
+    window.location.hash = "report";
+  });
+});
+
+
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
   const data = await supa(`entries?select=*&id=eq.${id}`);
