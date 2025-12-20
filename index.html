@@ -75,31 +75,17 @@
 </script>
 
   <!-- REPORT MODAL -->
-<div id="reportModal" style="
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.5);
-  z-index:9999;
-">
-  <div style="
-    background:#fff;
-    max-width:420px;
-    margin:80px auto;
-    padding:20px;
-    border-radius:8px;
-  ">
-    <h2>Problem / Produkt melden</h2>
+<form id="reportForm">
+  <label>
+    Beschreibung:<br>
+    <textarea name="description" rows="4" style="width:100%;" required></textarea>
+  </label>
 
-    <label>
-      Beschreibung:<br>
-      <textarea rows="4" style="width:100%;"></textarea>
-    </label>
+  <br><br>
+  <button type="submit">Senden</button>
+  <button type="button" id="closeReportModal">Schließen</button>
+</form>
 
-    <br><br>
-    <button id="closeReportModal">Schließen</button>
-  </div>
-</div>
 
   
 </body>
