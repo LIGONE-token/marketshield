@@ -924,3 +924,19 @@ body {
   font-size: 13px;
   opacity: 0.9;
 }
+/* === COMMUNITY BUTTON FIX === */
+
+.community-report {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.report-btn {
+  background: #1fa365;     /* grün statt blau */
+  max-width: 320px;        /* kleiner */
+  padding: 14px 18px;
+  border-radius: 10px;
+  position: relative;
+  z-index: 50;
+}
