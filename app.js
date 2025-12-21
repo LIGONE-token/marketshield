@@ -3,6 +3,8 @@
 ===================================================== */
 
 /* ================= INIT ================= */
+let currentEntryId = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
 
@@ -35,6 +37,28 @@ async function supa(query) {
   return r.json();
 }
 
+async function supaPost(table, bodyObj) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(bodyObj)
+  });
+
+  if (!r.ok) {
+    let msg = `HTTP ${r.status}`;
+    try {
+      const err = await r.json();
+      msg = err.message || err.error || JSON.stringify(err);
+    } catch {}
+    throw new Error(msg);
+  }
+}
+
 /* ================= HELPERS ================= */
 function escapeHtml(s) {
   return String(s || "")
@@ -48,7 +72,6 @@ function toNum(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-/* === Kurztext für Suchergebnisse === */
 function shortText(text, max = 160) {
   if (!text) return "";
   const clean = text.replace(/\s+/g, " ").trim();
@@ -57,7 +80,7 @@ function shortText(text, max = 160) {
     : clean;
 }
 
-/* ================= TEXT (DETAIL) ================= */
+/* ================= DETAIL TEXT ================= */
 function renderTextFromSupabase(text) {
   if (!text) return "";
 
@@ -125,7 +148,6 @@ function renderScoreBlock(score, processing) {
 }
 
 /* ================= ARRAY NORMALIZER ================= */
-/* Wandelt JSON-Strings ODER echte Arrays zuverlässig um */
 function asArray(value) {
   if (!value) return [];
   if (Array.isArray(value)) return value;
@@ -140,7 +162,7 @@ function asArray(value) {
   return [];
 }
 
-/* ================= EXTRA DETAILS (Wirkung → Risiken) ================= */
+/* ================= EXTRA DETAILS ================= */
 function renderExtraDetails(e) {
   let out = "";
 
@@ -211,7 +233,7 @@ async function loadCategory(cat) {
   renderList(data);
 }
 
-/* ================= LISTE (Kurzansicht mit Scores) ================= */
+/* ================= LISTE ================= */
 function renderList(data) {
   results.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}"
@@ -234,175 +256,53 @@ function renderList(data) {
   `).join("");
 }
 
-/* ===============================
-   COMMUNITY REPORT (MODAL + SUPABASE REST)
-=============================== */
-
-// Merkt sich, welcher Eintrag gerade geöffnet ist (für URL/ID im Report)
-let currentEntryId = null;
-
-// PATCH: setze currentEntryId in loadEntry (siehe Schritt 3 unten)
-
-async function supaPost(table, bodyObj) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify(bodyObj)
-  });
-
-  // Supabase REST liefert bei Fehlern oft JSON-Body
-  if (!r.ok) {
-    let msg = `HTTP ${r.status}`;
-    try {
-      const err = await r.json();
-      msg = err.message || err.error || JSON.stringify(err);
-    } catch {}
-    throw new Error(msg);
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("reportBtn");
-  const modal = document.getElementById("reportModal");
-  const close = document.getElementById("closeReportModal");
-  const form = document.getElementById("reportForm");
-
-  if (!btn || !modal || !form) {
-    console.log("Report: Button/Modal/Form fehlt im HTML");
-    return;
-  }
-
-  // Öffnen
-  btn.addEventListener("click", () => {
-    // falls du per CSS mit .active arbeitest:
-    modal.classList.add("active");
-    // falls du (noch) per display arbeitest, nimm stattdessen:
-    // modal.style.display = "block";
-  });
-
-  // Schließen
-  if (close) {
-    close.addEventListener("click", () => {
-      modal.classList.remove("active");
-      // modal.style.display = "none";
-    });
-  }
-
-  // Submit -> Supabase
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const description = (form.description?.value || "").trim();
-    if (!description) {
-      alert("Bitte Beschreibung eingeben.");
-      return;
-    }
-
-    // URL des aktuellen Eintrags (oder Startseite, wenn keiner offen)
-    const entryUrl = `${location.origin}${location.pathname}${location.search || ""}`;
-
-    // Payload: du kannst später beliebig erweitern
-    const payload = {
-      description,
-      entry_id: currentEntryId,  // null wenn kein Eintrag geöffnet
-      entry_url: entryUrl,
-      source: "community",
-      status: "new"
-    };
-
-    try {
-      await supaPost("reports", payload);
-      alert("Danke! Deine Meldung wurde gespeichert.");
-      form.reset();
-      modal.classList.remove("active");
-      // modal.style.display = "none";
-    } catch (err) {
-      console.error(err);
-      alert("Fehler beim Senden: " + (err?.message || err));
-    }
-  });
-});
-
-
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
   const data = await supa(`entries?select=*&id=eq.${id}`);
   const e = data[0];
   if (!e) return;
 
-   currentEntryId = id;
-   
+  currentEntryId = id;
   history.replaceState(null, "", "?id=" + id);
 
   results.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-
-    <div style="margin:4px 0 10px 0;">
-      <span class="ms-tooltip" tabindex="0" style="font-size:12px;opacity:.85;">
-        🛡️ Rechtssicher eingeordnet
-        <span class="ms-tooltip-text">
-          MarketShield informiert faktenbasiert und unabhängig.
-          Wirkungen werden transparent beschrieben, ohne Heilversprechen,
-          da Lebensmittel und Naturstoffe rechtlich nicht als Heilmittel
-          dargestellt werden dürfen.
-        </span>
-      </span>
-    </div>
-
     ${renderScoreBlock(toNum(e.score), toNum(e.processing_score))}
     ${e.summary ? `<h3>Zusammenfassung</h3>${renderTextFromSupabase(e.summary)}` : ""}
     ${renderExtraDetails(e)}
   `;
 }
+
+/* ================= COMMUNITY REPORT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("reportBtn");
   const modal = document.getElementById("reportModal");
   const close = document.getElementById("closeReportModal");
-
-  if (!btn || !modal) {
-    console.log("Report-Button oder Modal fehlt");
-    return;
-  }
-
-  btn.onclick = () => {
-    modal.style.display = "block";
-  };
-
-  if (close) {
-    close.onclick = () => {
-      modal.style.display = "none";
-    };
-  }
-});
-document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("reportForm");
-  const modal = document.getElementById("reportModal");
 
-  if (!form || !modal) return;
+  if (!btn || !modal || !form) return;
 
-  form.addEventListener("submit", async (e) => {
+  btn.onclick = () => modal.classList.add("active");
+  if (close) close.onclick = () => modal.classList.remove("active");
+
+  form.onsubmit = async (e) => {
     e.preventDefault();
 
     const description = form.description.value.trim();
     if (!description) return;
 
-    const { error } = await supabase
-      .from("reports")
-      .insert([{ description }]);
+    const entryUrl = `${location.origin}${location.pathname}${location.search || ""}`;
 
-    if (error) {
-      alert("Fehler beim Senden.");
-      console.error(error);
-      return;
-    }
+    await supaPost("reports", {
+      description,
+      entry_id: currentEntryId,
+      entry_url: entryUrl,
+      source: "community",
+      status: "new"
+    });
 
-    alert("Danke! Deine Meldung wurde gespeichert.");
     form.reset();
-    modal.style.display = "none";
-  });
+    modal.classList.remove("active");
+    alert("Danke! Deine Meldung wurde gespeichert.");
+  };
 });
