@@ -234,20 +234,24 @@ async function loadEntry(id) {
   currentEntryId = id;
 
   results.innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
+  <h2>${escapeHtml(e.title)}</h2>
 
-    ${renderScoreBlock(e.score, e.processing_score, 14)}
+  ${renderScoreBlock(e.score, e.processing_score, 14)}
 
-    ${e.summary ? `
-      <h3>Zusammenfassung</h3>
-      <div style="white-space:pre-wrap;line-height:1.6;">
-  ${normalizeText(e.summary)}
-</div>
+  ${renderTextBlock("Zusammenfassung", e.summary)}
+  ${renderTextBlock("Wirkmechanismus", e.mechanism)}
+  ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
 
-    ` : ""}
+  ${renderJsonList("Positive Effekte", e.effects_positive)}
+  ${renderJsonList("Negative Effekte", e.effects_negative)}
+  ${renderJsonList("Risikogruppen", e.risk_groups)}
+  ${renderJsonList("Synergien / Wechselwirkungen", e.synergy)}
+  ${renderJsonList("Natürliche Quellen", e.natural_sources)}
+  ${renderJsonList("Tags", e.tags)}
 
-    <div id="entryActions"></div>
-  `;
+  <div id="entryActions"></div>
+`;
+
 
   renderEntryActions(e.title);
   updateBackHome();
