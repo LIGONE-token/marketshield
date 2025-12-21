@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL)
+   MarketShield – app.js (STABIL / KORRIGIERT)
 ===================================================== */
 
 let currentEntryId = null;
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initBackHome();
 });
 
-/* ================= GLOBAL CLICK (Navigation) ================= */
+/* ================= GLOBAL CLICK ================= */
 document.addEventListener("click", (e) => {
   const card = e.target.closest(".entry-card");
   if (!card) return;
@@ -45,41 +45,25 @@ function escapeHtml(s = "") {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function toNum(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-}
-
-/* ================= SHARE ================= */
-function renderShareButtons(title) {
-  const box = document.getElementById("shareBox");
-  if (!box) return;
-
-  const url = encodeURIComponent(location.href);
-  const text = encodeURIComponent(title + " – MarketShield");
-
-  box.innerHTML = `
-    <div class="share-box">
-      <a href="https://wa.me/?text=${text}%20${url}" target="_blank">WhatsApp</a>
-      <a href="https://t.me/share/url?url=${url}&text=${text}" target="_blank">Telegram</a>
-      <a href="https://twitter.com/intent/tweet?url=${url}&text=${text}" target="_blank">X</a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=${url}" target="_blank">Facebook</a>
-    </div>
-  `;
+function shortText(text, max = 160) {
+  if (!text) return "";
+  return text.length > max ? text.slice(0, max) + " …" : text;
 }
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
-  if (score >= 80) return "💚💚💚";
-  if (score >= 60) return "💚💚";
-  if (score >= 40) return "💚";
-  if (score >= 20) return "🧡";
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n >= 80) return "💚💚💚";
+  if (n >= 60) return "💚💚";
+  if (n >= 40) return "💚";
+  if (n >= 20) return "🧡";
   return "⚠️❗⚠️";
 }
 
 function renderIndustry(score) {
-  const n = toNum(score);
-  if (!n || n <= 0) return "";
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
   const w = Math.round((n / 10) * 80);
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
@@ -134,9 +118,20 @@ async function loadCategory(cat) {
 function renderList(data) {
   results.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
-      <div>${renderHealth(e.score || 0)} ${renderIndustry(e.processing_score || 0)}</div>
-      <div>${escapeHtml(e.summary || "")}</div>
+      <div style="font-size:20px;font-weight:800;">
+        ${escapeHtml(e.title)}
+      </div>
+
+      ${(Number(e.score) > 0 || Number(e.processing_score) > 0) ? `
+        <div style="margin:6px 0;">
+          ${renderHealth(e.score)}
+          ${renderIndustry(e.processing_score)}
+        </div>
+      ` : ""}
+
+      <div style="font-size:15px;line-height:1.4;">
+        ${escapeHtml(shortText(e.summary, 160))}
+      </div>
     </div>
   `).join("");
 }
@@ -151,14 +146,47 @@ async function loadEntry(id) {
 
   results.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-    <div id="shareBox"></div>
-    ${renderHealth(e.score || 0)}
-    ${renderIndustry(e.processing_score || 0)}
-    <p>${escapeHtml(e.summary || "")}</p>
+
+    ${(Number(e.score) > 0 || Number(e.processing_score) > 0) ? `
+      <div style="margin:12px 0;">
+        ${renderHealth(e.score)}
+        ${renderIndustry(e.processing_score)}
+      </div>
+    ` : ""}
+
+    ${e.summary ? `
+      <h3>Zusammenfassung</h3>
+      <div style="white-space:pre-wrap;line-height:1.6;">
+        ${escapeHtml(e.summary)}
+      </div>
+    ` : ""}
+
+    <div id="entryActions"></div>
   `;
 
-  renderShareButtons(e.title);
+  renderEntryActions(e.title);
   updateBackHome();
+}
+
+/* ================= SHARE / ACTIONS ================= */
+function renderEntryActions(title) {
+  const box = document.getElementById("entryActions");
+  if (!box) return;
+
+  const url = location.href;
+  const encUrl = encodeURIComponent(url);
+  const encTitle = encodeURIComponent(title + " – MarketShield");
+
+  box.innerHTML = `
+    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button onclick="window.print()">🖨️ Drucken</button>
+      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+    </div>
+  `;
 }
 
 /* ================= REPORT ================= */
@@ -175,7 +203,6 @@ function initReport() {
 
   form.onsubmit = async (e) => {
     e.preventDefault();
-
     const description = form.description.value.trim();
     if (!description) return alert("Bitte Beschreibung eingeben.");
 
@@ -188,8 +215,9 @@ function initReport() {
       },
       body: JSON.stringify({
         description,
-        entry_id: currentEntryId,
-        entry_url: location.href
+        source: "community",
+        status: "new",
+        entry_id: currentEntryId || null
       })
     });
 
