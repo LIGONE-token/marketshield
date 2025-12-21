@@ -1017,3 +1017,33 @@ body {
   display: flex;
   gap: 10px;
 }
+/* ===== REPORT MODAL – OBEN FIXIERT ===== */
+
+#reportModal {
+  display: none;                 /* Standard: unsichtbar */
+  position: fixed;               /* NICHT im Seitenfluss */
+  top: 0;                        /* OBEN */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99999;
+
+  /* KEIN Centering! */
+  align-items: flex-start;       /* <<<<<< WICHTIG */
+  justify-content: center;
+
+  padding-top: 90px;             /* Abstand unter Header */
+}
+
+#reportModal.active {
+  display: flex;
+}
+
+#reportModal .report-modal-box {
+  background: #fff;
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 8px;
+}
