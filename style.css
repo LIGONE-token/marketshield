@@ -983,3 +983,37 @@ body {
   display: flex;
   gap: 10px;
 }
+/* ===== REPORT MODAL – FINAL ===== */
+
+.report-modal {
+  display: none;                 /* <-- DAS blendet es auf der Startseite AUS */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.report-modal.active {
+  display: flex;                 /* <-- NUR nach Klick sichtbar */
+}
+
+.report-modal-box {
+  background: #fff;
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 8px;
+}
+
+.report-modal textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
