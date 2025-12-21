@@ -317,24 +317,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-
-
-    const description = form.description.value.trim();
-    if (!description) return;
-
-    const entryUrl = `${location.origin}${location.pathname}${location.search || ""}`;
-
-    await supaPost("reports", {
-      description,
-      entry_id: currentEntryId,
-      entry_url: entryUrl,
-      source: "community",
-      status: "new"
-    });
-
-    form.reset();
-    modal.classList.remove("active");
-    alert("Danke! Deine Meldung wurde gespeichert.");
-  };
-});
