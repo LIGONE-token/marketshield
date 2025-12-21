@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / RESTORE SCORES)
+   MarketShield – app.js (STABIL / KORRIGIERT)
 ===================================================== */
 
 let currentEntryId = null;
@@ -42,7 +42,12 @@ async function supa(query) {
 
 /* ================= HELPERS ================= */
 function escapeHtml(s = "") {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function shortText(text, max = 160) {
+  if (!text) return "";
+  return text.length > max ? text.slice(0, max) + " …" : text;
 }
 
 /* ================= SCORES ================= */
@@ -67,37 +72,43 @@ function renderIndustry(score) {
   `;
 }
 
-/* ================= SCORE BLOCK (WIE VORHER) ================= */
-function renderScoreBlock(score, processing) {
+/* ================= SCORE BLOCK (EXAKT AUSGERICHTET) ================= */
+/* Ziel: Beschreibungen starten IMMER exakt gleich, Score & Text sind nah, nichts gequetscht */
+function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
+
   if (!h && !i) return "";
+
+  // 80px Balkenbreite + 10px Abstand = feste Textkante (wie sauber eingestellter Zustand)
+  const colW = 90;
+
+  const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
+
+  // Abstand zwischen Health-Zeile und Industry-Zeile (nicht gequetscht, aber kompakt)
+  const rowGap = 6;
+
+  // Abstand zwischen Score-Spalte und Text (nicht zu weit weg!)
+  const colGap = 8;
 
   return `
     <div style="margin:12px 0;">
-
       ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;align-items:center;margin-bottom:6px;">
-          <div>${h}</div>
-          <div style="font-size:13px;opacity:0.85;">
-            Gesundheitsscore
-          </div>
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;margin-bottom:${i ? rowGap : 0}px;">
+          <div style="white-space:nowrap;">${h}</div>
+          <div style="${labelStyle}">Gesundheitsscore</div>
         </div>
       ` : ""}
 
       ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;align-items:center;">
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;">
           <div>${i}</div>
-          <div style="font-size:13px;opacity:0.85;">
-            Industrie-Verarbeitungsgrad
-          </div>
+          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
         </div>
       ` : ""}
-
     </div>
   `;
 }
-
 
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
@@ -115,7 +126,7 @@ async function loadCategories() {
   });
 }
 
-/* ================= SUCHE / LISTE ================= */
+/* ================= SUCHE ================= */
 const input = document.getElementById("searchInput");
 const results = document.getElementById("results");
 
@@ -149,10 +160,10 @@ function renderList(data) {
         ${escapeHtml(e.title)}
       </div>
 
-      ${renderScoreBlock(e.score, e.processing_score)}
+      ${renderScoreBlock(e.score, e.processing_score, 13)}
 
       <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml((e.summary || "").split("\n")[0])}
+        ${escapeHtml(shortText(e.summary, 160))}
       </div>
     </div>
   `).join("");
@@ -169,12 +180,12 @@ async function loadEntry(id) {
   results.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
 
-    ${renderScoreBlock(e.score, e.processing_score)}
+    ${renderScoreBlock(e.score, e.processing_score, 14)}
 
     ${e.summary ? `
       <h3>Zusammenfassung</h3>
       <div style="white-space:pre-wrap;line-height:1.6;">
-        ${e.summary}
+        ${escapeHtml(e.summary)}
       </div>
     ` : ""}
 
@@ -185,6 +196,81 @@ async function loadEntry(id) {
   updateBackHome();
 }
 
-/* ================= ACTIONS / REPORT / BACK ================= */
-/* unverändert – bewusst weggelassen, bleibt wie bei dir */
+/* ================= SHARE / ACTIONS ================= */
+function renderEntryActions(title) {
+  const box = document.getElementById("entryActions");
+  if (!box) return;
 
+  const url = location.href;
+  const encUrl = encodeURIComponent(url);
+  const encTitle = encodeURIComponent(title + " – MarketShield");
+
+  box.innerHTML = `
+    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button onclick="window.print()">🖨️ Drucken</button>
+      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+    </div>
+  `;
+}
+
+/* ================= REPORT ================= */
+function initReport() {
+  const btn = document.getElementById("reportBtn");
+  const modal = document.getElementById("reportModal");
+  const close = document.getElementById("closeReportModal");
+  const form = document.getElementById("reportForm");
+
+  if (!btn || !modal || !form) return;
+
+  btn.onclick = () => modal.classList.add("active");
+  close.onclick = () => modal.classList.remove("active");
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const description = form.description.value.trim();
+    if (!description) return alert("Bitte Beschreibung eingeben.");
+
+    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        description,
+        source: "community",
+        status: "new",
+        entry_id: currentEntryId || null
+      })
+    });
+
+    form.reset();
+    modal.classList.remove("active");
+    alert("Meldung gesendet. Danke!");
+  };
+}
+
+/* ================= BACK HOME ================= */
+function initBackHome() {
+  const back = document.getElementById("backHome");
+  if (!back) return;
+
+  back.onclick = () => {
+    history.pushState(null, "", location.pathname);
+    results.innerHTML = "";
+    updateBackHome();
+  };
+
+  window.addEventListener("popstate", updateBackHome);
+}
+
+function updateBackHome() {
+  const back = document.getElementById("backHome");
+  if (!back) return;
+  back.style.display = location.search.includes("id=") ? "block" : "none";
+}
