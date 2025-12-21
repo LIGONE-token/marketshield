@@ -41,6 +41,26 @@ async function supa(query) {
 }
 
 /* ================= HELPERS ================= */
+async function saveSearchQuery(query) {
+  if (!query || query.length < 2) return;
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: query.trim()
+      })
+    });
+  } catch (e) {
+    // bewusst leer – Suche darf niemals blockieren
+  }
+}
+
 function escapeHtml(s = "") {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
