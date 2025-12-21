@@ -83,6 +83,27 @@ function renderJsonList(title, data) {
     </ul>
   `;
 }
+async function saveSearchQuery(query) {
+  if (!query || query.length < 2) return;
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: query.trim()
+        // status = 'pending' kommt aus der DB
+        // created_at = now() kommt aus der DB
+      })
+    });
+  } catch (e) {
+    // absichtlich leer – Suche darf niemals blockieren
+  }
+}
 
 
 /* ================= SCORES ================= */
