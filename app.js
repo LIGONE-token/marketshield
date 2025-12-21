@@ -273,7 +273,7 @@ async function loadEntry(id) {
   `;
 }
 
-/* ================= COMMUNITY REPORT ================= */
+/* ================= COMMUNITY REPORT (STABIL) ================= */
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("reportBtn");
   const modal = document.getElementById("reportModal");
@@ -282,41 +282,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!btn || !modal || !form) return;
 
-  // Modal öffnen
-  btn.onclick = () => modal.classList.add("active");
+  btn.addEventListener("click", () => {
+    modal.classList.add("active");
+  });
 
-  // Modal schließen
-  if (close) close.onclick = () => modal.classList.remove("active");
+  if (close) {
+    close.addEventListener("click", () => {
+      modal.classList.remove("active");
+    });
+  }
 
-  // Formular absenden
-  form.onsubmit = async (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const description = form.description.value.trim();
     if (!description) return;
 
-    const entryUrl =
-      `${location.origin}${location.pathname}${location.search || ""}`;
-
     try {
       await supaPost("reports", {
         description,
         entry_id: currentEntryId,
-        entry_url: entryUrl,
+        entry_url: location.href,
         source: "community",
         status: "new"
       });
 
-      // ✅ Erfolg
       form.reset();
       modal.classList.remove("active");
       alert("Meldung gesendet. Danke!");
 
     } catch (err) {
-      console.error("REPORT ERROR:", err);
-      alert("Leider gab es ein Problem beim Senden. Bitte später erneut versuchen.");
+      console.error(err);
+      alert("Senden derzeit nicht möglich.");
     }
-  };
+  });
 });
 
 
