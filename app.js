@@ -235,19 +235,96 @@ function renderList(data) {
 }
 
 /* ===============================
-   COMMUNITY REPORT BUTTON
+   COMMUNITY REPORT (MODAL + SUPABASE REST)
 =============================== */
 
+// Merkt sich, welcher Eintrag gerade geöffnet ist (für URL/ID im Report)
+let currentEntryId = null;
+
+// PATCH: setze currentEntryId in loadEntry (siehe Schritt 3 unten)
+
+async function supaPost(table, bodyObj) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(bodyObj)
+  });
+
+  // Supabase REST liefert bei Fehlern oft JSON-Body
+  if (!r.ok) {
+    let msg = `HTTP ${r.status}`;
+    try {
+      const err = await r.json();
+      msg = err.message || err.error || JSON.stringify(err);
+    } catch {}
+    throw new Error(msg);
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-  const reportBtn = document.getElementById("reportBtn");
-  if (!reportBtn) return;
+  const btn = document.getElementById("reportBtn");
+  const modal = document.getElementById("reportModal");
+  const close = document.getElementById("closeReportModal");
+  const form = document.getElementById("reportForm");
 
-  reportBtn.addEventListener("click", () => {
-    // TEMPORÄR: Flow-Start
-    console.log("Community-Report gestartet");
+  if (!btn || !modal || !form) {
+    console.log("Report: Button/Modal/Form fehlt im HTML");
+    return;
+  }
 
-    // Platzhalter – gleich ersetzen wir das durch Modal oder Seite
-    window.location.hash = "report";
+  // Öffnen
+  btn.addEventListener("click", () => {
+    // falls du per CSS mit .active arbeitest:
+    modal.classList.add("active");
+    // falls du (noch) per display arbeitest, nimm stattdessen:
+    // modal.style.display = "block";
+  });
+
+  // Schließen
+  if (close) {
+    close.addEventListener("click", () => {
+      modal.classList.remove("active");
+      // modal.style.display = "none";
+    });
+  }
+
+  // Submit -> Supabase
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const description = (form.description?.value || "").trim();
+    if (!description) {
+      alert("Bitte Beschreibung eingeben.");
+      return;
+    }
+
+    // URL des aktuellen Eintrags (oder Startseite, wenn keiner offen)
+    const entryUrl = `${location.origin}${location.pathname}${location.search || ""}`;
+
+    // Payload: du kannst später beliebig erweitern
+    const payload = {
+      description,
+      entry_id: currentEntryId,  // null wenn kein Eintrag geöffnet
+      entry_url: entryUrl,
+      source: "community",
+      status: "new"
+    };
+
+    try {
+      await supaPost("reports", payload);
+      alert("Danke! Deine Meldung wurde gespeichert.");
+      form.reset();
+      modal.classList.remove("active");
+      // modal.style.display = "none";
+    } catch (err) {
+      console.error(err);
+      alert("Fehler beim Senden: " + (err?.message || err));
+    }
   });
 });
 
