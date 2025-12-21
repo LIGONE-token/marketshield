@@ -335,6 +335,8 @@ async function loadEntry(id) {
   const e = data[0];
   if (!e) return;
 
+   currentEntryId = id;
+   
   history.replaceState(null, "", "?id=" + id);
 
   results.innerHTML = `
