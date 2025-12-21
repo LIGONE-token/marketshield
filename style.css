@@ -1100,3 +1100,13 @@ body {
   width: 90%;
   border-radius: 10px;
 }
+.back-home {
+  margin: 12px auto;
+  max-width: 720px;
+  cursor: pointer;
+  color: #2e7d32;
+  font-weight: 600;
+}
+.back-home:hover {
+  text-decoration: underline;
+}
