@@ -185,8 +185,9 @@ async function loadEntry(id) {
     ${e.summary ? `
       <h3>Zusammenfassung</h3>
       <div style="white-space:pre-wrap;line-height:1.6;">
-        ${e.summary}
-      </div>
+  ${normalizeText(e.summary)}
+</div>
+
     ` : ""}
 
     <div id="entryActions"></div>
