@@ -44,7 +44,7 @@ async function supaPost(table, bodyObj) {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${SUPABASE_KEY}`,
       "Content-Type": "application/json",
-      "Accept": "application/json"
+      Prefer: "return=minimal"
     },
     body: JSON.stringify(bodyObj)
   });
@@ -57,9 +57,8 @@ async function supaPost(table, bodyObj) {
     } catch {}
     throw new Error(msg);
   }
-
-  return true;
 }
+
 
 
 /* ================= HELPERS ================= */
