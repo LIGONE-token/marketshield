@@ -1110,3 +1110,102 @@ body {
 .back-home:hover {
   text-decoration: underline;
 }
+/* =====================================================
+   BASIS – nichts blockiert Klicks
+===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   COMMUNITY REPORT BUTTON
+===================================================== */
+
+.community-report {
+  position: relative;
+  z-index: 10;           /* immer über Content */
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.report-btn {
+  background: #e8f5e9;
+  border: 2px solid #2e7d32;
+  color: #2e7d32;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.report-btn:hover {
+  background: #dff0e3;
+}
+
+/* =====================================================
+   REPORT MODAL – EINZIGE, SAUBERE VERSION
+===================================================== */
+
+#reportModal {
+  display: none;                 /* 🔑 extrem wichtig */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9999;
+}
+
+#reportModal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-modal-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 420px;
+  width: 90%;
+}
+
+/* =====================================================
+   ZURÜCK ZUR STARTSEITE
+===================================================== */
+
+.back-home {
+  display: none;
+  margin: 12px auto;
+  max-width: 720px;
+  cursor: pointer;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.back-home:hover {
+  text-decoration: underline;
+}
+
+/* =====================================================
+   SUCHERGEBNISSE / LISTEN
+   KEINE pointer-events-Manipulation!
+===================================================== */
+
+.entry-card {
+  cursor: pointer;
+}
+
+.entry-card * {
+  pointer-events: none;   /* Text klickt nicht, Karte schon */
+}
+
+/* =====================================================
+   TABELLEN / VERGLEICHE / LINKS
+===================================================== */
+
+table, button, a, input, select {
+  pointer-events: auto;   /* Sicherheit */
+}
