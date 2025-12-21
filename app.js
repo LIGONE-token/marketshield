@@ -331,3 +331,24 @@ async function loadEntry(id) {
     }
   });
 })();
+/* ================= ZURÜCK ZUR STARTSEITE ================= */
+(function () {
+  const back = document.getElementById("backHome");
+  if (!back) return;
+
+  // sichtbar, wenn ein Eintrag geöffnet ist
+  function updateBack() {
+    back.style.display = location.search.includes("id=")
+      ? "block"
+      : "none";
+  }
+
+  back.addEventListener("click", () => {
+    history.pushState(null, "", location.pathname);
+    document.getElementById("results").innerHTML = "";
+    updateBack();
+  });
+
+  window.addEventListener("popstate", updateBack);
+  updateBack();
+})();
