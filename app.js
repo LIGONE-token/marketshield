@@ -282,37 +282,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!btn || !modal || !form) return;
 
+  // Modal öffnen
   btn.onclick = () => modal.classList.add("active");
+
+  // Modal schließen
   if (close) close.onclick = () => modal.classList.remove("active");
 
+  // Formular absenden
   form.onsubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const description = form.description.value.trim();
-  if (!description) return;
+    const description = form.description.value.trim();
+    if (!description) return;
 
-  const entryUrl =
-    `${location.origin}${location.pathname}${location.search || ""}`;
+    const entryUrl =
+      `${location.origin}${location.pathname}${location.search || ""}`;
 
-  try {
-    await supaPost("reports", {
-      description,
-      entry_id: currentEntryId,
-      entry_url: entryUrl,
-      source: "community",
-      status: "new"
-    });
+    try {
+      await supaPost("reports", {
+        description,
+        entry_id: currentEntryId,
+        entry_url: entryUrl,
+        source: "community",
+        status: "new"
+      });
 
-    // ✅ ERFOLG – Nutzerfreundlich
-    form.reset();
-    modal.classList.remove("active");
-    alert("Meldung gesendet. Danke!");
+      // ✅ Erfolg
+      form.reset();
+      modal.classList.remove("active");
+      alert("Meldung gesendet. Danke!");
 
-  } catch (err) {
-    console.error("REPORT ERROR:", err);
-    alert("Leider gab es ein Problem beim Senden. Bitte später erneut versuchen.");
-  }
-};
+    } catch (err) {
+      console.error("REPORT ERROR:", err);
+      alert("Leider gab es ein Problem beim Senden. Bitte später erneut versuchen.");
+    }
+  };
+});
 
 
 
