@@ -286,7 +286,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (close) close.onclick = () => modal.classList.remove("active");
 
   form.onsubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  alert("Submit läuft");
+
 
     const description = form.description.value.trim();
     if (!description) return;
