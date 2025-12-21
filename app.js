@@ -202,6 +202,24 @@ if (input) {
   });
 }
 
+input.addEventListener("keydown", async (e) => {
+  if (e.key !== "Enter") return;
+
+  const q = input.value.trim();
+  if (q.length < 2) return;
+
+  // ✅ Suchanfrage speichern
+  saveSearchQuery(q);
+
+  // ✅ Suche ausführen (identisch zur Input-Suche)
+  const enc = encodeURIComponent(q);
+  const data = await supa(
+    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+  );
+  renderList(data);
+});
+
+
 async function loadCategory(cat) {
   const data = await supa(
     `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
