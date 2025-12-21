@@ -49,6 +49,14 @@ function shortText(text, max = 160) {
   if (!text) return "";
   return text.length > max ? text.slice(0, max) + " …" : text;
 }
+function normalizeText(text) {
+  if (!text) return "";
+  return String(text)
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\n");
+}
+
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
