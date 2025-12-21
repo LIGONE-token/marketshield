@@ -287,7 +287,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.onsubmit = async (e) => {
   e.preventDefault();
-  alert("Submit läuft");
+
+  const description = form.description.value.trim();
+  if (!description) return;
+
+  const entryUrl =
+    `${location.origin}${location.pathname}${location.search || ""}`;
+
+  try {
+    await supaPost("reports", {
+      description,
+      entry_id: currentEntryId,
+      entry_url: entryUrl,
+      source: "community",
+      status: "new"
+    });
+
+    // ✅ ERFOLG – Nutzerfreundlich
+    form.reset();
+    modal.classList.remove("active");
+    alert("Meldung gesendet. Danke!");
+
+  } catch (err) {
+    console.error("REPORT ERROR:", err);
+    alert("Leider gab es ein Problem beim Senden. Bitte später erneut versuchen.");
+  }
+};
+
 
 
     const description = form.description.value.trim();
