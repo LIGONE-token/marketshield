@@ -1047,3 +1047,26 @@ body {
   width: 90%;
   border-radius: 8px;
 }
+/* ===== REPORT MODAL – KLICK-FIX ===== */
+
+/* Modal ist standardmäßig KOMPLETT weg */
+#reportModal {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* Nur wenn aktiv, darf es klicken */
+#reportModal.active {
+  display: flex !important;
+  pointer-events: auto !important;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+}
+
+/* Button immer klickbar */
+#reportBtn {
+  position: relative;
+  z-index: 1;
+}
