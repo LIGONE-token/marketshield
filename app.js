@@ -71,31 +71,33 @@ function renderIndustry(score) {
 function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
-
   if (!h && !i) return "";
 
   return `
     <div style="margin:12px 0;">
+
       ${h ? `
-        <div>
-          ${h}
-          <span style="margin-left:90px;font-size:13px;opacity:0.85;">
+        <div style="display:grid;grid-template-columns:90px 1fr;align-items:center;margin-bottom:6px;">
+          <div>${h}</div>
+          <div style="font-size:13px;opacity:0.85;">
             Gesundheitsscore
-          </span>
+          </div>
         </div>
       ` : ""}
 
       ${i ? `
-        <div style="margin-top:8px;">
-          ${i}
-          <span style="margin-left:90px;font-size:13px;opacity:0.85;">
+        <div style="display:grid;grid-template-columns:90px 1fr;align-items:center;">
+          <div>${i}</div>
+          <div style="font-size:13px;opacity:0.85;">
             Industrie-Verarbeitungsgrad
-          </span>
+          </div>
         </div>
       ` : ""}
+
     </div>
   `;
 }
+
 
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
