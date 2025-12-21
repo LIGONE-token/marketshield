@@ -56,6 +56,33 @@ function normalizeText(text) {
     .replace(/\\n/g, "\n")
     .replace(/\\r/g, "\n");
 }
+function renderTextBlock(title, text) {
+  if (!text) return "";
+  return `
+    <h3>${title}</h3>
+    <div style="white-space:pre-wrap;line-height:1.6;">
+      ${normalizeText(text)}
+    </div>
+  `;
+}
+
+function renderJsonList(title, data) {
+  if (!data) return "";
+  let arr;
+  try {
+    arr = Array.isArray(data) ? data : JSON.parse(data);
+  } catch {
+    return "";
+  }
+  if (!arr.length) return "";
+
+  return `
+    <h3>${title}</h3>
+    <ul style="line-height:1.6;padding-left:18px;">
+      ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
+    </ul>
+  `;
+}
 
 
 /* ================= SCORES ================= */
