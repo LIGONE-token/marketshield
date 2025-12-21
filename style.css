@@ -1070,3 +1070,33 @@ body {
   position: relative;
   z-index: 1;
 }
+/* Report Button darf NIE blockiert werden */
+.community-report {
+  position: relative;
+  z-index: 10;
+}
+
+/* Modal standardmäßig unsichtbar */
+.report-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+}
+
+/* Modal sichtbar */
+.report-modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal-Box */
+.report-modal-box {
+  background: #fff;
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 10px;
+}
