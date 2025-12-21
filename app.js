@@ -274,4 +274,60 @@ async function loadEntry(id) {
     ${renderExtraDetails(e)}
   `;
 }
+/* ================= COMMUNITY REPORT – FINAL STABIL ================= */
+(function () {
+  const btn = document.getElementById("reportBtn");
+  const modal = document.getElementById("reportModal");
+  const close = document.getElementById("closeReportModal");
+  const form = document.getElementById("reportForm");
 
+  if (!btn || !modal || !form) {
+    console.warn("Report-UI nicht vollständig vorhanden");
+    return;
+  }
+
+  btn.addEventListener("click", () => {
+    modal.classList.add("active");
+  });
+
+  if (close) {
+    close.addEventListener("click", () => {
+      modal.classList.remove("active");
+    });
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const description = form.description.value.trim();
+    if (!description) {
+      alert("Bitte eine Beschreibung eingeben.");
+      return;
+    }
+
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          description,
+          entry_id: currentEntryId || null,
+          entry_url: location.href
+        })
+      });
+
+      form.reset();
+      modal.classList.remove("active");
+      alert("Meldung gesendet. Danke!");
+
+    } catch (err) {
+      console.error("REPORT SEND ERROR:", err);
+      alert("Senden derzeit nicht möglich.");
+    }
+  });
+})();
