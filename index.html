@@ -74,17 +74,27 @@
   gtag('config', 'G-QBT1L9DKNW');
 </script>
 
-  <!-- REPORT MODAL -->
-<form id="reportForm">
-  <label>
-    Beschreibung:<br>
-    <textarea name="description" rows="4" style="width:100%;" required></textarea>
-  </label>
+ <!-- REPORT MODAL -->
+<div id="reportModal" class="report-modal">
+  <div class="report-modal-box">
 
-  <br><br>
-  <button type="submit">Senden</button>
-  <button type="button" id="closeReportModal">Schließen</button>
-</form>
+    <h2>Problem / Produkt melden</h2>
+
+    <form id="reportForm">
+      <label>
+        Beschreibung:<br>
+        <textarea name="description" rows="4" required></textarea>
+      </label>
+
+      <div class="actions">
+        <button type="submit">Senden</button>
+        <button type="button" id="closeReportModal">Schließen</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
 
 
   
