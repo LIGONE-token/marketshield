@@ -1367,3 +1367,4 @@ table, button, a, input, select {
 #shareBox {
   pointer-events: none;
 }
+#reportBtn { pointer-events:auto; z-index:9999; }
