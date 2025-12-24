@@ -1335,3 +1335,14 @@ table, button, a, input, select {
 #results {
   overflow: visible;
 }
+/* Rechtlicher Hinweis – dezent, aber sichtbar */
+.ms-legal {
+  font-size: 12px;
+  color: #666;
+  margin: 6px 0 14px 0;
+}
+
+.ms-legal::before {
+  content: "ℹ️ ";
+  opacity: 0.7;
+}
