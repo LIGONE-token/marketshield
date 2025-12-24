@@ -262,6 +262,51 @@ function renderList(data) {
     </div>
   `).join("");
 }
+/* ================= MARKDOWN TABLE FIX ================= */
+function renderMarkdownTables(text) {
+  if (!text) return "";
+
+  const lines = text.split("\n");
+  let html = "";
+  let inTable = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    // Tabellenkopf erkennen
+    if (line.includes("|") && lines[i + 1]?.match(/^-{3,}/)) {
+      inTable = true;
+      const headers = line.split("|").map(s => s.trim()).filter(Boolean);
+
+      html += `<div class="ms-table">`;
+      html += `<div class="ms-row ms-head">`;
+      headers.forEach(h => html += `<div>${h}</div>`);
+      html += `</div>`;
+      i++; // Trennlinie überspringen
+      continue;
+    }
+
+    // Tabellenzeilen
+    if (inTable && line.includes("|")) {
+      const cells = line.split("|").map(s => s.trim()).filter(Boolean);
+      html += `<div class="ms-row">`;
+      cells.forEach(c => html += `<div>${c}</div>`);
+      html += `</div>`;
+      continue;
+    }
+
+    // Tabellenende
+    if (inTable && !line.includes("|")) {
+      html += `</div>`;
+      inTable = false;
+    }
+
+    if (line) html += `<p>${line}</p>`;
+  }
+
+  if (inTable) html += `</div>`;
+  return html;
+}
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
