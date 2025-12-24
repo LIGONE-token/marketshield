@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / KORREKT)
+   MarketShield – app.js (FINAL / STABIL / KORRIGIERT)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -75,7 +75,7 @@ function renderHealth(score) {
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
-  if (n >= 20) return "💛"; // gelb
+  if (n >= 20) return "💛";
   return "⚠️❗⚠️";
 }
 
@@ -85,20 +85,17 @@ function renderIndustry(score) {
 
   const w = Math.round((n / 10) * 80);
 
-  // 🔴 Farb-Logik nach Höhe des Verarbeitungsgrads
-  let color = "#2e7d32";        // grün (niedrig)
-  if (n >= 7) color = "#c62828"; // rot (hoch)
+  let color = "#2e7d32";          // grün
+  if (n >= 7) color = "#c62828";  // rot (hoch)
   else if (n >= 4) color = "#f9a825"; // gelb (mittel)
 
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
       <div style="width:${w}px;height:8px;background:${color};"></div>
-    </div>
-  `;
+    </div>`;
 }
 
-
-/* ================= SCORE BLOCK (EXAKT) ================= */
+/* ================= SCORE BLOCK ================= */
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
@@ -125,14 +122,36 @@ function renderScoreBlock(score, processing, size = 13) {
 /* ================= RECHTLICHER TOOLTIP ================= */
 function renderLegalTooltip() {
   return `
-    <div style="margin-top:10px;">
-      <span style="position:relative;font-size:11px;color:#777;text-decoration:underline;cursor:help;"
-        onmouseenter="this.lastElementChild.style.display='block'"
-        onmouseleave="this.lastElementChild.style.display='none'">
-        Rechtliche Info
-        <span style="display:none;position:absolute;left:0;bottom:130%;width:260px;
-          background:#222;color:#fff;padding:10px;border-radius:6px;
-          font-size:11px;line-height:1.4;z-index:999;">
+    <div style="margin:6px 0 16px 0;">
+      <span
+        style="
+          position:relative;
+          font-size:12px;
+          color:#666;
+          cursor:help;
+          display:inline-block;
+        "
+        onmouseenter="this.querySelector('.legal-tip').style.display='block'"
+        onmouseleave="this.querySelector('.legal-tip').style.display='none'"
+      >
+        ℹ️ <span style="text-decoration:underline;">Rechtlicher Hinweis</span>
+        <span
+          class="legal-tip"
+          style="
+            display:none;
+            position:absolute;
+            left:0;
+            bottom:130%;
+            width:260px;
+            background:#222;
+            color:#fff;
+            padding:10px;
+            border-radius:6px;
+            font-size:11px;
+            line-height:1.4;
+            z-index:9999;
+          "
+        >
           MarketShield stellt Informationen und Bewertungen zur Orientierung bereit.
           Diese dürfen aus rechtlichen Gründen nicht als absolute Wahrheit oder
           individuelle Beratung verstanden werden.
@@ -172,7 +191,7 @@ function loadCategories() {
 function renderList(items) {
   if (!items || !items.length) { clearResults(); return; }
   setResultsHTML(items.map(e => `
-    <div class="entry-card" data-id="${e.id}">
+    <div class="entry-card" data-id="${e.id}" style="overflow:visible;">
       <strong>${escapeHtml(e.title)}</strong><br>
       <small>${escapeHtml(e.category||"")}${e.category&&e.type?" · ":""}${escapeHtml(formatType(e.type))}</small>
       ${renderScoreBlock(e.score, e.processing_score, 12)}
@@ -212,11 +231,13 @@ async function loadEntry(id) {
     <div style="opacity:.7;margin-bottom:12px;">
       ${escapeHtml(e.category||"")}${e.category&&e.type?" · ":""}${escapeHtml(formatType(e.type))}
     </div>
+
     ${renderScoreBlock(e.score, e.processing_score, 13)}
+    ${renderLegalTooltip()}
+
     ${e.summary?`<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}`:""}
     ${e.mechanism?`<h3>Mechanismus</h3>${renderRawText(e.mechanism)}`:""}
     ${e.scientific_note?`<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}`:""}
-    ${renderLegalTooltip()}
   `);
 
   const b = $("backHome");
@@ -226,22 +247,18 @@ async function loadEntry(id) {
 /* ================= EVENTS ================= */
 document.addEventListener("click", (e) => {
 
-  // 1️⃣ Kategorie hat PRIORITÄT
   const cat = e.target.closest(".cat-btn");
   if (cat) {
     loadListByCategory(cat.dataset.cat);
     return;
   }
 
-  // 2️⃣ Danach erst Entry-Karten
   const card = e.target.closest(".entry-card");
   if (card) {
     loadEntry(card.dataset.id);
     return;
   }
-
 });
-
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
