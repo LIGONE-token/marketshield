@@ -216,12 +216,23 @@ async function loadEntry(id) {
 
 /* ================= EVENTS ================= */
 document.addEventListener("click", (e) => {
-  const card = e.target.closest(".entry-card");
-  if (card) return loadEntry(card.dataset.id);
 
+  // 1️⃣ Kategorie hat PRIORITÄT
   const cat = e.target.closest(".cat-btn");
-  if (cat) return loadListByCategory(cat.dataset.cat);
+  if (cat) {
+    loadListByCategory(cat.dataset.cat);
+    return;
+  }
+
+  // 2️⃣ Danach erst Entry-Karten
+  const card = e.target.closest(".entry-card");
+  if (card) {
+    loadEntry(card.dataset.id);
+    return;
+  }
+
 });
+
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
