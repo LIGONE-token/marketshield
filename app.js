@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / NAV-FIX)
+   MarketShield – app.js (FINAL / STABIL / TABLE-FIX)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -41,21 +41,76 @@ function renderRawText(t) {
   if (!t) return "";
   return `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(t)}</div>`;
 }
-function renderSummary(text) {
+
+/* ================= SUMMARY (MIT TABELLEN) ================= */
+function renderSummaryWithTables(text) {
   if (!text) return "";
-  const lines = String(text).split("\n");
-  let html = "", buf = [];
-  const flush = () => {
-    if (!buf.length) return;
-    html += `<p>${escapeHtml(buf.join(" "))}</p>`;
-    buf = [];
+
+  const normalized = String(text)
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n");
+
+  const lines = normalized.split("\n");
+  let html = "";
+  let buffer = [];
+
+  const flushParagraph = () => {
+    if (!buffer.length) return;
+    html += `<p>${escapeHtml(buffer.join("\n")).replace(/\n/g, "<br>")}</p>`;
+    buffer = [];
   };
-  for (let l of lines) {
-    l = l.trim();
-    if (!l) { flush(); continue; }
-    buf.push(l);
+
+  const isSeparator = (l) => /^[-\s|]+$/.test(l);
+  const isPipeRow = (l) => (l.match(/\|/g) || []).length >= 2;
+
+  for (let i = 0; i < lines.length; ) {
+    const line = lines[i];
+
+    if (!line.trim()) {
+      flushParagraph();
+      i++;
+      continue;
+    }
+
+    if (isPipeRow(line)) {
+      flushParagraph();
+
+      const rows = [];
+      while (i < lines.length && (isPipeRow(lines[i]) || isSeparator(lines[i]))) {
+        if (!isSeparator(lines[i])) {
+          rows.push(
+            lines[i]
+              .split("|")
+              .map(c => c.trim())
+              .filter(Boolean)
+          );
+        }
+        i++;
+      }
+
+      if (rows.length) {
+        html += `<div class="summary-table-wrap"><table class="summary-table">`;
+
+        html += "<thead><tr>";
+        rows[0].forEach(c => html += `<th>${escapeHtml(c)}</th>`);
+        html += "</tr></thead>";
+
+        html += "<tbody>";
+        for (let r = 1; r < rows.length; r++) {
+          html += "<tr>";
+          rows[r].forEach(c => html += `<td>${escapeHtml(c)}</td>`);
+          html += "</tr>";
+        }
+        html += "</tbody></table></div>";
+      }
+      continue;
+    }
+
+    buffer.push(line);
+    i++;
   }
-  flush();
+
+  flushParagraph();
   return html;
 }
 
@@ -69,13 +124,16 @@ function renderHealth(score) {
   if (n >= 20) return "💛";
   return "⚠️❗⚠️";
 }
+
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
   const w = Math.round((n / 10) * 80);
+
   let color = "#2e7d32";
   if (n >= 7) color = "#c62828";
   else if (n >= 4) color = "#f9a825";
+
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
       <div style="width:${w}px;height:8px;background:${color};"></div>
@@ -87,8 +145,10 @@ function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
+
   const colW = 90;
   const labelStyle = `font-size:${size}px;opacity:.85;line-height:1.2;`;
+
   return `
     <div style="margin:12px 0;">
       ${h ? `
@@ -183,6 +243,7 @@ async function loadListBySearch(q) {
   });
   renderList(d);
 }
+
 async function loadListByCategory(cat) {
   const d = await supa("entries", {
     select:"id,title,category,type,score,processing_score",
@@ -190,6 +251,7 @@ async function loadListByCategory(cat) {
   });
   renderList(d);
 }
+
 async function loadEntry(id) {
   const d = await supa("entries",{ id:`eq.${id}`, limit:"1" });
   if (!d || !d.length) return clearResults();
@@ -206,7 +268,7 @@ async function loadEntry(id) {
     ${renderScoreBlock(e.score, e.processing_score, 13)}
     ${renderLegalTooltip()}
 
-    ${e.summary ? `<h3>Beschreibung</h3>${renderSummary(e.summary)}` : ""}
+    ${e.summary ? `<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}` : ""}
     ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
     ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
   `);
