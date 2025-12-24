@@ -124,6 +124,80 @@ async function saveSearchQuery(query) {
     // absichtlich leer – Suche darf niemals blockieren
   }
 }
+function renderSummaryWithTables(summary) {
+  if (!summary) return "";
+
+  const lines = normalizeText(summary).split("\n");
+  let html = "";
+  let buffer = [];
+
+  function flushParagraph() {
+    if (!buffer.length) return;
+    html += `<p>${buffer.join("<br>")}</p>`;
+    buffer = [];
+  }
+
+  function isSeparator(line) {
+    return /^[-\s|]+$/.test(line);
+  }
+
+  function isPipeRow(line) {
+    return (line.match(/\|/g) || []).length >= 2;
+  }
+
+  for (let i = 0; i < lines.length; ) {
+    const line = lines[i].trim();
+
+    if (!line) {
+      flushParagraph();
+      i++;
+      continue;
+    }
+
+    // 🔹 Tabelle erkannt
+    if (isPipeRow(line)) {
+      flushParagraph();
+
+      const rows = [];
+      while (i < lines.length && (isPipeRow(lines[i]) || isSeparator(lines[i]))) {
+        if (!isSeparator(lines[i])) {
+          const cells = lines[i]
+            .split("|")
+            .map(c => c.trim())
+            .filter(c => c !== "");
+          rows.push(cells);
+        }
+        i++;
+      }
+
+      if (rows.length) {
+        html += `<div class="summary-table-wrap"><table class="summary-table">`;
+
+        // Header
+        html += "<thead><tr>";
+        rows[0].forEach(c => html += `<th>${escapeHtml(c)}</th>`);
+        html += "</tr></thead>";
+
+        // Body
+        html += "<tbody>";
+        for (let r = 1; r < rows.length; r++) {
+          html += "<tr>";
+          rows[r].forEach(c => html += `<td>${escapeHtml(c)}</td>`);
+          html += "</tr>";
+        }
+        html += "</tbody></table></div>";
+      }
+
+      continue;
+    }
+
+    buffer.push(escapeHtml(line));
+    i++;
+  }
+
+  flushParagraph();
+  return html;
+}
 
 
 /* ================= SCORES ================= */
