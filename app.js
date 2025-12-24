@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / RESTORED)
+   MarketShield – app.js (FINAL / SEARCH & UI FIX)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -89,8 +89,7 @@ function renderSummaryWithTables(text) {
         html += `<div class="summary-table-wrap"><table class="summary-table">`;
         html += "<thead><tr>";
         rows[0].forEach(c => html += `<th>${escapeHtml(c)}</th>`);
-        html += "</tr></thead>";
-        html += "<tbody>";
+        html += "</tr></thead><tbody>";
         for (let r = 1; r < rows.length; r++) {
           html += "<tr>";
           rows[r].forEach(c => html += `<td>${escapeHtml(c)}</td>`);
@@ -163,19 +162,14 @@ function renderScoreBlock(score, processing, size = 13) {
 function renderLegalTooltip() {
   return `
     <div style="margin:6px 0 18px 0;">
-      <span
-        style="position:relative;font-size:12px;color:#666;cursor:help;"
-        onmouseenter="this.querySelector('.legal-tip').style.display='block'"
-        onmouseleave="this.querySelector('.legal-tip').style.display='none'"
-      >
+      <span style="position:relative;font-size:12px;color:#666;cursor:help;">
         ℹ️ <span style="text-decoration:underline;">Rechtlicher Hinweis</span>
-        <span class="legal-tip"
-          style="display:none;position:absolute;left:0;bottom:130%;width:260px;
-                 background:#222;color:#fff;padding:10px;border-radius:6px;
-                 font-size:11px;line-height:1.4;z-index:9999;">
+        <span style="
+          display:none;position:absolute;left:0;bottom:130%;width:260px;
+          background:#222;color:#fff;padding:10px;border-radius:6px;
+          font-size:11px;line-height:1.4;z-index:9999;"
+          class="legal-tip">
           MarketShield stellt Informationen und Bewertungen zur Orientierung bereit.
-          Diese dürfen aus rechtlichen Gründen nicht als absolute Wahrheit oder
-          individuelle Beratung verstanden werden.
         </span>
       </span>
     </div>`;
@@ -191,7 +185,7 @@ async function supa(path, params) {
   return r.json();
 }
 
-/* ================= SEARCH SAVE ================= */
+/* ================= SEARCH SAVE (ENTER ONLY) ================= */
 async function saveSearchQuery(q) {
   if (!q || q.length < 2) return;
   fetch(`${SUPABASE_URL}/rest/v1/search_queries`, {
@@ -229,7 +223,7 @@ function loadCategories() {
 
 /* ================= LISTE ================= */
 function renderList(items) {
-  if (!items || !items.length) { clearResults(); return; }
+  if (!items || !items.length) return;
   setResultsHTML(items.map(e => `
     <div class="entry-card" data-id="${e.id}">
       <strong>${escapeHtml(e.title)}</strong><br>
@@ -245,9 +239,7 @@ function renderList(items) {
 
 /* ================= LOADERS ================= */
 async function loadListBySearch(q) {
-  if (!q || q.length < 2) { clearResults(); return; }
-  saveSearchQuery(q);
-
+  if (!q || q.length < 2) return;
   const d = await supa("entries", {
     select:"id,title,category,type,score,processing_score",
     or:`(title.ilike.*${q}*,summary.ilike.*${q}*)`,
@@ -269,7 +261,7 @@ async function loadListByCategory(cat) {
 
 async function loadEntry(id) {
   const d = await supa("entries",{ id:`eq.${id}`, limit:"1" });
-  if (!d || !d.length) return clearResults();
+  if (!d || !d.length) return;
   const e = d[0];
 
   setResultsHTML(`
@@ -295,7 +287,6 @@ async function loadEntry(id) {
 /* ================= EVENTS ================= */
 document.addEventListener("click", (e) => {
 
-  // 🔙 Zur Startseite
   const back = e.target.closest("#backHome");
   if (back) {
     history.pushState(null, "", location.pathname);
@@ -303,7 +294,6 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // 📂 Kategorie
   const cat = e.target.closest(".cat-btn");
   if (cat) {
     const c = cat.dataset.cat;
@@ -312,7 +302,6 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // 📄 Eintrag
   const card = e.target.closest(".entry-card");
   if (card) {
     const id = card.dataset.id;
@@ -330,15 +319,29 @@ document.addEventListener("DOMContentLoaded", () => {
   const id = params.get("id");
   const cat = params.get("cat");
 
-  if (id) { loadEntry(id); return; }
-  if (cat) { loadListByCategory(cat); return; }
-
-  clearResults();
+  if (id) { loadEntry(id); }
+  else if (cat) { loadListByCategory(cat); }
 
   const input = $("searchInput");
   if (input) {
-    input.addEventListener("input", e =>
-      loadListBySearch(e.target.value.trim())
-    );
+
+    // Live-Suche (nur anzeigen)
+    input.addEventListener("input", (e) => {
+      const q = e.target.value.trim();
+      if (q.length < 2) {
+        clearResults();
+        return;
+      }
+      loadListBySearch(q);
+    });
+
+    // ENTER = speichern + suchen
+    input.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      const q = input.value.trim();
+      if (q.length < 2) return;
+      saveSearchQuery(q);
+      loadListBySearch(q);
+    });
   }
 });
