@@ -1350,3 +1350,8 @@ table, button, a, input, select {
 .summary-table { width:100%; border-collapse:collapse; }
 .summary-table th, .summary-table td { border:1px solid #ddd; padding:8px; }
 .summary-table th { background:#f5f5f5; }
+#reportBtn {
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto;
+}
