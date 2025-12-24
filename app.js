@@ -1,7 +1,11 @@
 /* =====================================================
-   MarketShield – app.js
-   STABIL / ROHES RENDERING / WIE VORHER
-   Passend zur bestehenden index.html
+   MarketShield – app.js (FINAL / FREEZE)
+   - Kategorien NUR aus categories.json
+   - Startseite leer
+   - Texte roh anzeigen (white-space: pre-wrap)
+   - Keine Platzhalter / Hinweise
+   - Report-Button UNANTASTBAR
+   - Render-Ziel: #results (wie in index.html)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -11,14 +15,9 @@ const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 /* ================= DOM ================= */
 const $ = (id) => document.getElementById(id);
 const $$ = (sel) => document.querySelector(sel);
-
-function resultsBox() {
-  return $("results");
-}
+function resultsBox() { return $("results"); }
 
 /* ================= HELPERS ================= */
-
-/** HTML sicher escapen */
 function escapeHtml(s) {
   if (s === null || s === undefined) return "";
   return String(s)
@@ -29,17 +28,10 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
-/** 
- * 🔑 WIE FRÜHER:
- * Text 1:1 anzeigen, inkl. Absätzen & Leerzeilen
- */
+/* WIE FRÜHER: Text 1:1 anzeigen */
 function renderRawText(text) {
   if (!text) return "";
-  return `
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${escapeHtml(text)}
-    </div>
-  `;
+  return `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(text)}</div>`;
 }
 
 /* ================= SUPABASE ================= */
@@ -53,26 +45,21 @@ async function supa(query) {
   return res.json();
 }
 
-/* ================= CORE RENDER ================= */
+/* ================= CORE ================= */
 function setResultsHTML(html) {
   const box = resultsBox();
   if (!box) return;
-  // shareBox immer erhalten
+  // shareBox immer erhalten (existiert in index.html)
   box.innerHTML = `<div id="shareBox"></div>${html || ""}`;
 }
-
-function clearResults() {
-  setResultsHTML(`
-     `);
-}
+function clearResults() { setResultsHTML(""); }
 
 /* ================= LISTE ================= */
 function renderList(items) {
   if (!items || !items.length) {
-    setResultsHTML("<p>Keine Treffer gefunden.</p>");
+    setResultsHTML("");
     return;
   }
-
   setResultsHTML(
     items.map(e => `
       <div class="entry-card" data-id="${e.id}">
@@ -89,11 +76,7 @@ function renderList(items) {
 
 async function loadListBySearch(q) {
   const query = q.trim();
-  if (query.length < 2) {
-    clearResults();
-    return;
-  }
-
+  if (query.length < 2) { clearResults(); return; }
   const enc = encodeURIComponent(`%${query}%`);
   const data = await supa(
     `entries?select=id,title,category,type&or=(title.ilike.${enc},summary.ilike.${enc})&order=title.asc&limit=200`
@@ -101,10 +84,10 @@ async function loadListBySearch(q) {
   renderList(data);
 }
 
-async function loadListByCategory(category) {
-  const cat = String(category || "").trim();
+async function loadListByCategory(categoryTitle) {
+  const cat = String(categoryTitle || "").trim();
   if (!cat) return;
-
+  // exakter Match auf Titel aus categories.json
   const data = await supa(
     `entries?select=id,title,category,type&category=eq.${encodeURIComponent(cat)}&order=title.asc&limit=500`
   );
@@ -117,11 +100,7 @@ async function loadEntry(id) {
   if (!entryId) return;
 
   const data = await supa(`entries?id=eq.${entryId}&limit=1`);
-  if (!data || !data.length) {
-    setResultsHTML("<p>Eintrag nicht gefunden.</p>");
-    return;
-  }
-
+  if (!data || !data.length) { setResultsHTML(""); return; }
   const e = data[0];
 
   setResultsHTML(`
@@ -132,9 +111,7 @@ async function loadEntry(id) {
       ${escapeHtml(e.type || "")}
     </div>
 
-    <h3>Beschreibung</h3>
-    ${renderRawText(e.summary)}
-
+    ${e.summary ? `<h3>Beschreibung</h3>${renderRawText(e.summary)}` : ""}
     ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
     ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
   `);
@@ -143,37 +120,36 @@ async function loadEntry(id) {
   if (back) back.style.display = "block";
 }
 
-/* ================= KATEGORIEN ================= */
+/* ================= KATEGORIEN (NUR categories.json) ================= */
 async function loadCategories() {
   const grid = $$(".category-grid");
   if (!grid) return;
 
-  const data = await supa("entries?select=category");
-  const cats = [...new Set(data.map(d => d.category).filter(Boolean))].sort();
-
-  grid.innerHTML = cats
-    .map(c => `<button class="cat-btn" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`)
-    .join("");
+  try {
+    const res = await fetch("categories.json");
+    const cats = await res.json(); // erwartet: [{ id, title, description }]
+    grid.innerHTML = cats
+      .map(c => `<button class="cat-btn" data-cat="${escapeHtml(c.title)}">${escapeHtml(c.title)}</button>`)
+      .join("");
+  } catch (e) {
+    console.error("categories.json konnte nicht geladen werden", e);
+  }
 }
 
 /* ================= SUCHE ================= */
 function initSearch() {
   const input = $("searchInput");
   if (!input) return;
-
   input.addEventListener("input", () => {
     const q = input.value.trim();
-    if (q.length < 2) {
-      clearResults();
-      return;
-    }
+    if (q.length < 2) { clearResults(); return; }
     loadListBySearch(q);
   });
 }
 
 /* ================= NAVIGATION ================= */
 document.addEventListener("click", (e) => {
-  // Report-Button bleibt UNBERÜHRT
+  // Report-Button bleibt UNANTASTBAR
   if (e.target.closest("#reportBtn")) return;
 
   const card = e.target.closest(".entry-card");
@@ -203,9 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initSearch();
 
   const id = new URLSearchParams(location.search).get("id");
-  if (id) {
-    loadEntry(id);
-  } else {
-    clearResults(); // Startseite leer – wie vorher
-  }
+  if (id) loadEntry(id);
+  else clearResults(); // Startseite leer (Freeze)
 });
