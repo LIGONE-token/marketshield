@@ -1295,3 +1295,35 @@ table, button, a, input, select {
     min-width: 420px;
   }
 }
+.health-score .hearts { font-size: 22px; }
+.health-score.green .hearts { color:#2e7d32; }
+.health-score.yellow .hearts { color:#f9a825; }
+.health-score.red .hearts { color:#c62828; }
+
+.health-warning {
+  color:#c62828;
+  font-weight:bold;
+  margin-top:4px;
+}
+
+.industry-score-line {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:6px;
+}
+
+.industry-label { white-space:nowrap; font-size:14px; }
+
+.industry-bar {
+  width:160px;
+  height:10px;
+  background:#ddd;
+  border-radius:5px;
+  overflow:hidden;
+}
+
+.industry-fill {
+  height:100%;
+  background:#4a90e2;
+}
