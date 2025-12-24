@@ -280,12 +280,18 @@ async function loadEntry(id) {
 /* ================= EVENTS ================= */
 document.addEventListener("click", (e) => {
 
-  // 🚨 Report-Button niemals abfangen
-  if (e.target.closest("#reportBtn")) return;
+  // 🚨 REPORT-BUTTON MUSS ABSOLUT FREI SEIN
+  const report = e.target.closest("#reportBtn");
+  if (report) {
+    e.preventDefault();    // ← WICHTIG
+    e.stopPropagation();   // ← KRITISCH
+    return;
+  }
 
   // 🔙 Zur Startseite
   const back = e.target.closest("#backHome");
   if (back) {
+    e.preventDefault();
     history.pushState(null, "", location.pathname);
     clearResults();
     return;
@@ -294,6 +300,7 @@ document.addEventListener("click", (e) => {
   // 📂 Kategorie
   const cat = e.target.closest(".cat-btn");
   if (cat) {
+    e.preventDefault();
     const c = cat.dataset.cat;
     history.pushState({ type:"category", cat:c }, "", "?cat=" + encodeURIComponent(c));
     loadListByCategory(c);
@@ -303,6 +310,7 @@ document.addEventListener("click", (e) => {
   // 📄 Eintrag
   const card = e.target.closest(".entry-card");
   if (card) {
+    e.preventDefault();
     const id = card.dataset.id;
     history.pushState({ type:"entry", id }, "", "?id=" + id);
     loadEntry(id);
