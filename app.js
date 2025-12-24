@@ -145,6 +145,42 @@ function renderIndustry(score) {
     </div>
   `;
 }
+<div style="margin-top:6px;">
+  <span
+    style="
+      position:relative;
+      font-size:11px;
+      color:#777;
+      text-decoration:underline;
+      cursor:help;
+    "
+    onmouseenter="this.querySelector('.legal-tip').style.display='block'"
+    onmouseleave="this.querySelector('.legal-tip').style.display='none'"
+  >
+    Rechtliche Info
+    <span
+      class="legal-tip"
+      style="
+        display:none;
+        position:absolute;
+        left:0;
+        bottom:130%;
+        width:240px;
+        background:#222;
+        color:#fff;
+        padding:8px;
+        border-radius:6px;
+        font-size:11px;
+        line-height:1.4;
+        z-index:999;
+      "
+    >
+      MarketShield stellt Informationen und Bewertungen zur Orientierung bereit.
+      Diese dürfen aus rechtlichen Gründen nicht als absolute Wahrheit oder
+      individuelle Beratung verstanden werden.
+    </span>
+  </span>
+</div>
 
 /* ================= SCORE BLOCK (EXAKT AUSGERICHTET) ================= */
 /* Ziel: Beschreibungen starten IMMER exakt gleich, Score & Text sind nah, nichts gequetscht */
