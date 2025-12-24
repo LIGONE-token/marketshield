@@ -53,13 +53,19 @@ function renderRawText(text) {
 function renderSummaryWithTables(text) {
   if (!text) return "";
 
-  const lines = String(text).split("\n");
+  // 🔧 NORMALISIERUNG: escaped Newlines → echte Zeilenumbrüche
+  const normalized = String(text)
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n\\n/g, "\n\n")
+    .replace(/\\n/g, "\n");
+
+  const lines = normalized.split("\n");
   let html = "";
   let buffer = [];
 
   const flushParagraph = () => {
     if (!buffer.length) return;
-    html += `<p>${escapeHtml(buffer.join("\n")).replace(/\n/g, "<br>")}</p>`;
+    html += `<p>${escapeHtml(buffer.join(" ")).trim()}</p>`;
     buffer = [];
   };
 
@@ -67,14 +73,16 @@ function renderSummaryWithTables(text) {
   const isPipeRow = (l) => (l.match(/\|/g) || []).length >= 2;
 
   for (let i = 0; i < lines.length; ) {
-    const line = lines[i];
+    const line = lines[i].trim();
 
-    if (!line.trim()) {
+    // ⬇️ LEERZEILE = neuer Absatz
+    if (!line) {
       flushParagraph();
       i++;
       continue;
     }
 
+    // ⬇️ MARKDOWN-TABELLE
     if (isPipeRow(line)) {
       flushParagraph();
       const rows = [];
@@ -102,6 +110,7 @@ function renderSummaryWithTables(text) {
           rows[r].forEach(c => html += `<td>${escapeHtml(c)}</td>`);
           html += "</tr>";
         }
+
         html += "</tbody></table></div>";
       }
       continue;
