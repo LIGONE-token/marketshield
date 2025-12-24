@@ -124,14 +124,14 @@ function renderSummaryWithTables(text) {
   return html;
 }
 
-/* ================= SCORES (EXAKT WIE VORHER) ================= */
+/* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
-  if (n >= 20) return "💛";
+  if (n >= 20) return "💛";   // ← GELB statt ROT
   return "⚠️❗⚠️";
 }
 
@@ -145,6 +145,45 @@ function renderIndustry(score) {
     </div>
   `;
 }
+
+/* ================= SCORE BLOCK (EXAKT AUSGERICHTET) ================= */
+/* Ziel: Beschreibungen starten IMMER exakt gleich, Score & Text sind nah, nichts gequetscht */
+function renderScoreBlock(score, processing, size = 13) {
+  const h = renderHealth(score);
+  const i = renderIndustry(processing);
+
+  if (!h && !i) return "";
+
+  // 80px Balkenbreite + 10px Abstand = feste Textkante (wie sauber eingestellter Zustand)
+  const colW = 90;
+
+  const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
+
+  // Abstand zwischen Health-Zeile und Industry-Zeile (nicht gequetscht, aber kompakt)
+  const rowGap = 6;
+
+  // Abstand zwischen Score-Spalte und Text (nicht zu weit weg!)
+  const colGap = 8;
+
+  return `
+    <div style="margin:12px 0;">
+      ${h ? `
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;margin-bottom:${i ? rowGap : 0}px;">
+          <div style="white-space:nowrap;">${h}</div>
+          <div style="${labelStyle}">Gesundheitsscore</div>
+        </div>
+      ` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;">
+          <div>${i}</div>
+          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
 
 /* ================= SUPABASE ================= */
 async function supa(path, params) {
