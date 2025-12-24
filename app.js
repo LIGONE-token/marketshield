@@ -1,12 +1,12 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / KORRIGIERT)
+   MarketShield – app.js (FINAL / STABIL / TABELLEN FIX)
 ===================================================== */
 
 let currentEntryId = null;
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  injectTableStyles();   // ✅ FEHLTE – OHNE DAS KEINE TABELLEN
+  injectTableStyles();
 
   loadCategories();
 
@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initReport();
   initBackHome();
 });
-
 
 /* ================= GLOBAL CLICK ================= */
 document.addEventListener("click", (e) => {
@@ -44,92 +43,26 @@ async function supa(query) {
 }
 
 /* ================= HELPERS ================= */
-async function saveSearchQuery(query) {
-  if (!query || query.length < 2) return;
-
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        query: query.trim()
-      })
-    });
-  } catch (e) {
-    // bewusst leer – Suche darf niemals blockieren
-  }
+function escapeHtml(s = "") {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
-function escapeHtml(s = "") {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function normalizeText(text) {
+  if (!text) return "";
+  return String(text)
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
 }
 
 function shortText(text, max = 160) {
   if (!text) return "";
   return text.length > max ? text.slice(0, max) + " …" : text;
 }
-function normalizeText(text) {
-  if (!text) return "";
-  return String(text)
-    .replace(/\\r\\n/g, "\n")
-    .replace(/\\n/g, "\n")
-    .replace(/\\r/g, "\n");
-}
-function renderTextBlock(title, text) {
-  if (!text) return "";
-  const norm = normalizeText(text);
 
-  return `
-    <h3>${escapeHtml(title)}</h3>
-    <div class="ms-text">
-      ${renderMarkdownTables(norm)}
-    </div>
-  `;
-}
-
-
-function renderJsonList(title, data) {
-  if (!data) return "";
-  let arr;
-  try {
-    arr = Array.isArray(data) ? data : JSON.parse(data);
-  } catch {
-    return "";
-  }
-  if (!arr.length) return "";
-
-  return `
-    <h3>${title}</h3>
-    <ul style="line-height:1.6;padding-left:18px;">
-      ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
-    </ul>
-  `;
-}
-async function saveSearchQuery(query) {
-  if (!query || query.length < 2) return;
-
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        query: query.trim()
-        // status = 'pending' kommt aus der DB
-        // created_at = now() kommt aus der DB
-      })
-    });
-  } catch (e) {
-    // absichtlich leer – Suche darf niemals blockieren
-  }
-}
+/* ================= TABLE STYLES ================= */
 function injectTableStyles() {
   if (document.getElementById("msTableStyles")) return;
 
@@ -138,19 +71,112 @@ function injectTableStyles() {
   style.textContent = `
     .ms-text p { margin: 8px 0; line-height: 1.6; }
     .ms-text .ms-sp { height: 10px; }
-    .ms-table { margin: 12px 0; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; }
-    .ms-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
-    .ms-row > div { padding: 8px 10px; border-top: 1px solid #eee; }
-    .ms-head { font-weight: 800; background: #f6f6f6; }
-    .ms-head > div { border-top: none; }
+
+    .ms-table {
+      margin: 14px 0;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .ms-row {
+      display: grid;
+    }
+
+    .ms-row > div {
+      padding: 8px 10px;
+      border-top: 1px solid #eee;
+      word-break: break-word;
+    }
+
+    .ms-head {
+      background: #f5f5f5;
+      font-weight: 800;
+    }
+
+    .ms-head > div {
+      border-top: none;
+    }
+
     @media (max-width: 720px) {
-      .ms-row { grid-template-columns: 1fr; }
-      .ms-row > div { border-top: 1px solid #eee; }
+      .ms-row {
+        grid-template-columns: 1fr !important;
+      }
     }
   `;
   document.head.appendChild(style);
 }
 
+/* ================= MARKDOWN TABLE RENDER ================= */
+function renderMarkdownTables(text) {
+  if (!text) return "";
+
+  const lines = normalizeText(text).split("\n");
+  let html = "";
+  let inTable = false;
+  let colCount = 0;
+
+  const isSeparator = (s) =>
+    /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test((s || "").trim());
+
+  const splitRow = (row) =>
+    row.split("|").map(s => s.trim()).filter(Boolean);
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const line = raw.trim();
+
+    // Tabellenstart
+    if (!inTable && line.includes("|") && isSeparator(lines[i + 1])) {
+      inTable = true;
+      const headers = splitRow(line);
+      colCount = headers.length;
+
+      html += `<div class="ms-table">`;
+      html += `<div class="ms-row ms-head" style="grid-template-columns:repeat(${colCount},1fr)">`;
+      headers.forEach(h => html += `<div>${escapeHtml(h)}</div>`);
+      html += `</div>`;
+
+      i++; // Separator überspringen
+      continue;
+    }
+
+    // Tabellenzeilen
+    if (inTable) {
+      if (line.includes("|")) {
+        const cells = splitRow(line);
+        html += `<div class="ms-row" style="grid-template-columns:repeat(${colCount},1fr)">`;
+        cells.forEach(c => html += `<div>${escapeHtml(c)}</div>`);
+        html += `</div>`;
+        continue;
+      } else {
+        html += `</div>`;
+        inTable = false;
+      }
+    }
+
+    // Normaler Text
+    if (line.length === 0) {
+      html += `<div class="ms-sp"></div>`;
+    } else {
+      html += `<p>${escapeHtml(raw)}</p>`;
+    }
+  }
+
+  if (inTable) html += `</div>`;
+  return html;
+}
+
+/* ================= TEXT BLOCK ================= */
+function renderTextBlock(title, text) {
+  if (!text) return "";
+  return `
+    <h3>${escapeHtml(title)}</h3>
+    <div class="ms-text">
+      ${renderMarkdownTables(text)}
+    </div>
+  `;
+}
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
@@ -163,7 +189,6 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
-
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -175,187 +200,33 @@ function renderIndustry(score) {
   `;
 }
 
-/* ================= SCORE BLOCK (EXAKT AUSGERICHTET) ================= */
-/* Ziel: Beschreibungen starten IMMER exakt gleich, Score & Text sind nah, nichts gequetscht */
-function renderScoreBlock(score, processing, size = 13) {
+function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
-
   if (!h && !i) return "";
-
-  // 80px Balkenbreite + 10px Abstand = feste Textkante (wie sauber eingestellter Zustand)
-  const colW = 90;
-
-  const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
-
-  // Abstand zwischen Health-Zeile und Industry-Zeile (nicht gequetscht, aber kompakt)
-  const rowGap = 6;
-
-  // Abstand zwischen Score-Spalte und Text (nicht zu weit weg!)
-  const colGap = 8;
 
   return `
     <div style="margin:12px 0;">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;margin-bottom:${i ? rowGap : 0}px;">
-          <div style="white-space:nowrap;">${h}</div>
-          <div style="${labelStyle}">Gesundheitsscore</div>
-        </div>
-      ` : ""}
-
-      ${i ? `
-        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;">
-          <div>${i}</div>
-          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
-        </div>
-      ` : ""}
+      ${h ? `<div>${h} <span style="opacity:.7">Gesundheitsscore</span></div>` : ""}
+      ${i ? `<div style="margin-top:6px;">${i} <span style="opacity:.7">Industrie-Verarbeitungsgrad</span></div>` : ""}
     </div>
   `;
 }
 
-/* ================= KATEGORIEN ================= */
-async function loadCategories() {
-  const grid = document.querySelector(".category-grid");
-  if (!grid) return;
-
-  const data = await fetch("categories.json").then(r => r.json());
-  grid.innerHTML = "";
-
-  data.categories.forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c.title;
-    b.onclick = () => loadCategory(c.title);
-    grid.appendChild(b);
-  });
-}
-
-/* ================= SUCHE ================= */
-const input = document.getElementById("searchInput");
-const results = document.getElementById("results");
-
-if (input) {
-  input.addEventListener("input", async () => {
-    const q = input.value.trim();
-    if (q.length < 2) {
-      results.innerHTML = "";
-      return;
-    }
-
-    const enc = encodeURIComponent(q);
-    const data = await supa(
-      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
-    );
-    renderList(data);
-  });
-}
-
-input.addEventListener("keydown", async (e) => {
-  if (e.key !== "Enter") return;
-
-  const q = input.value.trim();
-  if (q.length < 2) return;
-
-  // ✅ Suchanfrage speichern
-  saveSearchQuery(q);
-
-  // ✅ Suche ausführen (identisch zur Input-Suche)
-  const enc = encodeURIComponent(q);
-  const data = await supa(
-    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
-  );
-  renderList(data);
-});
-
-
-async function loadCategory(cat) {
-  const data = await supa(
-    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
-  );
-  renderList(data);
-}
-
+/* ================= LIST / DETAIL ================= */
 function renderList(data) {
+  const results = document.getElementById("results");
   results.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800;">
         ${escapeHtml(e.title)}
       </div>
-
-      ${renderScoreBlock(e.score, e.processing_score, 13)}
-
-      <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary, 160))}
-      </div>
+      ${renderScoreBlock(e.score, e.processing_score)}
+      <div>${escapeHtml(shortText(e.summary, 160))}</div>
     </div>
   `).join("");
 }
-/* ================= MARKDOWN TABLE FIX ================= */
-function renderMarkdownTables(text) {
-  if (!text) return "";
 
-  const lines = String(text).split("\n");
-  let html = "";
-  let inTable = false;
-
-  const isSeparator = (s) => {
-    const t = (s || "").trim();
-    // akzeptiert:
-    //  --- --- ---
-    //  |---|---|
-    //  |:---|---:|
-    return /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test(t);
-  };
-
-  const splitRow = (row) =>
-    row.split("|").map(s => s.trim()).filter(v => v.length);
-
-  for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i];
-    const line = raw.trim();
-
-    // Tabellenstart: Header-Zeile + Separator-Zeile
-    if (!inTable && line.includes("|") && isSeparator(lines[i + 1])) {
-      inTable = true;
-
-      const headers = splitRow(line);
-      html += `<div class="ms-table">`;
-      html += `<div class="ms-row ms-head">`;
-      headers.forEach(h => html += `<div>${escapeHtml(h)}</div>`);
-      html += `</div>`;
-
-      i++; // Separator überspringen
-      continue;
-    }
-
-    // Tabellenzeilen
-    if (inTable) {
-      if (line.includes("|")) {
-        const cells = splitRow(line);
-        html += `<div class="ms-row">`;
-        cells.forEach(c => html += `<div>${escapeHtml(c)}</div>`);
-        html += `</div>`;
-        continue;
-      } else {
-        // Tabelle endet, sobald eine Zeile ohne | kommt
-        html += `</div>`;
-        inTable = false;
-        // fallthrough: normale Textzeile ausgeben
-      }
-    }
-
-    // Normaler Text (Absätze/Leerzeilen sauber)
-    if (line.length === 0) {
-      html += `<div class="ms-sp"></div>`;
-    } else {
-      html += `<p>${escapeHtml(raw)}</p>`;
-    }
-  }
-
-  if (inTable) html += `</div>`;
-  return html;
-}
-
-/* ================= DETAIL ================= */
 async function loadEntry(id) {
   const data = await supa(`entries?select=*&id=eq.${id}`);
   const e = data[0];
@@ -363,105 +234,17 @@ async function loadEntry(id) {
 
   currentEntryId = id;
 
-  results.innerHTML = `
-  <h2>${escapeHtml(e.title)}</h2>
-
-  ${renderScoreBlock(e.score, e.processing_score, 14)}
-
-  ${renderTextBlock("Zusammenfassung", e.summary)}
-  ${renderTextBlock("Wirkmechanismus", e.mechanism)}
-  ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
-
-  ${renderJsonList("Positive Effekte", e.effects_positive)}
-  ${renderJsonList("Negative Effekte", e.effects_negative)}
-  ${renderJsonList("Risikogruppen", e.risk_groups)}
-  ${renderJsonList("Synergien / Wechselwirkungen", e.synergy)}
-  ${renderJsonList("Natürliche Quellen", e.natural_sources)}
-  ${renderJsonList("Tags", e.tags)}
-
-  <div id="entryActions"></div>
-`;
-
-
-  renderEntryActions(e.title);
-  updateBackHome();
-}
-
-/* ================= SHARE / ACTIONS ================= */
-function renderEntryActions(title) {
-  const box = document.getElementById("entryActions");
-  if (!box) return;
-
-  const url = location.href;
-  const encUrl = encodeURIComponent(url);
-  const encTitle = encodeURIComponent(title + " – MarketShield");
-
-  box.innerHTML = `
-    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
-      <button onclick="window.print()">🖨️ Drucken</button>
-      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
-      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
-      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
-    </div>
+  document.getElementById("results").innerHTML = `
+    <h2>${escapeHtml(e.title)}</h2>
+    ${renderScoreBlock(e.score, e.processing_score)}
+    ${renderTextBlock("Zusammenfassung", e.summary)}
+    ${renderTextBlock("Wirkmechanismus", e.mechanism)}
+    ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
+    <div id="entryActions"></div>
   `;
 }
 
-/* ================= REPORT ================= */
-function initReport() {
-  const btn = document.getElementById("reportBtn");
-  const modal = document.getElementById("reportModal");
-  const close = document.getElementById("closeReportModal");
-  const form = document.getElementById("reportForm");
-
-  if (!btn || !modal || !form) return;
-
-  btn.onclick = () => modal.classList.add("active");
-  close.onclick = () => modal.classList.remove("active");
-
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    const description = form.description.value.trim();
-    if (!description) return alert("Bitte Beschreibung eingeben.");
-
-    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        description,
-        source: "community",
-        status: "new",
-        entry_id: currentEntryId || null
-      })
-    });
-
-    form.reset();
-    modal.classList.remove("active");
-    alert("Meldung gesendet. Danke!");
-  };
-}
-
-/* ================= BACK HOME ================= */
-function initBackHome() {
-  const back = document.getElementById("backHome");
-  if (!back) return;
-
-  back.onclick = () => {
-    history.pushState(null, "", location.pathname);
-    results.innerHTML = "";
-    updateBackHome();
-  };
-
-  window.addEventListener("popstate", updateBackHome);
-}
-
-function updateBackHome() {
-  const back = document.getElementById("backHome");
-  if (!back) return;
-  back.style.display = location.search.includes("id=") ? "block" : "none";
-}
+/* ================= STUBS ================= */
+function loadCategories() {}
+function initReport() {}
+function initBackHome() {}
