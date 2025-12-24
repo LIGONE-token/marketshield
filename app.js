@@ -33,6 +33,73 @@ function renderRawText(text) {
   if (!text) return "";
   return `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(text)}</div>`;
 }
+function renderSummaryWithTables(text) {
+  if (!text) return "";
+
+  const lines = text.split("\n");
+  let html = "";
+  let buffer = [];
+
+  const flushParagraph = () => {
+    if (buffer.length) {
+      html += `<p>${escapeHtml(buffer.join("\n")).replace(/\n/g, "<br>")}</p>`;
+      buffer = [];
+    }
+  };
+
+  const isSeparator = l => /^[-\s|]+$/.test(l);
+  const isPipeRow = l => (l.match(/\|/g) || []).length >= 2;
+
+  for (let i = 0; i < lines.length; ) {
+    const line = lines[i];
+
+    if (!line.trim()) {
+      flushParagraph();
+      i++;
+      continue;
+    }
+
+    // 🔹 Tabelle erkannt
+    if (isPipeRow(line)) {
+      flushParagraph();
+      const rows = [];
+
+      while (i < lines.length && (isPipeRow(lines[i]) || isSeparator(lines[i]))) {
+        if (!isSeparator(lines[i])) {
+          rows.push(
+            lines[i]
+              .split("|")
+              .map(c => c.trim())
+              .filter(Boolean)
+          );
+        }
+        i++;
+      }
+
+      if (rows.length) {
+        html += `<div class="summary-table-wrap"><table class="summary-table">`;
+        html += "<thead><tr>";
+        rows[0].forEach(c => html += `<th>${escapeHtml(c)}</th>`);
+        html += "</tr></thead><tbody>";
+
+        for (let r = 1; r < rows.length; r++) {
+          html += "<tr>";
+          rows[r].forEach(c => html += `<td>${escapeHtml(c)}</td>`);
+          html += "</tr>";
+        }
+
+        html += "</tbody></table></div>";
+      }
+      continue;
+    }
+
+    buffer.push(line);
+    i++;
+  }
+
+  flushParagraph();
+  return html;
+}
 
 /* ================= SUPABASE ================= */
 async function supa(query) {
