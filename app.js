@@ -78,13 +78,16 @@ function normalizeText(text) {
 }
 function renderTextBlock(title, text) {
   if (!text) return "";
+  const norm = normalizeText(text);
+
   return `
-    <h3>${title}</h3>
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${normalizeText(text)}
+    <h3>${escapeHtml(title)}</h3>
+    <div class="ms-text">
+      ${renderMarkdownTables(norm)}
     </div>
   `;
 }
+
 
 function renderJsonList(title, data) {
   if (!data) return "";
