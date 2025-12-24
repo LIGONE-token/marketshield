@@ -276,6 +276,20 @@ async function loadEntry(id) {
   const back = $("backHome");
   if (back) back.style.display = "block";
 }
+async function saveSearchQuery(q) {
+  if (!q || q.length < 2) return;
+
+  fetch(`${SUPABASE_URL}/rest/v1/search_queries`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify({ query: q })
+  }).catch(() => {});
+}
 
 /* ================= EVENTS ================= */
 document.addEventListener("click", (e) => {
