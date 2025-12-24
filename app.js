@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / KORRIGIERT)
+   MarketShield – app.js (FINAL / STABIL / ENDGÜLTIG)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -43,14 +43,9 @@ function renderRawText(t) {
 }
 
 /* ================= SUMMARY ================= */
-function renderSummaryWithTables(text) {
+function renderSummary(text) {
   if (!text) return "";
-  const normalized = String(text)
-    .replace(/\\r\\n/g, "\n")
-    .replace(/\\n\\n/g, "\n\n")
-    .replace(/\\n/g, "\n");
-
-  const lines = normalized.split("\n");
+  const lines = String(text).split("\n");
   let html = "", buf = [];
 
   const flush = () => {
@@ -84,10 +79,9 @@ function renderIndustry(score) {
   if (!Number.isFinite(n) || n <= 0) return "";
 
   const w = Math.round((n / 10) * 80);
-
-  let color = "#2e7d32";          // grün
-  if (n >= 7) color = "#c62828";  // rot (hoch)
-  else if (n >= 4) color = "#f9a825"; // gelb (mittel)
+  let color = "#2e7d32";
+  if (n >= 7) color = "#c62828";
+  else if (n >= 4) color = "#f9a825";
 
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
@@ -119,39 +113,20 @@ function renderScoreBlock(score, processing, size = 13) {
     </div>`;
 }
 
-/* ================= RECHTLICHER TOOLTIP ================= */
+/* ================= RECHTLICHER TOOLTIP (NUR DETAIL) ================= */
 function renderLegalTooltip() {
   return `
-    <div style="margin:6px 0 16px 0;">
+    <div style="margin:6px 0 18px 0;">
       <span
-        style="
-          position:relative;
-          font-size:12px;
-          color:#666;
-          cursor:help;
-          display:inline-block;
-        "
+        style="position:relative;font-size:12px;color:#666;cursor:help;"
         onmouseenter="this.querySelector('.legal-tip').style.display='block'"
         onmouseleave="this.querySelector('.legal-tip').style.display='none'"
       >
         ℹ️ <span style="text-decoration:underline;">Rechtlicher Hinweis</span>
-        <span
-          class="legal-tip"
-          style="
-            display:none;
-            position:absolute;
-            left:0;
-            bottom:130%;
-            width:260px;
-            background:#222;
-            color:#fff;
-            padding:10px;
-            border-radius:6px;
-            font-size:11px;
-            line-height:1.4;
-            z-index:9999;
-          "
-        >
+        <span class="legal-tip"
+          style="display:none;position:absolute;left:0;bottom:130%;width:260px;
+                 background:#222;color:#fff;padding:10px;border-radius:6px;
+                 font-size:11px;line-height:1.4;z-index:9999;">
           MarketShield stellt Informationen und Bewertungen zur Orientierung bereit.
           Diese dürfen aus rechtlichen Gründen nicht als absolute Wahrheit oder
           individuelle Beratung verstanden werden.
@@ -187,15 +162,18 @@ function loadCategories() {
   ).join("");
 }
 
-/* ================= LISTE ================= */
+/* ================= LISTE (OHNE TOOLTIP) ================= */
 function renderList(items) {
   if (!items || !items.length) { clearResults(); return; }
   setResultsHTML(items.map(e => `
-    <div class="entry-card" data-id="${e.id}" style="overflow:visible;">
+    <div class="entry-card" data-id="${e.id}">
       <strong>${escapeHtml(e.title)}</strong><br>
-      <small>${escapeHtml(e.category||"")}${e.category&&e.type?" · ":""}${escapeHtml(formatType(e.type))}</small>
+      <small>
+        ${escapeHtml(e.category||"")}
+        ${e.category&&e.type?" · ":""}
+        ${escapeHtml(formatType(e.type))}
+      </small>
       ${renderScoreBlock(e.score, e.processing_score, 12)}
-      ${renderLegalTooltip()}
     </div>
   `).join(""));
 }
@@ -220,7 +198,7 @@ async function loadListByCategory(cat) {
   renderList(d);
 }
 
-/* ================= DETAIL ================= */
+/* ================= DETAIL (MIT TOOLTIP) ================= */
 async function loadEntry(id) {
   const d = await supa("entries",{ id:`eq.${id}`, limit:"1" });
   if (!d || !d.length) return clearResults();
@@ -229,19 +207,18 @@ async function loadEntry(id) {
   setResultsHTML(`
     <h2>${escapeHtml(e.title)}</h2>
     <div style="opacity:.7;margin-bottom:12px;">
-      ${escapeHtml(e.category||"")}${e.category&&e.type?" · ":""}${escapeHtml(formatType(e.type))}
+      ${escapeHtml(e.category||"")}
+      ${e.category&&e.type?" · ":""}
+      ${escapeHtml(formatType(e.type))}
     </div>
 
     ${renderScoreBlock(e.score, e.processing_score, 13)}
     ${renderLegalTooltip()}
 
-    ${e.summary?`<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}`:""}
-    ${e.mechanism?`<h3>Mechanismus</h3>${renderRawText(e.mechanism)}`:""}
-    ${e.scientific_note?`<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}`:""}
+    ${e.summary ? `<h3>Beschreibung</h3>${renderSummary(e.summary)}` : ""}
+    ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
+    ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
   `);
-
-  const b = $("backHome");
-  if (b) b.style.display="block";
 }
 
 /* ================= EVENTS ================= */
