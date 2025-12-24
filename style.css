@@ -1355,3 +1355,11 @@ table, button, a, input, select {
   z-index: 9999;
   pointer-events: auto;
 }
+#shareBox {
+  pointer-events: none;
+}
+#reportBtn {
+  pointer-events: auto;
+  position: relative;
+  z-index: 10;
+}
