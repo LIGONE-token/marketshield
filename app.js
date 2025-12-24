@@ -47,13 +47,11 @@ function renderSummary(text) {
   if (!text) return "";
   const lines = String(text).split("\n");
   let html = "", buf = [];
-
   const flush = () => {
     if (!buf.length) return;
     html += `<p>${escapeHtml(buf.join(" "))}</p>`;
     buf = [];
   };
-
   for (let l of lines) {
     l = l.trim();
     if (!l) { flush(); continue; }
@@ -77,12 +75,10 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-
   const w = Math.round((n / 10) * 80);
   let color = "#2e7d32";
   if (n >= 7) color = "#c62828";
   else if (n >= 4) color = "#f9a825";
-
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
       <div style="width:${w}px;height:8px;background:${color};"></div>
@@ -94,10 +90,8 @@ function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
-
   const colW = 90;
   const labelStyle = `font-size:${size}px;opacity:.85;line-height:1.2;`;
-
   return `
     <div style="margin:12px 0;">
       ${h ? `
@@ -151,7 +145,11 @@ function setResultsHTML(html) {
   if (!b) return;
   b.innerHTML = `<div id="shareBox"></div>${html || ""}`;
 }
-function clearResults(){ setResultsHTML(""); }
+function clearResults() {
+  setResultsHTML("");
+  const back = $("backHome");
+  if (back) back.style.display = "none";
+}
 
 /* ================= KATEGORIEN ================= */
 function loadCategories() {
@@ -219,17 +217,30 @@ async function loadEntry(id) {
     ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
     ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
   `);
+
+  const back = $("backHome");
+  if (back) back.style.display = "block";
 }
 
 /* ================= EVENTS ================= */
 document.addEventListener("click", (e) => {
 
+  // 🔙 Zur Startseite
+  const back = e.target.closest("#backHome");
+  if (back) {
+    history.pushState(null, "", location.pathname);
+    clearResults();
+    return;
+  }
+
+  // 📂 Kategorie
   const cat = e.target.closest(".cat-btn");
   if (cat) {
     loadListByCategory(cat.dataset.cat);
     return;
   }
 
+  // 📄 Eintrag
   const card = e.target.closest(".entry-card");
   if (card) {
     loadEntry(card.dataset.id);
