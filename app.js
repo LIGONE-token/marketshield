@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / REPARIERT)
+   MarketShield – app.js (FINAL / STABIL / KORREKT)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -18,7 +18,7 @@ const CATEGORIES = [
 /* ================= DOM ================= */
 const $ = (id) => document.getElementById(id);
 const $$ = (sel) => document.querySelector(sel);
-function resultsBox() { return $("results"); }
+const resultsBox = () => $("results");
 
 /* ================= HELPERS ================= */
 function escapeHtml(s) {
@@ -75,7 +75,7 @@ function renderHealth(score) {
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
-  if (n >= 20) return "💛";
+  if (n >= 20) return "💛"; // gelb
   return "⚠️❗⚠️";
 }
 
@@ -89,7 +89,7 @@ function renderIndustry(score) {
     </div>`;
 }
 
-/* ================= SCORE BLOCK (ORIGINAL & KORREKT) ================= */
+/* ================= SCORE BLOCK (EXAKT) ================= */
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
@@ -113,12 +113,31 @@ function renderScoreBlock(score, processing, size = 13) {
     </div>`;
 }
 
+/* ================= RECHTLICHER TOOLTIP ================= */
+function renderLegalTooltip() {
+  return `
+    <div style="margin-top:10px;">
+      <span style="position:relative;font-size:11px;color:#777;text-decoration:underline;cursor:help;"
+        onmouseenter="this.lastElementChild.style.display='block'"
+        onmouseleave="this.lastElementChild.style.display='none'">
+        Rechtliche Info
+        <span style="display:none;position:absolute;left:0;bottom:130%;width:260px;
+          background:#222;color:#fff;padding:10px;border-radius:6px;
+          font-size:11px;line-height:1.4;z-index:999;">
+          MarketShield stellt Informationen und Bewertungen zur Orientierung bereit.
+          Diese dürfen aus rechtlichen Gründen nicht als absolute Wahrheit oder
+          individuelle Beratung verstanden werden.
+        </span>
+      </span>
+    </div>`;
+}
+
 /* ================= SUPABASE ================= */
 async function supa(path, params) {
   const url = new URL(`${SUPABASE_URL}/rest/v1/${path}`);
   if (params) url.search = new URLSearchParams(params).toString();
   const r = await fetch(url, {
-    headers: { apikey: SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}` }
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   });
   return r.json();
 }
@@ -148,6 +167,7 @@ function renderList(items) {
       <strong>${escapeHtml(e.title)}</strong><br>
       <small>${escapeHtml(e.category||"")}${e.category&&e.type?" · ":""}${escapeHtml(formatType(e.type))}</small>
       ${renderScoreBlock(e.score, e.processing_score, 12)}
+      ${renderLegalTooltip()}
     </div>
   `).join(""));
 }
@@ -187,17 +207,25 @@ async function loadEntry(id) {
     ${e.summary?`<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}`:""}
     ${e.mechanism?`<h3>Mechanismus</h3>${renderRawText(e.mechanism)}`:""}
     ${e.scientific_note?`<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}`:""}
+    ${renderLegalTooltip()}
   `);
 
   const b = $("backHome");
   if (b) b.style.display="block";
 }
 
+/* ================= EVENTS ================= */
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".entry-card");
+  if (card) return loadEntry(card.dataset.id);
+
+  const cat = e.target.closest(".cat-btn");
+  if (cat) return loadListByCategory(cat.dataset.cat);
+});
+
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
   const input = $("searchInput");
-  if (input) {
-    input.addEventListener("input", e => loadListBySearch(e.target.value.trim()));
-  }
+  if (input) input.addEventListener("input", e => loadListBySearch(e.target.value.trim()));
 });
