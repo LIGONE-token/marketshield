@@ -6,6 +6,8 @@ let currentEntryId = null;
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
+  injectTableStyles();   // ✅ FEHLTE – OHNE DAS KEINE TABELLEN
+
   loadCategories();
 
   const params = new URLSearchParams(location.search);
@@ -15,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initReport();
   initBackHome();
 });
+
 
 /* ================= GLOBAL CLICK ================= */
 document.addEventListener("click", (e) => {
