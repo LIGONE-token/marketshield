@@ -82,12 +82,21 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
+
   const w = Math.round((n / 10) * 80);
+
+  // 🔴 Farb-Logik nach Höhe des Verarbeitungsgrads
+  let color = "#2e7d32";        // grün (niedrig)
+  if (n >= 7) color = "#c62828"; // rot (hoch)
+  else if (n >= 4) color = "#f9a825"; // gelb (mittel)
+
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
-      <div style="width:${w}px;height:8px;background:#2e7d32;"></div>
-    </div>`;
+      <div style="width:${w}px;height:8px;background:${color};"></div>
+    </div>
+  `;
 }
+
 
 /* ================= SCORE BLOCK (EXAKT) ================= */
 function renderScoreBlock(score, processing, size = 13) {
