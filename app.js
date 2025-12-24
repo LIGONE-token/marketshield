@@ -231,17 +231,21 @@ async function loadEntry(id) {
   const e = data[0];
 
   setResultsHTML(`
-    <h2>${escapeHtml(e.title)}</h2>
-    <div style="opacity:.7;margin-bottom:12px;">
-      ${escapeHtml(e.category || "")}
-      ${e.category && e.type ? " · " : ""}
-      ${escapeHtml(formatType(e.type))}
-    </div>
+  <h2>${escapeHtml(e.title)}</h2>
+  <div style="opacity:.7;margin-bottom:12px;">
+    ${escapeHtml(e.category || "")}
+    ${e.category && e.type ? " · " : ""}
+    ${escapeHtml(formatType(e.type))}
+  </div>
 
-    ${e.summary ? `<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}` : ""}
-    ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
-    ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
-  `);
+  ${renderHealthScore(e.score)}
+  ${renderIndustryScore(e.processing_score)}
+
+  ${e.summary ? `<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}` : ""}
+  ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
+  ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
+`);
+
 
   const back = $("backHome");
   if (back) back.style.display = "block";
