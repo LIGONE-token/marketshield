@@ -1,8 +1,9 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / FREEZE)
-   - Kategorien NUR aus categories.json
+   MarketShield – app.js (FINAL / FREEZE / GENERATOR-FEST)
+   - Kategorien NUR aus categories.json (Root, neben index.html)
    - Startseite leer
    - Texte roh anzeigen (white-space: pre-wrap)
+   - In summary: Markdown-Tabellen erkennen & rendern
    - Keine Platzhalter / Hinweise
    - Report-Button UNANTASTBAR
    - Render-Ziel: #results (wie in index.html)
@@ -28,15 +29,17 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
-/* WIE FRÜHER: Text 1:1 anzeigen */
+/* Rohes Rendering (wie früher) */
 function renderRawText(text) {
   if (!text) return "";
   return `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(text)}</div>`;
 }
+
+/* Summary: Rohtext + Markdown-Tabellen */
 function renderSummaryWithTables(text) {
   if (!text) return "";
 
-  const lines = text.split("\n");
+  const lines = String(text).split("\n");
   let html = "";
   let buffer = [];
 
@@ -48,7 +51,7 @@ function renderSummaryWithTables(text) {
   };
 
   const isSeparator = l => /^[-\s|]+$/.test(l);
-  const isPipeRow = l => (l.match(/\|/g) || []).length >= 2;
+  const isPipeRow  = l => (l.match(/\|/g) || []).length >= 2;
 
   for (let i = 0; i < lines.length; ) {
     const line = lines[i];
@@ -59,35 +62,27 @@ function renderSummaryWithTables(text) {
       continue;
     }
 
-    // 🔹 Tabelle erkannt
     if (isPipeRow(line)) {
       flushParagraph();
       const rows = [];
-
       while (i < lines.length && (isPipeRow(lines[i]) || isSeparator(lines[i]))) {
         if (!isSeparator(lines[i])) {
           rows.push(
-            lines[i]
-              .split("|")
-              .map(c => c.trim())
-              .filter(Boolean)
+            lines[i].split("|").map(c => c.trim()).filter(Boolean)
           );
         }
         i++;
       }
-
       if (rows.length) {
         html += `<div class="summary-table-wrap"><table class="summary-table">`;
         html += "<thead><tr>";
         rows[0].forEach(c => html += `<th>${escapeHtml(c)}</th>`);
         html += "</tr></thead><tbody>";
-
         for (let r = 1; r < rows.length; r++) {
           html += "<tr>";
           rows[r].forEach(c => html += `<td>${escapeHtml(c)}</td>`);
           html += "</tr>";
         }
-
         html += "</tbody></table></div>";
       }
       continue;
@@ -116,17 +111,13 @@ async function supa(query) {
 function setResultsHTML(html) {
   const box = resultsBox();
   if (!box) return;
-  // shareBox immer erhalten (existiert in index.html)
   box.innerHTML = `<div id="shareBox"></div>${html || ""}`;
 }
 function clearResults() { setResultsHTML(""); }
 
 /* ================= LISTE ================= */
 function renderList(items) {
-  if (!items || !items.length) {
-    setResultsHTML("");
-    return;
-  }
+  if (!items || !items.length) { setResultsHTML(""); return; }
   setResultsHTML(
     items.map(e => `
       <div class="entry-card" data-id="${e.id}">
@@ -154,7 +145,6 @@ async function loadListBySearch(q) {
 async function loadListByCategory(categoryTitle) {
   const cat = String(categoryTitle || "").trim();
   if (!cat) return;
-  // exakter Match auf Titel aus categories.json
   const data = await supa(
     `entries?select=id,title,category,type&category=eq.${encodeURIComponent(cat)}&order=title.asc&limit=500`
   );
@@ -178,7 +168,7 @@ async function loadEntry(id) {
       ${escapeHtml(e.type || "")}
     </div>
 
-    ${e.summary ? `<h3>Beschreibung</h3>${renderRawText(e.summary)}` : ""}
+    ${e.summary ? `<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}` : ""}
     ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
     ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
   `);
@@ -193,13 +183,17 @@ async function loadCategories() {
   if (!grid) return;
 
   try {
-    const res = await fetch("categories.json");
-    const cats = await res.json(); // erwartet: [{ id, title, description }]
+    // Erwartet im Root neben index.html
+    const res = await fetch("./categories.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const cats = await res.json(); // [{ id, title, description }]
+    if (!Array.isArray(cats) || !cats.length) return;
+
     grid.innerHTML = cats
       .map(c => `<button class="cat-btn" data-cat="${escapeHtml(c.title)}">${escapeHtml(c.title)}</button>`)
       .join("");
   } catch (e) {
-    console.error("categories.json konnte nicht geladen werden", e);
+    console.error("❌ Kategorien konnten nicht geladen werden:", e);
   }
 }
 
