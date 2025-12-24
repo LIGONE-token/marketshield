@@ -4,7 +4,7 @@
 
 /* ================= CONFIG ================= */
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
-const SUPABASE_KEY = "sb_publishable_DEIN_KEY_HIER"; // falls vorhanden
+const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 /* ================= HELPERS ================= */
 
