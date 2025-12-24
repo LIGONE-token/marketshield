@@ -1,12 +1,12 @@
 /* =====================================================
    MarketShield – app.js (FINAL / STABIL / SEARCH FIX)
    - Kategorien FEST im Code (immer sichtbar)
-   - Suche stabil: PostgREST ilike.*term* (kein %25 Chaos)
+   - Suche stabil: PostgREST ilike.*term*
    - Summary: Markdown-Tabellen rendern
    - Mechanismus/Scientific: roh (pre-wrap)
    - Startseite: leer (keine Platzhaltertexte)
    - Report-Button UNANTASTBAR
-   - Passt zur bestehenden index.html
+   - SCORES: exakt wie vorher (Herzen + Balken)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -49,7 +49,7 @@ function renderRawText(text) {
   return `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(text)}</div>`;
 }
 
-/* Summary: Text + Markdown-Tabellen (|) */
+/* ================= SUMMARY + TABELLEN ================= */
 function renderSummaryWithTables(text) {
   if (!text) return "";
 
@@ -77,8 +77,8 @@ function renderSummaryWithTables(text) {
 
     if (isPipeRow(line)) {
       flushParagraph();
-
       const rows = [];
+
       while (i < lines.length && (isPipeRow(lines[i]) || isSeparator(lines[i]))) {
         if (!isSeparator(lines[i])) {
           rows.push(
@@ -93,12 +93,10 @@ function renderSummaryWithTables(text) {
 
       if (rows.length) {
         html += `<div class="summary-table-wrap"><table class="summary-table">`;
-
         html += "<thead><tr>";
         rows[0].forEach(c => html += `<th>${escapeHtml(c)}</th>`);
-        html += "</tr></thead>";
+        html += "</tr></thead><tbody>";
 
-        html += "<tbody>";
         for (let r = 1; r < rows.length; r++) {
           html += "<tr>";
           rows[r].forEach(c => html += `<td>${escapeHtml(c)}</td>`);
@@ -117,12 +115,29 @@ function renderSummaryWithTables(text) {
   return html;
 }
 
-/* ================= SUPABASE (robust) ================= */
-/**
- * PostgREST: baue URL sauber mit URLSearchParams (keine Encoding-Fallen)
- * path z.B. "entries"
- * params z.B. { select:"id,title", or:"(...)", order:"title.asc", limit:"200" }
- */
+/* ================= SCORES (EXAKT WIE VORHER) ================= */
+function renderHealth(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n >= 80) return "💚💚💚";
+  if (n >= 60) return "💚💚";
+  if (n >= 40) return "💚";
+  if (n >= 20) return "💛";
+  return "⚠️❗⚠️";
+}
+
+function renderIndustry(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  const w = Math.round((n / 10) * 80);
+  return `
+    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
+      <div style="width:${w}px;height:8px;background:#2e7d32;"></div>
+    </div>
+  `;
+}
+
+/* ================= SUPABASE ================= */
 async function supa(path, params) {
   const url = new URL(`${SUPABASE_URL}/rest/v1/${path}`);
   if (params) url.search = new URLSearchParams(params).toString();
@@ -141,12 +156,11 @@ async function supa(path, params) {
 function setResultsHTML(html) {
   const box = resultsBox();
   if (!box) return;
-  // shareBox IMMER erhalten (wie in index.html)
   box.innerHTML = `<div id="shareBox"></div>${html || ""}`;
 }
 function clearResults() { setResultsHTML(""); }
 
-/* ================= KATEGORIEN (immer sichtbar) ================= */
+/* ================= KATEGORIEN ================= */
 function loadCategories() {
   const grid = $$(".category-grid");
   if (!grid) return;
@@ -177,10 +191,8 @@ function renderList(items) {
   );
 }
 
-/* ================= SUCHE (FIX) ================= */
+/* ================= SUCHE ================= */
 function toIlikePattern(q) {
-  // PostgREST ilike nutzt * als Wildcard
-  // Außerdem trimmen wir extremen Müll, ohne echte Begriffe zu zerstören.
   const clean = String(q || "").trim();
   return `*${clean}*`;
 }
@@ -190,7 +202,6 @@ async function loadListBySearch(q) {
   if (query.length < 2) { clearResults(); return; }
 
   const pat = toIlikePattern(query);
-
   const data = await supa("entries", {
     select: "id,title,category,type",
     or: `(title.ilike.${pat},summary.ilike.${pat})`,
@@ -201,7 +212,7 @@ async function loadListBySearch(q) {
   renderList(data);
 }
 
-/* ================= KATEGORIE-FILTER ================= */
+/* ================= KATEGORIE ================= */
 async function loadListByCategory(categoryTitle) {
   const cat = String(categoryTitle || "").trim();
   if (!cat) return;
@@ -227,45 +238,42 @@ async function loadEntry(id) {
   });
 
   if (!data || !data.length) { clearResults(); return; }
-
   const e = data[0];
 
   setResultsHTML(`
-  <h2>${escapeHtml(e.title)}</h2>
-  <div style="opacity:.7;margin-bottom:12px;">
-    ${escapeHtml(e.category || "")}
-    ${e.category && e.type ? " · " : ""}
-    ${escapeHtml(formatType(e.type))}
-  </div>
+    <h2>${escapeHtml(e.title)}</h2>
+    <div style="opacity:.7;margin-bottom:12px;">
+      ${escapeHtml(e.category || "")}
+      ${e.category && e.type ? " · " : ""}
+      ${escapeHtml(formatType(e.type))}
+    </div>
 
-  ${renderHealthScore(e.score)}
-  ${renderIndustryScore(e.processing_score)}
+    <div><strong>Gesundheit:</strong> ${renderHealth(e.score)}</div>
+    <div style="margin-top:6px;">
+      <strong>Industrie Verarbeitungsgrad:</strong>
+      ${renderIndustry(e.processing_score)}
+    </div>
 
-  ${e.summary ? `<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}` : ""}
-  ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
-  ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
-`);
-
+    ${e.summary ? `<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}` : ""}
+    ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
+    ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
+  `);
 
   const back = $("backHome");
   if (back) back.style.display = "block";
 }
 
-/* ================= INPUT SEARCH ================= */
+/* ================= SEARCH INPUT ================= */
 function initSearch() {
   const input = $("searchInput");
   if (!input) return;
 
   input.addEventListener("input", () => {
     const q = input.value.trim();
-    if (q.length < 2) {
-      clearResults();
-      return;
-    }
+    if (q.length < 2) { clearResults(); return; }
     loadListBySearch(q);
   });
 
-  // optional: Enter erzwingt Suche (falls Browser-Input-Events zicken)
   input.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
     const q = input.value.trim();
@@ -276,7 +284,6 @@ function initSearch() {
 
 /* ================= NAVIGATION ================= */
 document.addEventListener("click", (e) => {
-  // Report-Button UNANTASTBAR
   if (e.target.closest("#reportBtn")) return;
 
   const card = e.target.closest(".entry-card");
@@ -307,5 +314,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
-  else clearResults(); // Startseite leer, Kategorien sichtbar
+  else clearResults();
 });
