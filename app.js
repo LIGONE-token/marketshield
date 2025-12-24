@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / TABLE-FIX)
+   MarketShield – app.js (FINAL / STABIL / RESTORED)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -79,10 +79,7 @@ function renderSummaryWithTables(text) {
       while (i < lines.length && (isPipeRow(lines[i]) || isSeparator(lines[i]))) {
         if (!isSeparator(lines[i])) {
           rows.push(
-            lines[i]
-              .split("|")
-              .map(c => c.trim())
-              .filter(Boolean)
+            lines[i].split("|").map(c => c.trim()).filter(Boolean)
           );
         }
         i++;
@@ -90,11 +87,9 @@ function renderSummaryWithTables(text) {
 
       if (rows.length) {
         html += `<div class="summary-table-wrap"><table class="summary-table">`;
-
         html += "<thead><tr>";
         rows[0].forEach(c => html += `<th>${escapeHtml(c)}</th>`);
         html += "</tr></thead>";
-
         html += "<tbody>";
         for (let r = 1; r < rows.length; r++) {
           html += "<tr>";
@@ -128,8 +123,8 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-  const w = Math.round((n / 10) * 80);
 
+  const w = Math.round((n / 10) * 80);
   let color = "#2e7d32";
   if (n >= 7) color = "#c62828";
   else if (n >= 4) color = "#f9a825";
@@ -196,6 +191,21 @@ async function supa(path, params) {
   return r.json();
 }
 
+/* ================= SEARCH SAVE ================= */
+async function saveSearchQuery(q) {
+  if (!q || q.length < 2) return;
+  fetch(`${SUPABASE_URL}/rest/v1/search_queries`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify({ query: q })
+  }).catch(() => {});
+}
+
 /* ================= CORE ================= */
 function setResultsHTML(html) {
   const b = resultsBox();
@@ -217,7 +227,7 @@ function loadCategories() {
   ).join("");
 }
 
-/* ================= LISTE (OHNE TOOLTIP) ================= */
+/* ================= LISTE ================= */
 function renderList(items) {
   if (!items || !items.length) { clearResults(); return; }
   setResultsHTML(items.map(e => `
@@ -236,10 +246,13 @@ function renderList(items) {
 /* ================= LOADERS ================= */
 async function loadListBySearch(q) {
   if (!q || q.length < 2) { clearResults(); return; }
+  saveSearchQuery(q);
+
   const d = await supa("entries", {
     select:"id,title,category,type,score,processing_score",
     or:`(title.ilike.*${q}*,summary.ilike.*${q}*)`,
-    order:"title.asc", limit:"200"
+    order:"title.asc",
+    limit:"200"
   });
   renderList(d);
 }
@@ -247,7 +260,9 @@ async function loadListBySearch(q) {
 async function loadListByCategory(cat) {
   const d = await supa("entries", {
     select:"id,title,category,type,score,processing_score",
-    category:`eq.${cat}`, order:"title.asc", limit:"500"
+    category:`eq.${cat}`,
+    order:"title.asc",
+    limit:"500"
   });
   renderList(d);
 }
@@ -276,36 +291,13 @@ async function loadEntry(id) {
   const back = $("backHome");
   if (back) back.style.display = "block";
 }
-async function saveSearchQuery(q) {
-  if (!q || q.length < 2) return;
-
-  fetch(`${SUPABASE_URL}/rest/v1/search_queries`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify({ query: q })
-  }).catch(() => {});
-}
 
 /* ================= EVENTS ================= */
 document.addEventListener("click", (e) => {
 
-  // 🚨 REPORT-BUTTON MUSS ABSOLUT FREI SEIN
-  const report = e.target.closest("#reportBtn");
-  if (report) {
-    e.preventDefault();    // ← WICHTIG
-    e.stopPropagation();   // ← KRITISCH
-    return;
-  }
-
   // 🔙 Zur Startseite
   const back = e.target.closest("#backHome");
   if (back) {
-    e.preventDefault();
     history.pushState(null, "", location.pathname);
     clearResults();
     return;
@@ -314,7 +306,6 @@ document.addEventListener("click", (e) => {
   // 📂 Kategorie
   const cat = e.target.closest(".cat-btn");
   if (cat) {
-    e.preventDefault();
     const c = cat.dataset.cat;
     history.pushState({ type:"category", cat:c }, "", "?cat=" + encodeURIComponent(c));
     loadListByCategory(c);
@@ -324,7 +315,6 @@ document.addEventListener("click", (e) => {
   // 📄 Eintrag
   const card = e.target.closest(".entry-card");
   if (card) {
-    e.preventDefault();
     const id = card.dataset.id;
     history.pushState({ type:"entry", id }, "", "?id=" + id);
     loadEntry(id);
