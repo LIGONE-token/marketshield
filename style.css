@@ -1364,3 +1364,6 @@ table, button, a, input, select {
   z-index: 10;
 }
 #shareBox { pointer-events: none; }
+#shareBox {
+  pointer-events: none;
+}
