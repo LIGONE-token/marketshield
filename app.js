@@ -63,10 +63,7 @@ function setResultsHTML(html) {
 
 function clearResults() {
   setResultsHTML(`
-    <p style="margin-top:12px;">
-      Tippe oben in die Suche (mind. 2 Zeichen) oder wähle eine Kategorie.
-    </p>
-  `);
+     `);
 }
 
 /* ================= LISTE ================= */
