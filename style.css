@@ -1327,3 +1327,11 @@ table, button, a, input, select {
   height:100%;
   background:#4a90e2;
 }
+.entry-card {
+  overflow: visible;
+  position: relative;
+}
+
+#results {
+  overflow: visible;
+}
