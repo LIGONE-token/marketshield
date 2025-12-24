@@ -127,6 +127,26 @@ async function saveSearchQuery(query) {
     // absichtlich leer – Suche darf niemals blockieren
   }
 }
+function injectTableStyles() {
+  if (document.getElementById("msTableStyles")) return;
+
+  const style = document.createElement("style");
+  style.id = "msTableStyles";
+  style.textContent = `
+    .ms-text p { margin: 8px 0; line-height: 1.6; }
+    .ms-text .ms-sp { height: 10px; }
+    .ms-table { margin: 12px 0; border: 1px solid #ddd; border-radius: 10px; overflow: hidden; }
+    .ms-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; }
+    .ms-row > div { padding: 8px 10px; border-top: 1px solid #eee; }
+    .ms-head { font-weight: 800; background: #f6f6f6; }
+    .ms-head > div { border-top: none; }
+    @media (max-width: 720px) {
+      .ms-row { grid-template-columns: 1fr; }
+      .ms-row > div { border-top: 1px solid #eee; }
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 
 /* ================= SCORES ================= */
