@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL)
+   MarketShield – app.js (FINAL / STABIL / KOMPLETT)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -25,7 +25,11 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
-/* ================= SUMMARY WITH TABLES ================= */
+function isThema(e) {
+  return String(e.type).toLowerCase() === "thema";
+}
+
+/* ================= SUMMARY (MIT TABELLEN) ================= */
 
 function renderSummaryWithTables(summary) {
   if (!summary) return "";
@@ -57,7 +61,6 @@ function renderSummaryWithTables(summary) {
       continue;
     }
 
-    // ===== Tabelle erkannt =====
     if (isPipeRow(line)) {
       flushParagraph();
 
@@ -67,7 +70,7 @@ function renderSummaryWithTables(summary) {
           const cells = lines[i]
             .split("|")
             .map(c => c.trim())
-            .filter(c => c !== "");
+            .filter(Boolean);
           rows.push(cells);
         }
         i++;
@@ -76,12 +79,10 @@ function renderSummaryWithTables(summary) {
       if (rows.length) {
         html += `<div class="summary-table-wrap"><table class="summary-table">`;
 
-        // Header
         html += "<thead><tr>";
         rows[0].forEach(c => html += `<th>${escapeHtml(c)}</th>`);
         html += "</tr></thead>";
 
-        // Body
         html += "<tbody>";
         for (let r = 1; r < rows.length; r++) {
           html += "<tr>";
@@ -101,7 +102,7 @@ function renderSummaryWithTables(summary) {
   return html;
 }
 
-/* ================= GENERIC TEXT BLOCK ================= */
+/* ================= TEXT BLOCK ================= */
 
 function renderTextBlock(title, text) {
   if (!text) return "";
@@ -115,20 +116,53 @@ function renderTextBlock(title, text) {
   `;
 }
 
-/* ================= LOAD ENTRY ================= */
+/* ================= DATA FETCH ================= */
+
+async function supa(query) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+    },
+  });
+  return r.json();
+}
+
+/* ================= LISTE ================= */
+
+async function loadList(filter = {}) {
+  let q = "entries?select=id,title,summary,category,type&order=title.asc";
+
+  if (filter.category) {
+    q += `&category=eq.${encodeURIComponent(filter.category)}`;
+  }
+
+  if (filter.search) {
+    const s = encodeURIComponent(`%${filter.search}%`);
+    q += `&or=(title.ilike.${s},summary.ilike.${s})`;
+  }
+
+  const data = await supa(q);
+  const container = document.getElementById("content");
+
+  if (!data || !data.length) {
+    container.innerHTML = "<p>Keine Einträge gefunden.</p>";
+    return;
+  }
+
+  container.innerHTML = data.map(e => `
+    <div class="entry-card" data-id="${e.id}">
+      <h3>${escapeHtml(e.title)}</h3>
+      <p>${escapeHtml(e.summary?.slice(0, 200) || "")}…</p>
+      <small>${escapeHtml(e.category)} · ${escapeHtml(e.type)}</small>
+    </div>
+  `).join("");
+}
+
+/* ================= DETAIL ================= */
 
 async function loadEntry(id) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/entries?id=eq.${id}`,
-    {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    }
-  );
-
-  const data = await res.json();
+  const data = await supa(`entries?id=eq.${id}`);
   if (!data || !data.length) return;
 
   const e = data[0];
@@ -137,19 +171,83 @@ async function loadEntry(id) {
   container.innerHTML = `
     <h1>${escapeHtml(e.title)}</h1>
 
-    <!-- SUMMARY (MIT TABELLEN) -->
     <h3>Zusammenfassung</h3>
     ${renderSummaryWithTables(e.summary)}
 
-    ${renderTextBlock("Mechanismus", e.mechanism)}
-    ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
+    ${
+      isThema(e)
+        ? ""
+        : renderTextBlock("Mechanismus", e.mechanism)
+    }
+
+    ${
+      isThema(e)
+        ? ""
+        : renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)
+    }
   `;
 }
+
+/* ================= KATEGORIEN ================= */
+
+async function loadCategories() {
+  const cats = await supa("entries?select=category");
+  const box = document.getElementById("categories");
+  if (!box) return;
+
+  const uniq = [...new Set(cats.map(c => c.category).filter(Boolean))].sort();
+
+  box.innerHTML = uniq.map(c => `
+    <button class="cat-btn" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>
+  `).join("");
+}
+
+/* ================= SUCHE ================= */
+
+function initSearch() {
+  const input = document.getElementById("searchInput");
+  if (!input) return;
+
+  input.addEventListener("input", () => {
+    const q = input.value.trim();
+    if (q.length < 2) {
+      loadList();
+    } else {
+      loadList({ search: q });
+    }
+  });
+}
+
+/* ================= NAVIGATION ================= */
+
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".entry-card");
+  if (card) {
+    const id = card.dataset.id;
+    history.pushState(null, "", "?id=" + id);
+    loadEntry(id);
+  }
+
+  const cat = e.target.closest(".cat-btn");
+  if (cat) {
+    loadList({ category: cat.dataset.cat });
+  }
+});
 
 /* ================= INIT ================= */
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("MarketShield app.js loaded");
+
+  loadCategories();
+  initSearch();
+
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
-  if (id) loadEntry(id);
+
+  if (id) {
+    loadEntry(id);
+  } else {
+    loadList();
+  }
 });
