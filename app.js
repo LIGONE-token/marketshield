@@ -228,13 +228,16 @@ function renderList(items) {
   setResultsHTML(
     items.map(e => `
       <div class="entry-card" data-id="${e.id}">
-        <strong>${escapeHtml(e.title)}</strong><br>
-        <small>
-          ${escapeHtml(e.category || "")}
-          ${e.category && e.type ? " · " : ""}
-          ${escapeHtml(formatType(e.type))}
-        </small>
-      </div>
+  <strong>${escapeHtml(e.title)}</strong><br>
+  <small>
+    ${escapeHtml(e.category || "")}
+    ${e.category && e.type ? " · " : ""}
+    ${escapeHtml(formatType(e.type))}
+  </small>
+
+  ${renderScoreBlock(e.score, e.processing_score, 12)}
+</div>
+
     `).join("")
   );
 }
