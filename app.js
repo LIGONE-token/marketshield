@@ -225,6 +225,11 @@ async function loadEntry(id) {
 /* ================= EVENTS ================= */
 document.addEventListener("click", (e) => {
 
+  // 🚨 REPORT-BUTTON DARF NICHT ABGEFANGEN WERDEN
+  if (e.target.closest("#reportBtn")) {
+    return; // ← lässt den Original-Klick durch
+  }
+
   // 🔙 Zur Startseite
   const back = e.target.closest("#backHome");
   if (back) {
@@ -247,6 +252,7 @@ document.addEventListener("click", (e) => {
     return;
   }
 });
+
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
