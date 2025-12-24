@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / FEHLERFREI)
+   MarketShield – app.js (FINAL / STABIL / KORREKT)
    PASSEND ZUR BESTEHENDEN index.html
 ===================================================== */
 
@@ -7,18 +7,20 @@
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-/* ================= BASIS ================= */
+/* ================= DOM HELPERS ================= */
+const $ = (id) => document.getElementById(id);
+const $$ = (sel) => document.querySelector(sel);
 
-function $(id) {
-  return document.getElementById(id);
+function resultsBox() {
+  return $("results"); // existiert in index.html
+}
+function backHomeBtn() {
+  return $("backHome");
 }
 
-function mainContainer() {
-  return $("results");
-}
-
+/* ================= TEXT HELPERS ================= */
 function escapeHtml(s) {
-  if (!s) return "";
+  if (s === null || s === undefined) return "";
   return String(s)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -35,24 +37,60 @@ function normalizeText(text) {
     .trim();
 }
 
-function isThema(e) {
-  return String(e.type).toLowerCase() === "thema";
+function isThema(entry) {
+  return String(entry?.type || "").toLowerCase() === "thema";
 }
 
 /* ================= SUPABASE ================= */
-
-async function supa(query) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
+async function supa(pathAndQuery) {
+  const url = `${SUPABASE_URL}/rest/v1/${pathAndQuery}`;
+  const res = await fetch(url, {
     headers: {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${SUPABASE_KEY}`,
     },
   });
-  return res.json();
+  const text = await res.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
+  if (!res.ok) {
+    const msg = data?.message || data?.error || text || "Unbekannter Fehler";
+    throw new Error(`Supabase (${res.status}): ${msg}`);
+  }
+  return data || [];
 }
 
-/* ================= SUMMARY MIT TABELLEN ================= */
+/* ================= RENDER CORE ================= */
+function setResultsHTML(innerHtml) {
+  const box = resultsBox();
+  if (!box) return;
+  // ShareBox bleibt immer erhalten (index.html enthält sie)
+  box.innerHTML = `<div id="shareBox"></div>${innerHtml || ""}`;
+}
 
+function clearResults(showHint = true) {
+  if (showHint) {
+    setResultsHTML(`
+      <p style="margin-top:12px;">
+        Tippe oben in die Suche (mind. 2 Zeichen) oder wähle eine Kategorie.
+      </p>
+    `);
+  } else {
+    setResultsHTML("");
+  }
+}
+
+function showBackHome(show) {
+  const el = backHomeBtn();
+  if (!el) return;
+  el.style.display = show ? "block" : "none";
+}
+
+/* ================= SUMMARY WITH TABLES ================= */
 function renderSummaryWithTables(summary) {
   if (!summary) return "";
 
@@ -61,14 +99,13 @@ function renderSummaryWithTables(summary) {
   let buffer = [];
 
   const flush = () => {
-    if (buffer.length) {
-      html += `<p>${buffer.join("<br>")}</p>`;
-      buffer = [];
-    }
+    if (!buffer.length) return;
+    html += `<p>${buffer.join("<br>")}</p>`;
+    buffer = [];
   };
 
-  const isSeparator = l => /^[-\s|]+$/.test(l);
-  const isPipeRow = l => (l.match(/\|/g) || []).length >= 2;
+  const isSeparator = (l) => /^[-\s|]+$/.test(l);
+  const isPipeRow = (l) => (l.match(/\|/g) || []).length >= 2;
 
   for (let i = 0; i < lines.length; ) {
     const line = lines[i].trim();
@@ -82,30 +119,28 @@ function renderSummaryWithTables(summary) {
     if (isPipeRow(line)) {
       flush();
       const rows = [];
-
       while (i < lines.length && (isPipeRow(lines[i]) || isSeparator(lines[i]))) {
         if (!isSeparator(lines[i])) {
           rows.push(
             lines[i]
               .split("|")
-              .map(c => c.trim())
+              .map((c) => c.trim())
               .filter(Boolean)
           );
         }
         i++;
       }
-
       if (rows.length) {
-        html += `<table class="summary-table"><tr>`;
-        rows[0].forEach(c => (html += `<th>${escapeHtml(c)}</th>`));
-        html += "</tr>";
-
+        html += `<div class="summary-table-wrap"><table class="summary-table">`;
+        html += "<thead><tr>";
+        rows[0].forEach((c) => (html += `<th>${escapeHtml(c)}</th>`));
+        html += "</tr></thead><tbody>";
         for (let r = 1; r < rows.length; r++) {
           html += "<tr>";
-          rows[r].forEach(c => (html += `<td>${escapeHtml(c)}</td>`));
+          rows[r].forEach((c) => (html += `<td>${escapeHtml(c)}</td>`));
           html += "</tr>";
         }
-        html += "</table>";
+        html += "</tbody></table></div>";
       }
       continue;
     }
@@ -118,83 +153,118 @@ function renderSummaryWithTables(summary) {
   return html;
 }
 
-/* ================= LISTE ================= */
-
-async function loadList(search = "", category = "") {
-  let query = "entries?select=id,title,summary,category,type&order=title.asc";
-
-  if (search) {
-    const s = encodeURIComponent(`%${search}%`);
-    query += `&or=(title.ilike.${s},summary.ilike.${s})`;
-  }
-
-  if (category) {
-    query += `&category=eq.${encodeURIComponent(category)}`;
-  }
-
-  const data = await supa(query);
-  const box = mainContainer();
-  if (!box) return;
-
-  if (!data || !data.length) {
-    box.innerHTML = "<p>Keine Einträge gefunden.</p>";
+/* ================= LIST RENDER ================= */
+function renderList(items) {
+  if (!items || !items.length) {
+    setResultsHTML(`<p>Keine Treffer gefunden.</p>`);
     return;
   }
 
-  box.innerHTML = data
-    .map(
-      e => `
-      <div class="entry-card" data-id="${e.id}">
-        <strong>${escapeHtml(e.title)}</strong><br>
-        <small>${escapeHtml(e.category)} · ${escapeHtml(e.type)}</small>
+  setResultsHTML(
+    items
+      .map((e) => {
+        const title = escapeHtml(e.title);
+        const category = escapeHtml(e.category || "");
+        const type = escapeHtml(e.type || "");
+        const snippet = escapeHtml((e.summary || "").slice(0, 200));
+        const dots = (e.summary || "").length > 200 ? "…" : "";
+
+        return `
+          <div class="entry-card" data-id="${e.id}">
+            <div style="font-weight:700;">${title}</div>
+            ${snippet ? `<div style="margin-top:6px;opacity:.9;">${snippet}${dots}</div>` : ""}
+            <div style="margin-top:8px;font-size:13px;opacity:.7;">
+              ${category}${category && type ? " · " : ""}${type}
+            </div>
+          </div>
+        `;
+      })
+      .join("")
+  );
+}
+
+/* ================= DATA LOADERS ================= */
+async function loadListBySearch(q) {
+  const query = q.trim();
+  if (query.length < 2) {
+    clearResults(true);
+    return;
+  }
+  const enc = encodeURIComponent(`%${query}%`);
+  const data = await supa(
+    `entries?select=id,title,summary,category,type&or=(title.ilike.${enc},summary.ilike.${enc})&order=title.asc&limit=200`
+  );
+  showBackHome(false);
+  renderList(data);
+}
+
+async function loadListByCategory(category) {
+  const cat = String(category || "").trim();
+  if (!cat) return;
+  const data = await supa(
+    `entries?select=id,title,summary,category,type&category=eq.${encodeURIComponent(cat)}&order=title.asc&limit=500`
+  );
+  showBackHome(false);
+  renderList(data);
+}
+
+async function loadEntry(id) {
+  const entryId = String(id || "").trim();
+  if (!entryId) return;
+
+  const data = await supa(`entries?id=eq.${entryId}&limit=1`);
+  if (!data || !data.length) {
+    setResultsHTML(`<p>Eintrag nicht gefunden.</p>`);
+    return;
+  }
+
+  const e = data[0];
+  showBackHome(true);
+
+  // Themen: keine Scores/Extra-Fachblöcke erzwingen
+  const blocks = [];
+  if (!isThema(e)) {
+    if (e.mechanism) {
+      blocks.push(`<h3>Mechanismus</h3><p>${escapeHtml(normalizeText(e.mechanism))}</p>`);
+    }
+    if (e.scientific_note) {
+      blocks.push(`<h3>Wissenschaftlicher Hinweis</h3><p>${escapeHtml(normalizeText(e.scientific_note))}</p>`);
+    }
+  }
+
+  setResultsHTML(`
+    <div class="entry-detail" data-id="${escapeHtml(e.id)}">
+      <h2 style="margin-top:10px;">${escapeHtml(e.title)}</h2>
+      <div style="margin:6px 0 14px;opacity:.7;">
+        ${escapeHtml(e.category || "")}${e.category && e.type ? " · " : ""}${escapeHtml(e.type || "")}
       </div>
-    `
+
+      <h3>Zusammenfassung</h3>
+      <div class="entry-summary">
+        ${renderSummaryWithTables(e.summary)}
+      </div>
+
+      ${blocks.length ? `<div class="entry-blocks">${blocks.join("")}</div>` : ""}
+    </div>
+  `);
+}
+
+/* ================= CATEGORIES ================= */
+async function loadCategories() {
+  const grid = $$(".category-grid");
+  if (!grid) return;
+
+  const data = await supa("entries?select=category");
+  const cats = [...new Set(data.map((d) => d.category).filter(Boolean))].sort();
+
+  grid.innerHTML = cats
+    .map(
+      (c) => `<button class="cat-btn" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`
     )
     .join("");
 }
 
-/* ================= DETAIL ================= */
-
-async function loadEntry(id) {
-  const data = await supa(`entries?id=eq.${id}`);
-  if (!data || !data.length) return;
-
-  const e = data[0];
-  const box = mainContainer();
-  if (!box) return;
-
-  box.innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
-    ${renderSummaryWithTables(e.summary)}
-    ${
-      isThema(e)
-        ? ""
-        : e.mechanism
-        ? `<h3>Mechanismus</h3><p>${escapeHtml(e.mechanism)}</p>`
-        : ""
-    }
-  `;
-
-  const back = $("backHome");
-  if (back) back.style.display = "block";
-}
-
-/* ================= KATEGORIEN ================= */
-
-async function loadCategories() {
-  const data = await supa("entries?select=category");
-  const grid = document.querySelector(".category-grid");
-  if (!grid) return;
-
-  const cats = [...new Set(data.map(d => d.category).filter(Boolean))].sort();
-
-  grid.innerHTML = cats
-    .map(c => `<button class="cat-btn" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`)
-    .join("");
-}
-
-/* ================= SUCHE ================= */
-
+/* ================= SEARCH ================= */
 function initSearch() {
   const input = $("searchInput");
   if (!input) return;
@@ -202,17 +272,16 @@ function initSearch() {
   input.addEventListener("input", () => {
     const q = input.value.trim();
     if (q.length < 2) {
-      loadList();
-    } else {
-      loadList(q);
+      clearResults(true);
+      return;
     }
+    loadListBySearch(q);
   });
 }
 
 /* ================= NAVIGATION ================= */
-
-document.addEventListener("click", e => {
-  // Report-Button UNANTASTBAR
+document.addEventListener("click", (e) => {
+  // Report-Button bleibt UNANTASTBAR
   if (e.target.closest("#reportBtn")) return;
 
   const card = e.target.closest(".entry-card");
@@ -224,7 +293,7 @@ document.addEventListener("click", e => {
 
   const cat = e.target.closest(".cat-btn");
   if (cat) {
-    loadList("", cat.dataset.cat);
+    loadListByCategory(cat.dataset.cat);
     return;
   }
 
@@ -232,12 +301,11 @@ document.addEventListener("click", e => {
   if (back) {
     back.style.display = "none";
     history.pushState(null, "", location.pathname);
-    loadList();
+    clearResults(true);
   }
 });
 
 /* ================= INIT ================= */
-
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
   initSearch();
@@ -246,6 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (id) {
     loadEntry(id);
   } else {
-    loadList();
+    // Startseite bewusst leer (suchgetrieben)
+    clearResults(true);
   }
 });
