@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / ENDGÜLTIG)
+   MarketShield – app.js (FINAL / STABIL / NAV-FIX)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -41,8 +41,6 @@ function renderRawText(t) {
   if (!t) return "";
   return `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(t)}</div>`;
 }
-
-/* ================= SUMMARY ================= */
 function renderSummary(text) {
   if (!text) return "";
   const lines = String(text).split("\n");
@@ -71,7 +69,6 @@ function renderHealth(score) {
   if (n >= 20) return "💛";
   return "⚠️❗⚠️";
 }
-
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -107,7 +104,7 @@ function renderScoreBlock(score, processing, size = 13) {
     </div>`;
 }
 
-/* ================= RECHTLICHER TOOLTIP (NUR DETAIL) ================= */
+/* ================= TOOLTIP (NUR DETAIL) ================= */
 function renderLegalTooltip() {
   return `
     <div style="margin:6px 0 18px 0;">
@@ -176,7 +173,7 @@ function renderList(items) {
   `).join(""));
 }
 
-/* ================= SUCHE ================= */
+/* ================= LOADERS ================= */
 async function loadListBySearch(q) {
   if (!q || q.length < 2) { clearResults(); return; }
   const d = await supa("entries", {
@@ -186,8 +183,6 @@ async function loadListBySearch(q) {
   });
   renderList(d);
 }
-
-/* ================= KATEGORIE ================= */
 async function loadListByCategory(cat) {
   const d = await supa("entries", {
     select:"id,title,category,type,score,processing_score",
@@ -195,8 +190,6 @@ async function loadListByCategory(cat) {
   });
   renderList(d);
 }
-
-/* ================= DETAIL (MIT TOOLTIP) ================= */
 async function loadEntry(id) {
   const d = await supa("entries",{ id:`eq.${id}`, limit:"1" });
   if (!d || !d.length) return clearResults();
@@ -225,10 +218,8 @@ async function loadEntry(id) {
 /* ================= EVENTS ================= */
 document.addEventListener("click", (e) => {
 
-  // 🚨 REPORT-BUTTON DARF NICHT ABGEFANGEN WERDEN
-  if (e.target.closest("#reportBtn")) {
-    return; // ← lässt den Original-Klick durch
-  }
+  // 🚨 Report-Button niemals abfangen
+  if (e.target.closest("#reportBtn")) return;
 
   // 🔙 Zur Startseite
   const back = e.target.closest("#backHome");
@@ -241,22 +232,39 @@ document.addEventListener("click", (e) => {
   // 📂 Kategorie
   const cat = e.target.closest(".cat-btn");
   if (cat) {
-    loadListByCategory(cat.dataset.cat);
+    const c = cat.dataset.cat;
+    history.pushState({ type:"category", cat:c }, "", "?cat=" + encodeURIComponent(c));
+    loadListByCategory(c);
     return;
   }
 
   // 📄 Eintrag
   const card = e.target.closest(".entry-card");
   if (card) {
-    loadEntry(card.dataset.id);
+    const id = card.dataset.id;
+    history.pushState({ type:"entry", id }, "", "?id=" + id);
+    loadEntry(id);
     return;
   }
 });
 
-
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
+
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const cat = params.get("cat");
+
+  if (id) { loadEntry(id); return; }
+  if (cat) { loadListByCategory(cat); return; }
+
+  clearResults();
+
   const input = $("searchInput");
-  if (input) input.addEventListener("input", e => loadListBySearch(e.target.value.trim()));
+  if (input) {
+    input.addEventListener("input", e =>
+      loadListBySearch(e.target.value.trim())
+    );
+  }
 });
