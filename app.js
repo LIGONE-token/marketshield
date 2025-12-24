@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / SEARCH & UI FIX)
+   MarketShield – app.js (FINAL / STABLE)
 ===================================================== */
 
 /* ================= CONFIG ================= */
@@ -42,7 +42,7 @@ function renderRawText(t) {
   return `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(t)}</div>`;
 }
 
-/* ================= SUMMARY (MIT TABELLEN) ================= */
+/* ================= SUMMARY + TABELLEN ================= */
 function renderSummaryWithTables(text) {
   if (!text) return "";
 
@@ -54,48 +54,38 @@ function renderSummaryWithTables(text) {
   let html = "";
   let buffer = [];
 
-  const flushParagraph = () => {
+  const flush = () => {
     if (!buffer.length) return;
-    html += `<p>${escapeHtml(buffer.join("\n")).replace(/\n/g, "<br>")}</p>`;
+    html += `<p>${escapeHtml(buffer.join("\n")).replace(/\n/g,"<br>")}</p>`;
     buffer = [];
   };
 
-  const isSeparator = (l) => /^[-\s|]+$/.test(l);
-  const isPipeRow = (l) => (l.match(/\|/g) || []).length >= 2;
+  const isPipe = l => (l.match(/\|/g)||[]).length >= 2;
+  const isSep = l => /^[-\s|]+$/.test(l);
 
-  for (let i = 0; i < lines.length; ) {
+  for (let i=0;i<lines.length;) {
     const line = lines[i];
+    if (!line.trim()) { flush(); i++; continue; }
 
-    if (!line.trim()) {
-      flushParagraph();
-      i++;
-      continue;
-    }
-
-    if (isPipeRow(line)) {
-      flushParagraph();
-
-      const rows = [];
-      while (i < lines.length && (isPipeRow(lines[i]) || isSeparator(lines[i]))) {
-        if (!isSeparator(lines[i])) {
-          rows.push(
-            lines[i].split("|").map(c => c.trim()).filter(Boolean)
-          );
+    if (isPipe(line)) {
+      flush();
+      const rows=[];
+      while (i<lines.length && (isPipe(lines[i])||isSep(lines[i]))) {
+        if (!isSep(lines[i])) {
+          rows.push(lines[i].split("|").map(c=>c.trim()).filter(Boolean));
         }
         i++;
       }
-
       if (rows.length) {
-        html += `<div class="summary-table-wrap"><table class="summary-table">`;
-        html += "<thead><tr>";
-        rows[0].forEach(c => html += `<th>${escapeHtml(c)}</th>`);
-        html += "</tr></thead><tbody>";
-        for (let r = 1; r < rows.length; r++) {
-          html += "<tr>";
-          rows[r].forEach(c => html += `<td>${escapeHtml(c)}</td>`);
-          html += "</tr>";
+        html += `<div class="summary-table-wrap"><table class="summary-table"><thead><tr>`;
+        rows[0].forEach(c=>html+=`<th>${escapeHtml(c)}</th>`);
+        html += `</tr></thead><tbody>`;
+        for (let r=1;r<rows.length;r++) {
+          html += `<tr>`;
+          rows[r].forEach(c=>html+=`<td>${escapeHtml(c)}</td>`);
+          html += `</tr>`;
         }
-        html += "</tbody></table></div>";
+        html += `</tbody></table></div>`;
       }
       continue;
     }
@@ -103,73 +93,56 @@ function renderSummaryWithTables(text) {
     buffer.push(line);
     i++;
   }
-
-  flushParagraph();
+  flush();
   return html;
 }
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
-  if (n >= 80) return "💚💚💚";
-  if (n >= 60) return "💚💚";
-  if (n >= 40) return "💚";
-  if (n >= 20) return "💛";
+  if (!Number.isFinite(n)||n<=0) return "";
+  if (n>=80) return "💚💚💚";
+  if (n>=60) return "💚💚";
+  if (n>=40) return "💚";
+  if (n>=20) return "💛";
   return "⚠️❗⚠️";
 }
-
 function renderIndustry(score) {
   const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
-
-  const w = Math.round((n / 10) * 80);
-  let color = "#2e7d32";
-  if (n >= 7) color = "#c62828";
-  else if (n >= 4) color = "#f9a825";
-
+  if (!Number.isFinite(n)||n<=0) return "";
+  const w = Math.round((n/10)*80);
+  let c="#2e7d32";
+  if (n>=7) c="#c62828";
+  else if (n>=4) c="#f9a825";
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
-      <div style="width:${w}px;height:8px;background:${color};"></div>
+      <div style="width:${w}px;height:8px;background:${c};"></div>
     </div>`;
 }
-
-/* ================= SCORE BLOCK ================= */
-function renderScoreBlock(score, processing, size = 13) {
-  const h = renderHealth(score);
-  const i = renderIndustry(processing);
-  if (!h && !i) return "";
-
-  const colW = 90;
-  const labelStyle = `font-size:${size}px;opacity:.85;line-height:1.2;`;
-
+function renderScoreBlock(score, proc, size=13) {
+  const h=renderHealth(score), i=renderIndustry(proc);
+  if (!h&&!i) return "";
   return `
     <div style="margin:12px 0;">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
-          <div style="white-space:nowrap;">${h}</div>
-          <div style="${labelStyle}">Gesundheitsscore</div>
-        </div>` : ""}
-      ${i ? `
-        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:8px;align-items:center;">
-          <div>${i}</div>
-          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
+      ${h?`<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
+        <div>${h}</div><div style="font-size:${size}px;">Gesundheitsscore</div>
+      </div>`:""}
+      ${i?`<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;margin-top:6px;">
+        <div>${i}</div><div style="font-size:${size}px;">Industrie Verarbeitungsgrad</div>
+      </div>`:""}
     </div>`;
 }
 
-/* ================= TOOLTIP (NUR DETAIL) ================= */
+/* ================= TOOLTIP ================= */
 function renderLegalTooltip() {
   return `
-    <div style="margin:6px 0 18px 0;">
-      <span style="position:relative;font-size:12px;color:#666;cursor:help;">
+    <div style="margin:6px 0 18px;">
+      <span style="font-size:12px;color:#666;">
         ℹ️ <span style="text-decoration:underline;">Rechtlicher Hinweis</span>
-        <span style="
-          display:none;position:absolute;left:0;bottom:130%;width:260px;
-          background:#222;color:#fff;padding:10px;border-radius:6px;
-          font-size:11px;line-height:1.4;z-index:9999;"
+        <span style="display:none;position:absolute;width:260px;
+          background:#222;color:#fff;padding:10px;border-radius:6px;"
           class="legal-tip">
-          MarketShield stellt Informationen und Bewertungen zur Orientierung bereit.
+          MarketShield stellt Informationen zur Orientierung bereit.
         </span>
       </span>
     </div>`;
@@ -179,167 +152,107 @@ function renderLegalTooltip() {
 async function supa(path, params) {
   const url = new URL(`${SUPABASE_URL}/rest/v1/${path}`);
   if (params) url.search = new URLSearchParams(params).toString();
-  const r = await fetch(url, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+  const r = await fetch(url,{
+    headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}
   });
   return r.json();
 }
 
-/* ================= SEARCH SAVE (ENTER ONLY) ================= */
-async function saveSearchQuery(q) {
-  if (!q || q.length < 2) return;
-  fetch(`${SUPABASE_URL}/rest/v1/search_queries`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
+/* ================= SEARCH SAVE ================= */
+function saveSearchQuery(q) {
+  if (!q||q.length<2) return;
+  fetch(`${SUPABASE_URL}/rest/v1/search_queue`,{
+    method:"POST",
+    headers:{
+      apikey:SUPABASE_KEY,
+      Authorization:`Bearer ${SUPABASE_KEY}`,
+      "Content-Type":"application/json",
+      Prefer:"return=minimal"
     },
-    body: JSON.stringify({ query: q })
-  }).catch(() => {});
+    body:JSON.stringify({query:q})
+  }).catch(()=>{});
 }
 
 /* ================= CORE ================= */
 function setResultsHTML(html) {
-  const b = resultsBox();
-  if (!b) return;
-  b.innerHTML = `<div id="shareBox"></div>${html || ""}`;
+  const b=resultsBox(); if(!b)return;
+  b.innerHTML = html||"";
 }
 function clearResults() {
   setResultsHTML("");
-  const back = $("backHome");
-  if (back) back.style.display = "none";
+  const back=$("backHome"); if(back) back.style.display="none";
 }
 
 /* ================= KATEGORIEN ================= */
 function loadCategories() {
-  const g = $$(".category-grid");
-  if (!g) return;
-  g.innerHTML = CATEGORIES.map(c =>
-    `<button class="cat-btn" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`
-  ).join("");
+  const g=$$(".category-grid"); if(!g)return;
+  g.innerHTML=CATEGORIES.map(c=>`<button class="cat-btn">${c}</button>`).join("");
 }
 
 /* ================= LISTE ================= */
 function renderList(items) {
-  if (!items || !items.length) return;
-  setResultsHTML(items.map(e => `
+  if(!items||!items.length) return;
+  setResultsHTML(items.map(e=>`
     <div class="entry-card" data-id="${e.id}">
       <strong>${escapeHtml(e.title)}</strong><br>
-      <small>
-        ${escapeHtml(e.category||"")}
-        ${e.category&&e.type?" · ":""}
-        ${escapeHtml(formatType(e.type))}
-      </small>
-      ${renderScoreBlock(e.score, e.processing_score, 12)}
-    </div>
-  `).join(""));
+      <small>${escapeHtml(e.category||"")}</small>
+      ${renderScoreBlock(e.score,e.processing_score,12)}
+    </div>`).join(""));
 }
 
 /* ================= LOADERS ================= */
 async function loadListBySearch(q) {
-  if (!q || q.length < 2) return;
-  const d = await supa("entries", {
-    select:"id,title,category,type,score,processing_score",
+  if(!q||q.length<2) return;
+  const d=await supa("entries",{
+    select:"id,title,category,score,processing_score",
     or:`(title.ilike.*${q}*,summary.ilike.*${q}*)`,
-    order:"title.asc",
-    limit:"200"
+    order:"title.asc"
   });
   renderList(d);
 }
-
-async function loadListByCategory(cat) {
-  const d = await supa("entries", {
-    select:"id,title,category,type,score,processing_score",
-    category:`eq.${cat}`,
-    order:"title.asc",
-    limit:"500"
-  });
-  renderList(d);
-}
-
 async function loadEntry(id) {
-  const d = await supa("entries",{ id:`eq.${id}`, limit:"1" });
-  if (!d || !d.length) return;
-  const e = d[0];
-
+  const d=await supa("entries",{id:`eq.${id}`,limit:"1"});
+  if(!d||!d.length) return;
+  const e=d[0];
   setResultsHTML(`
     <h2>${escapeHtml(e.title)}</h2>
-    <div style="opacity:.7;margin-bottom:12px;">
-      ${escapeHtml(e.category||"")}
-      ${e.category&&e.type?" · ":""}
-      ${escapeHtml(formatType(e.type))}
-    </div>
-
-    ${renderScoreBlock(e.score, e.processing_score, 13)}
+    ${renderScoreBlock(e.score,e.processing_score)}
     ${renderLegalTooltip()}
-
-    ${e.summary ? `<h3>Beschreibung</h3>${renderSummaryWithTables(e.summary)}` : ""}
-    ${e.mechanism ? `<h3>Mechanismus</h3>${renderRawText(e.mechanism)}` : ""}
-    ${e.scientific_note ? `<h3>Wissenschaftlicher Hinweis</h3>${renderRawText(e.scientific_note)}` : ""}
-  `);
-
-  const back = $("backHome");
-  if (back) back.style.display = "block";
+    ${e.summary?renderSummaryWithTables(e.summary):""}`);
+  const back=$("backHome"); if(back) back.style.display="block";
 }
 
-/* ================= EVENTS ================= */
-document.addEventListener("click", (e) => {
+/* ================= GLOBAL CLICK ================= */
+document.addEventListener("click",(e)=>{
+  if (e.target.closest("#reportBtn") ||
+      e.target.closest("a") ||
+      e.target.closest(".no-nav")) return;
 
-  const back = e.target.closest("#backHome");
-  if (back) {
-    history.pushState(null, "", location.pathname);
-    clearResults();
-    return;
-  }
-
-  const cat = e.target.closest(".cat-btn");
-  if (cat) {
-    const c = cat.dataset.cat;
-    history.pushState({ type:"category", cat:c }, "", "?cat=" + encodeURIComponent(c));
-    loadListByCategory(c);
-    return;
-  }
-
-  const card = e.target.closest(".entry-card");
-  if (card) {
-    const id = card.dataset.id;
-    history.pushState({ type:"entry", id }, "", "?id=" + id);
-    loadEntry(id);
-    return;
-  }
+  const card=e.target.closest(".entry-card");
+  if(!card) return;
+  const id=card.dataset.id;
+  history.pushState({id},"","?id="+id);
+  loadEntry(id);
 });
 
 /* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",()=>{
   loadCategories();
 
-  const params = new URLSearchParams(location.search);
-  const id = params.get("id");
-  const cat = params.get("cat");
+  const p=new URLSearchParams(location.search);
+  if (p.get("id")) loadEntry(p.get("id"));
 
-  if (id) { loadEntry(id); }
-  else if (cat) { loadListByCategory(cat); }
-
-  const input = $("searchInput");
-  if (input) {
-
-    // Live-Suche (nur anzeigen)
-    input.addEventListener("input", (e) => {
-      const q = e.target.value.trim();
-      if (q.length < 2) {
-        clearResults();
-        return;
-      }
+  const input=$("searchInput");
+  if(input){
+    input.addEventListener("input",e=>{
+      const q=e.target.value.trim();
+      if(q.length<2){clearResults();return;}
       loadListBySearch(q);
     });
-
-    // ENTER = speichern + suchen
-    input.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter") return;
-      const q = input.value.trim();
-      if (q.length < 2) return;
+    input.addEventListener("keydown",e=>{
+      if(e.key!=="Enter")return;
+      const q=input.value.trim();
+      if(q.length<2)return;
       saveSearchQuery(q);
       loadListBySearch(q);
     });
