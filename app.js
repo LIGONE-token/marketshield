@@ -36,10 +36,7 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-
-  // Industrie 0–10 → 80px Balken
   const w = Math.round((n / 10) * 80);
-
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
       <div style="width:${w}px;height:8px;background:#2e7d32;"></div>
@@ -47,45 +44,27 @@ function renderIndustry(score) {
   `;
 }
 
-/* ================= SCORE BLOCK (FINAL / EXAKT) ================= */
-/* Ziel:
-   - feste linke Score-Spalte
-   - Text startet IMMER exakt gleich
-   - Score & Text nah beieinander
-   - keine Umbrüche, kein Springen
-*/
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
-
   if (!h && !i) return "";
 
-  // 80px Balken + 10px Reserve = feste Textkante
   const colW = 90;
-  const colGap = 8;
-  const rowGap = 6;
   const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
+  const rowGap = 6;
+  const colGap = 8;
 
   return `
     <div style="margin:12px 0;">
       ${h ? `
-        <div style="
-          display:grid;
-          grid-template-columns:${colW}px 1fr;
-          column-gap:${colGap}px;
-          align-items:center;
-          margin-bottom:${i ? rowGap : 0}px;">
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;margin-bottom:${i ? rowGap : 0}px;">
           <div style="white-space:nowrap;">${h}</div>
           <div style="${labelStyle}">Gesundheitsscore</div>
         </div>
       ` : ""}
 
       ${i ? `
-        <div style="
-          display:grid;
-          grid-template-columns:${colW}px 1fr;
-          column-gap:${colGap}px;
-          align-items:center;">
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;">
           <div style="white-space:nowrap;">${i}</div>
           <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
         </div>
