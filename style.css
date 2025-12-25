@@ -1366,3 +1366,72 @@ table, button, a, input, select {
   pointer-events: none;
 }
 #reportBtn { pointer-events:auto; z-index:9999; }
+/* === MarketShield: Legal Tooltip FIX === */
+.ms-legal-tooltip {
+  position: absolute !important;
+  display: inline-block !important;
+  width: max-content !important;
+  max-width: 260px !important;
+  min-width: unset !important;
+
+  padding: 6px 8px !important;
+  background: #222 !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+
+  border-radius: 4px !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.25) !important;
+  white-space: normal !important;
+  z-index: 9999 !important;
+}
+/* === MarketShield: Content-Kante erzwingen === */
+.ms-content-wrap {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* === Buttons dürfen NICHT global 100% breit sein === */
+button {
+  width: auto;
+  max-width: 100%;
+}
+/* === Text-Absätze stabil === */
+.ms-text p {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+  white-space: normal;
+}
+/* === Tabellen sauber & scrollbar === */
+.ms-table-wrap {
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.ms-table-wrap table {
+  border-collapse: collapse;
+  min-width: 600px;
+  width: 100%;
+}
+
+.ms-table-wrap th,
+.ms-table-wrap td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.ms-table-wrap th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+/* === Scoreblock NICHT von globalem CSS zerstören lassen === */
+.ms-score-block {
+  display: block;
+}
+
+.ms-score-block * {
+  box-sizing: content-box;
+}
