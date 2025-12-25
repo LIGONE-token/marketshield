@@ -133,7 +133,7 @@ function renderHealth(score) {
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
-  if (n >= 20) return "🧡";
+  if (n >= 20) return "💛";
   return "⚠️❗⚠️";
 }
 
