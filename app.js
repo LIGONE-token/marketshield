@@ -4,6 +4,15 @@
 
 let currentEntryId = null;
 
+const categories = [
+  "Ernährung","Gesundheit","Medizin","Genussmittel","Risiken","Pflege",
+  "Kosmetik","Hygiene","Sonnenschutz","Haushalt","Wohnen","Luftqualität",
+  "Wasserqualität","Textilien","Umwelt","Chemikalien","Strahlung","Tiere",
+  "Technik","Arbeit","Baumarkt","Zielgruppen","Lifestyle","Finanzen",
+  "Trends","Konsum","Freizeit","Mobilität","Sicherheit","Energie"
+];
+
+
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   injectTableStyles();
