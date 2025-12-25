@@ -1,11 +1,13 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / TABELLEN-ANZEIGE FIX)
+   MarketShield – app.js (STABIL / TABELLEN FIX OHNE NEBENWIRKUNG)
 ===================================================== */
 
 let currentEntryId = null;
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
+  injectTableStyles(); // ✅ nur Styles für Tabellen (berührt Tooltip nicht)
+
   loadCategories();
 
   const params = new URLSearchParams(location.search);
@@ -52,9 +54,15 @@ async function saveSearchQuery(query) {
         Authorization: `Bearer ${SUPABASE_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ query: query.trim() })
+      body: JSON.stringify({
+        query: query.trim()
+        // status = 'pending' kommt aus der DB
+        // created_at = now() kommt aus der DB
+      })
     });
-  } catch {}
+  } catch (e) {
+    // absichtlich leer – Suche darf niemals blockieren
+  }
 }
 
 function escapeHtml(s = "") {
@@ -64,6 +72,11 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
+function shortText(text, max = 160) {
+  if (!text) return "";
+  return text.length > max ? text.slice(0, max) + " …" : text;
+}
+
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
@@ -71,44 +84,82 @@ function normalizeText(text) {
     .replace(/\r/g, "\n");
 }
 
-function shortText(text, max = 160) {
-  if (!text) return "";
-  return text.length > max ? text.slice(0, max) + " …" : text;
+/* ================= TABELLEN: STYLES (NUR .ms-table / .ms-row) ================= */
+function injectTableStyles() {
+  if (document.getElementById("msTableStyles")) return;
+
+  const style = document.createElement("style");
+  style.id = "msTableStyles";
+  style.textContent = `
+    /* Nur Tabellen – keine Tooltip/Buttons/Layouts anfassen */
+    .ms-table {
+      margin: 12px 0;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .ms-row { display: grid; }
+    .ms-row > div {
+      padding: 8px 10px;
+      border-top: 1px solid #eee;
+      word-break: break-word;
+    }
+    .ms-head {
+      font-weight: 800;
+      background: #f6f6f6;
+    }
+    .ms-head > div { border-top: none; }
+
+    /* Mobil: Tabelle untereinander (gewollt) */
+    @media (max-width: 720px) {
+      .ms-row { grid-template-columns: 1fr !important; }
+    }
+  `;
+  document.head.appendChild(style);
 }
 
-/* ================= TABELLEN-RENDER (ISOLIERT) ================= */
-/* Rendert NUR Markdown-Tabellen, sonst normalen Text */
-function renderMarkdownTablesOnly(text) {
+/* ================= TABELLEN: MARKDOWN -> GRID ================= */
+/* Unterstützt: 
+   Header:  A | B | C
+   Sep:     -----...   oder  |---|---|  oder :---:
+*/
+function renderMarkdownTables(text) {
   if (!text) return "";
 
   const lines = normalizeText(text).split("\n");
   let html = "";
   let inTable = false;
-  let cols = 0;
+  let colCount = 0;
 
-  const isSeparator = s =>
-    /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test((s || "").trim());
+  const isSeparator = (s) => {
+    const t = (s || "").trim();
+    // erlaubt auch reine Dashes ohne Pipes:
+    // -----------------------------------------
+    // |---|---|---|
+    // |:---|---:|
+    return /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test(t);
+  };
 
-  const splitRow = row =>
+  const splitRow = (row) =>
     row.split("|").map(s => s.trim()).filter(Boolean);
 
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i];
     const line = raw.trim();
 
-    // Tabellenstart
+    // Tabellenstart: Header + Separator
     if (!inTable && line.includes("|") && isSeparator(lines[i + 1])) {
       inTable = true;
-      const headers = splitRow(line);
-      cols = headers.length;
 
-      html += `
-        <div style="margin:12px 0;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
-          <div style="display:grid;grid-template-columns:repeat(${cols},1fr);background:#f5f5f5;font-weight:700;">
-            ${headers.map(h => `<div style="padding:8px 10px;">${escapeHtml(h)}</div>`).join("")}
-          </div>
-      `;
-      i++;
+      const headers = splitRow(line);
+      colCount = Math.max(1, headers.length);
+
+      html += `<div class="ms-table">`;
+      html += `<div class="ms-row ms-head" style="grid-template-columns:repeat(${colCount},1fr)">`;
+      headers.forEach(h => html += `<div>${escapeHtml(h)}</div>`);
+      html += `</div>`;
+
+      i++; // Separator überspringen
       continue;
     }
 
@@ -116,20 +167,23 @@ function renderMarkdownTablesOnly(text) {
     if (inTable) {
       if (line.includes("|")) {
         const cells = splitRow(line);
-        html += `
-          <div style="display:grid;grid-template-columns:repeat(${cols},1fr);border-top:1px solid #eee;">
-            ${cells.map(c => `<div style="padding:8px 10px;">${escapeHtml(c)}</div>`).join("")}
-          </div>
-        `;
+        // falls mal eine Zeile weniger/mehr Zellen hat, nicht crashen:
+        const cols = Math.max(colCount, cells.length || colCount);
+
+        html += `<div class="ms-row" style="grid-template-columns:repeat(${cols},1fr)">`;
+        cells.forEach(c => html += `<div>${escapeHtml(c)}</div>`);
+        html += `</div>`;
         continue;
       } else {
+        // Tabelle endet bei erster Zeile ohne |
         html += `</div>`;
         inTable = false;
+        // fallthrough: normaler Text
       }
     }
 
-    // normaler Text
-    if (raw.trim() === "") {
+    // Normaler Text: als <div> mit <br> (ähnlich pre-wrap)
+    if (raw === "") {
       html += `<div style="height:8px;"></div>`;
     } else {
       html += `<div>${escapeHtml(raw)}</div>`;
@@ -140,14 +194,34 @@ function renderMarkdownTablesOnly(text) {
   return html;
 }
 
-/* ================= TEXT BLOCK ================= */
+/* ================= TEXT BLOCK (NUR HIER greifen Tabellen ein) ================= */
 function renderTextBlock(title, text) {
   if (!text) return "";
+  const norm = normalizeText(text);
+
   return `
     <h3>${escapeHtml(title)}</h3>
     <div style="line-height:1.6;">
-      ${renderMarkdownTablesOnly(text)}
+      ${renderMarkdownTables(norm)}
     </div>
+  `;
+}
+
+function renderJsonList(title, data) {
+  if (!data) return "";
+  let arr;
+  try {
+    arr = Array.isArray(data) ? data : JSON.parse(data);
+  } catch {
+    return "";
+  }
+  if (!arr.length) return "";
+
+  return `
+    <h3>${escapeHtml(title)}</h3>
+    <ul style="line-height:1.6;padding-left:18px;">
+      ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
+    </ul>
   `;
 }
 
@@ -173,15 +247,33 @@ function renderIndustry(score) {
   `;
 }
 
+/* ================= SCORE BLOCK (EXAKT AUSGERICHTET) ================= */
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
+
   if (!h && !i) return "";
+
+  const colW = 90;
+  const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
+  const rowGap = 6;
+  const colGap = 8;
 
   return `
     <div style="margin:12px 0;">
-      ${h ? `<div>${h} <span style="opacity:.7;font-size:${size}px;">Gesundheitsscore</span></div>` : ""}
-      ${i ? `<div style="margin-top:6px;">${i} <span style="opacity:.7;font-size:${size}px;">Industrie-Verarbeitungsgrad</span></div>` : ""}
+      ${h ? `
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;margin-bottom:${i ? rowGap : 0}px;">
+          <div style="white-space:nowrap;">${h}</div>
+          <div style="${labelStyle}">Gesundheitsscore</div>
+        </div>
+      ` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;">
+          <div>${i}</div>
+          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
+        </div>
+      ` : ""}
     </div>
   `;
 }
@@ -220,21 +312,22 @@ if (input) {
     );
     renderList(data);
   });
+
+  input.addEventListener("keydown", async (e) => {
+    if (e.key !== "Enter") return;
+
+    const q = input.value.trim();
+    if (q.length < 2) return;
+
+    saveSearchQuery(q);
+
+    const enc = encodeURIComponent(q);
+    const data = await supa(
+      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+    );
+    renderList(data);
+  });
 }
-
-input.addEventListener("keydown", async (e) => {
-  if (e.key !== "Enter") return;
-  const q = input.value.trim();
-  if (q.length < 2) return;
-
-  saveSearchQuery(q);
-
-  const enc = encodeURIComponent(q);
-  const data = await supa(
-    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
-  );
-  renderList(data);
-});
 
 async function loadCategory(cat) {
   const data = await supa(
@@ -246,8 +339,12 @@ async function loadCategory(cat) {
 function renderList(data) {
   results.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
+      <div style="font-size:20px;font-weight:800;">
+        ${escapeHtml(e.title)}
+      </div>
+
       ${renderScoreBlock(e.score, e.processing_score, 13)}
+
       <div style="font-size:15px;line-height:1.4;">
         ${escapeHtml(shortText(e.summary, 160))}
       </div>
@@ -264,13 +361,23 @@ async function loadEntry(id) {
   currentEntryId = id;
 
   results.innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
-    ${renderScoreBlock(e.score, e.processing_score, 14)}
-    ${renderTextBlock("Zusammenfassung", e.summary)}
-    ${renderTextBlock("Wirkmechanismus", e.mechanism)}
-    ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
-    <div id="entryActions"></div>
-  `;
+  <h2>${escapeHtml(e.title)}</h2>
+
+  ${renderScoreBlock(e.score, e.processing_score, 14)}
+
+  ${renderTextBlock("Zusammenfassung", e.summary)}
+  ${renderTextBlock("Wirkmechanismus", e.mechanism)}
+  ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
+
+  ${renderJsonList("Positive Effekte", e.effects_positive)}
+  ${renderJsonList("Negative Effekte", e.effects_negative)}
+  ${renderJsonList("Risikogruppen", e.risk_groups)}
+  ${renderJsonList("Synergien / Wechselwirkungen", e.synergy)}
+  ${renderJsonList("Natürliche Quellen", e.natural_sources)}
+  ${renderJsonList("Tags", e.tags)}
+
+  <div id="entryActions"></div>
+`;
 
   renderEntryActions(e.title);
   updateBackHome();
