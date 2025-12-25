@@ -57,8 +57,15 @@ function shortText(text, max = 160) {
 }
 function normalizeText(text) {
   if (!text) return "";
-  return String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  return String(text)
+    // doppelt oder einfach escapte Zeilenumbrüche → echte Umbrüche
+    .replace(/\\n\\n/g, "\n\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .trim();
 }
+
 function renderTextBlock(title, text) {
   if (!text) return "";
   return `
