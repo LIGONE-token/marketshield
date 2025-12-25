@@ -222,12 +222,50 @@ function renderEntryActions(title) {
   const box = document.getElementById("entryActions");
   if (!box) return;
 
+  const url = encodeURIComponent(location.href);
+  const text = encodeURIComponent(title || document.title);
+
   box.innerHTML = `
-    <button onclick="navigator.clipboard.writeText(location.href)">🔗 Kopieren</button>
-    <button onclick="window.open('https://t.me/share/url?url='+encodeURIComponent(location.href)+'&text='+encodeURIComponent('${title}'),'_blank')">Telegram</button>
-    <button onclick="window.print()">🖨️ Drucken</button>
+    <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="navigator.clipboard.writeText(location.href)">
+        🔗 Kopieren
+      </button>
+
+      <button onclick="window.open(
+        'https://www.facebook.com/sharer/sharer.php?u=${url}',
+        '_blank'
+      )">
+        Facebook
+      </button>
+
+      <button onclick="window.open(
+        'https://twitter.com/intent/tweet?url=${url}&text=${text}',
+        '_blank'
+      )">
+        X
+      </button>
+
+      <button onclick="window.open(
+        'https://wa.me/?text=${text}%20${url}',
+        '_blank'
+      )">
+        WhatsApp
+      </button>
+
+      <button onclick="window.open(
+        'https://t.me/share/url?url=${url}&text=${text}',
+        '_blank'
+      )">
+        Telegram
+      </button>
+
+      <button onclick="window.print()">
+        🖨️ Drucken
+      </button>
+    </div>
   `;
 }
+
 
 /* ================= CATEGORIES ================= */
 async function loadCategories() {
