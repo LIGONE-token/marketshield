@@ -1,5 +1,6 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / TABELLEN + MOBILE + TOOLTIP)
+   MarketShield – app.js (FINAL / STABIL)
+   Tabellen (PC+Mobile), Absätze, Tooltip, Scores FIX
 ===================================================== */
 
 let currentEntryId = null;
@@ -7,8 +8,6 @@ let currentEntryId = null;
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   injectTableStyles();
-  initTooltips();
-
   loadCategories();
 
   const params = new URLSearchParams(location.search);
@@ -23,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("click", (e) => {
   const card = e.target.closest(".entry-card");
   if (!card) return;
-
   const id = card.dataset.id;
   history.pushState(null, "", "?id=" + id);
   loadEntry(id);
@@ -35,10 +33,7 @@ const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    }
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   });
   return r.json();
 }
@@ -63,11 +58,20 @@ function escapeHtml(s = "") {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+/* Escaped \\n\\n -> echte Absätze + saubere Normalisierung */
 function normalizeText(text) {
   if (!text) return "";
-  return String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  let t = String(text)
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\n{3,}/g, "\n\n");
+  return t;
 }
 
+/* Entfernt alte KI-Artefakte */
 function stripOaiCiteArtifacts(text) {
   if (!text) return "";
   return String(text)
@@ -82,54 +86,19 @@ function shortText(text, max = 160) {
   return text.length > max ? text.slice(0, max) + " …" : text;
 }
 
-/* ================= TOOLTIP (GLOBAL, NICHT INTRUSIV) ================= */
-function initTooltips() {
-  if (document.getElementById("msTooltip")) return;
-
-  const tip = document.createElement("div");
-  tip.id = "msTooltip";
-  tip.style.cssText = `
-    position: fixed; z-index: 99999; max-width: 360px;
-    padding: 8px 10px; border-radius: 8px;
-    background: rgba(20,20,20,.95); color:#fff;
-    font-size:13px; line-height:1.35;
-    pointer-events:none; opacity:0;
-    transform: translateY(6px);
-    transition: opacity .12s ease, transform .12s ease;
-    box-shadow: 0 10px 26px rgba(0,0,0,.25);
-  `;
-  document.body.appendChild(tip);
-
-  const show = (text, x, y) => {
-    tip.textContent = text;
-    const pad = 14;
-    tip.style.left = Math.min(window.innerWidth - 20, x + pad) + "px";
-    tip.style.top  = Math.min(window.innerHeight - 20, y + pad) + "px";
-    tip.style.opacity = "1";
-    tip.style.transform = "translateY(0)";
-  };
-
-  const hide = () => {
-    tip.style.opacity = "0";
-    tip.style.transform = "translateY(6px)";
-  };
-
-  document.addEventListener("mousemove", (e) => {
-    const el = e.target.closest("[data-tooltip],[title]");
-    if (!el) return hide();
-    const text = el.getAttribute("data-tooltip") || el.getAttribute("title");
-    if (!text || !text.trim()) return hide();
-    show(text.trim(), e.clientX, e.clientY);
-  }, { passive:true });
-
-  document.addEventListener("mouseleave", hide, { passive:true });
-  document.addEventListener("scroll", hide, { passive:true });
+/* ================= TOOLTIP (stabil: Browser-Tooltip) ================= */
+/* Nach jedem innerHTML-Update aufrufen */
+function reInitTooltips() {
+  document.querySelectorAll("[data-tooltip]").forEach(el => {
+    if (!el.getAttribute("title")) {
+      el.setAttribute("title", el.getAttribute("data-tooltip"));
+    }
+  });
 }
 
 /* ================= TABELLEN STYLES (PC + MOBILE) ================= */
 function injectTableStyles() {
   if (document.getElementById("msTableStyles")) return;
-
   const style = document.createElement("style");
   style.id = "msTableStyles";
   style.textContent = `
@@ -138,8 +107,6 @@ function injectTableStyles() {
     .ms-row > div { padding:8px 10px; border-top:1px solid #eee; word-break:break-word; }
     .ms-head { font-weight:800; background:#f6f6f6; }
     .ms-head > div { border-top:none; }
-
-    /* MOBILE: horizontal scroll statt Umbruch */
     @media (max-width: 720px) {
       .ms-table { overflow-x:auto; -webkit-overflow-scrolling: touch; }
       .ms-row { min-width: 600px; }
@@ -148,10 +115,9 @@ function injectTableStyles() {
   document.head.appendChild(style);
 }
 
-/* ================= TABELLEN-RENDER ================= */
+/* ================= TABELLEN + TEXT RENDER ================= */
 function renderMarkdownTables(text) {
   if (!text) return "";
-
   const lines = normalizeText(text).split("\n");
   let html = "";
   let inTable = false;
@@ -159,19 +125,18 @@ function renderMarkdownTables(text) {
 
   const isSeparator = s =>
     /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test((s || "").trim());
-
   const splitRow = row =>
     row.split("|").map(s => s.trim()).filter(Boolean);
 
   for (let i = 0; i < lines.length; i++) {
-    const raw = stripOaiCiteArtifacts(lines[i]);
+    const raw0 = stripOaiCiteArtifacts(lines[i]);
+    const raw = raw0;
     const line = raw.trim();
 
     if (!inTable && line.includes("|") && isSeparator(lines[i + 1])) {
       inTable = true;
       const headers = splitRow(line);
       colCount = Math.max(1, headers.length);
-
       html += `<div class="ms-table">`;
       html += `<div class="ms-row ms-head" style="grid-template-columns:repeat(${colCount},1fr)">`;
       headers.forEach(h => html += `<div>${escapeHtml(h)}</div>`);
@@ -194,22 +159,23 @@ function renderMarkdownTables(text) {
       }
     }
 
-    if (raw === "") html += `<div style="height:8px;"></div>`;
-    else html += `<div>${escapeHtml(raw)}</div>`;
+    /* Absätze korrekt rendern */
+    if (raw === "") {
+      html += `<div style="height:10px;"></div>`;
+    } else {
+      html += `<p style="margin:8px 0;line-height:1.6;">${escapeHtml(raw)}</p>`;
+    }
   }
 
   if (inTable) html += `</div>`;
   return html;
 }
 
-/* ================= TEXT BLOCK ================= */
 function renderTextBlock(title, text) {
   if (!text) return "";
   return `
     <h3>${escapeHtml(title)}</h3>
-    <div style="line-height:1.6;">
-      ${renderMarkdownTables(text)}
-    </div>
+    <div>${renderMarkdownTables(text)}</div>
   `;
 }
 
@@ -235,57 +201,38 @@ function renderIndustry(score) {
   `;
 }
 
+/* Bewährtes Layout wiederhergestellt */
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
-
   if (!h && !i) return "";
 
-  // feste Spaltenbreite für saubere Kante
-  const colW = 90;
-  const colGap = 8;
-  const rowGap = 6;
-  const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
+  const colW = 90, colGap = 8, rowGap = 6;
+  const labelStyle = `font-size:${size}px;opacity:.85;line-height:1.2;`;
 
   return `
     <div style="margin:12px 0;">
       ${h ? `
-        <div style="
-          display:grid;
-          grid-template-columns:${colW}px 1fr;
-          column-gap:${colGap}px;
-          align-items:center;
-          margin-bottom:${i ? rowGap : 0}px;
-        ">
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;margin-bottom:${i ? rowGap : 0}px;">
           <div style="white-space:nowrap;">${h}</div>
           <div style="${labelStyle}">Gesundheitsscore</div>
-        </div>
-      ` : ""}
+        </div>` : ""}
 
       ${i ? `
-        <div style="
-          display:grid;
-          grid-template-columns:${colW}px 1fr;
-          column-gap:${colGap}px;
-          align-items:center;
-        ">
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;">
           <div>${i}</div>
           <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
-        </div>
-      ` : ""}
+        </div>` : ""}
     </div>
   `;
 }
-
 
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
-
   const data = await fetch("categories.json").then(r => r.json());
   grid.innerHTML = "";
-
   data.categories.forEach(c => {
     const b = document.createElement("button");
     b.textContent = c.title;
@@ -339,6 +286,7 @@ function renderList(data) {
       </div>
     </div>
   `).join("");
+  reInitTooltips();
 }
 
 /* ================= DETAIL ================= */
@@ -357,9 +305,9 @@ async function loadEntry(id) {
     ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
     <div id="entryActions"></div>
   `;
-
   renderEntryActions(e.title);
   updateBackHome();
+  reInitTooltips();
 }
 
 /* ================= SHARE / ACTIONS ================= */
@@ -373,12 +321,12 @@ function renderEntryActions(title) {
 
   box.innerHTML = `
     <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
-      <button onclick="window.print()">🖨️ Drucken</button>
-      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
-      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
-      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+      <button data-tooltip="Link kopieren" onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button data-tooltip="Drucken" onclick="window.print()">🖨️ Drucken</button>
+      <button data-tooltip="WhatsApp teilen" onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button data-tooltip="Telegram teilen" onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button data-tooltip="X teilen" onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button data-tooltip="Facebook teilen" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
     </div>
   `;
 }
@@ -389,7 +337,6 @@ function initReport() {
   const modal = document.getElementById("reportModal");
   const close = document.getElementById("closeReportModal");
   const form = document.getElementById("reportForm");
-
   if (!btn || !modal || !form) return;
 
   btn.onclick = () => modal.classList.add("active");
@@ -399,7 +346,6 @@ function initReport() {
     e.preventDefault();
     const description = form.description.value.trim();
     if (!description) return alert("Bitte Beschreibung eingeben.");
-
     await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
       method: "POST",
       headers: {
@@ -408,13 +354,10 @@ function initReport() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        description,
-        source: "community",
-        status: "new",
+        description, source: "community", status: "new",
         entry_id: currentEntryId || null
       })
     });
-
     form.reset();
     modal.classList.remove("active");
     alert("Meldung gesendet. Danke!");
@@ -425,13 +368,11 @@ function initReport() {
 function initBackHome() {
   const back = document.getElementById("backHome");
   if (!back) return;
-
   back.onclick = () => {
     history.pushState(null, "", location.pathname);
     results.innerHTML = "";
     updateBackHome();
   };
-
   window.addEventListener("popstate", updateBackHome);
 }
 
