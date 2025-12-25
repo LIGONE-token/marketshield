@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / KORREKT)
+   MarketShield – app.js (FINAL / STABIL / KORREKT)
 ===================================================== */
 
 let currentEntryId = null;
@@ -22,7 +22,7 @@ function escapeHtml(s = "") {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
-/* KI-Artefakte entfernen – Absätze bleiben */
+/* KI-Artefakte raus – Absätze bleiben */
 function cleanGeneratedArtifacts(text) {
   return String(text || "")
     .replace(/:contentReference\[[^\]]*]\{[^}]*}/g, "")
@@ -42,7 +42,7 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= ZURÜCK-BUTTON (JS-ERZEUGT, RICHTIG POSITIONIERT) ================= */
+/* ================= ZURÜCK-BUTTON (JS-ERZEUGT, RICHTIG POSITIONIERT & FUNKTIONAL) ================= */
 function ensureBackHomeButton() {
   let btn = $("backHome");
   if (btn) return btn;
@@ -61,14 +61,15 @@ function ensureBackHomeButton() {
     border-radius:4px;
   `;
 
+  // WICHTIG: IM #results, damit gleiche Startkante wie Titel/Text
   const results = $("results");
-  if (results) results.prepend(btn); // gleiche Startkante wie Titel
+  if (results) results.prepend(btn);
 
   btn.onclick = () => {
     history.pushState(null, "", location.pathname);
     $("results").innerHTML = "";
-    loadCategories();
-    initSearch();
+    loadCategories();   // Startansicht neu laden
+    initSearch();       // Suche wieder aktiv
     updateBackHome();
   };
 
@@ -173,7 +174,7 @@ function renderScoreBlock(score, processing, size = 13) {
   `;
 }
 
-/* ================= ECHTER KLEINER CLICK-TOOLTIP (KEIN BALKEN) ================= */
+/* ================= ECHTES KLEINES CLICK-TOOLTIP (KEIN BALKEN) ================= */
 function toggleLegalTooltip(btn) {
   let tip = document.getElementById("legalTooltip");
   if (tip) { tip.remove(); return; }
@@ -183,6 +184,7 @@ function toggleLegalTooltip(btn) {
   tip.textContent =
     "MarketShield kann rechtlich keine vollständige oder absolute Wahrheit darstellen. Die Inhalte dienen der Einordnung, nicht der Tatsachenbehauptung.";
 
+  // ENTSCHEIDEND: inline-block + fit-content ⇒ KEIN Balken
   tip.style.cssText = `
     position:absolute;
     z-index:9999;
