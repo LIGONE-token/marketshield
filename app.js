@@ -243,8 +243,3 @@ async function loadEntry(id) {
     <div id="entryActions"></div>
   `;
 }
-
-/* ================= STUBS ================= */
-function loadCategories() {}
-function initReport() {}
-function initBackHome() {}
