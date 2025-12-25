@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / KORREKT)
+   MarketShield – app.js (FINAL / KORREKT)
 ===================================================== */
 
 let currentEntryId = null;
@@ -22,7 +22,7 @@ function escapeHtml(s = "") {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
-/* KI-Artefakte raus – Absätze bleiben */
+/* KI-Artefakte entfernen – Absätze bleiben */
 function cleanGeneratedArtifacts(text) {
   return String(text || "")
     .replace(/:contentReference\[[^\]]*]\{[^}]*}/g, "")
@@ -61,15 +61,20 @@ function ensureBackHomeButton() {
     border-radius:4px;
   `;
 
-  // WICHTIG: IM #results, damit gleiche Startkante wie Titel/Text
   const results = $("results");
-  if (results) results.prepend(btn);
+  // 🔑 In denselben inneren Flow wie Titel/Text einfügen
+  const anchor = results?.querySelector("h2, h1, .entry-card");
+  if (anchor && anchor.parentNode) {
+    anchor.parentNode.insertBefore(btn, anchor);
+  } else if (results) {
+    results.prepend(btn); // Fallback
+  }
 
   btn.onclick = () => {
     history.pushState(null, "", location.pathname);
-    $("results").innerHTML = "";
-    loadCategories();   // Startansicht neu laden
-    initSearch();       // Suche wieder aktiv
+    results.innerHTML = "";
+    loadCategories();
+    initSearch();
     updateBackHome();
   };
 
@@ -184,13 +189,15 @@ function toggleLegalTooltip(btn) {
   tip.textContent =
     "MarketShield kann rechtlich keine vollständige oder absolute Wahrheit darstellen. Die Inhalte dienen der Einordnung, nicht der Tatsachenbehauptung.";
 
-  // ENTSCHEIDEND: inline-block + fit-content ⇒ KEIN Balken
+  // ENTSCHEIDEND: kein Balken
   tip.style.cssText = `
     position:absolute;
     z-index:9999;
     display:inline-block;
-    width:fit-content;
+    width:max-content;
     max-width:220px;
+    min-width:unset;
+    box-sizing:content-box;
     padding:6px 8px;
     background:#222;
     color:#fff;
