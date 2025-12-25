@@ -104,6 +104,59 @@ async function saveSearchQuery(query) {
     // niemals blockieren
   }
 }
+function ensureLegalPopup() {
+  if (document.getElementById("legalPopup")) return;
+
+  const div = document.createElement("div");
+  div.id = "legalPopup";
+  div.style.cssText = `
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    z-index:99999;
+    align-items:center;
+    justify-content:center;
+  `;
+
+  div.innerHTML = `
+    <div style="
+      background:#fff;
+      max-width:420px;
+      padding:18px 20px;
+      border-radius:12px;
+      font-size:14px;
+      line-height:1.45;
+    ">
+      <div style="font-weight:900;margin-bottom:8px;">
+        Rechtlicher Hinweis
+      </div>
+
+      <div style="margin-bottom:14px;">
+        MarketShield darf rechtlich keine absolute Wahrheit darstellen.
+        Alle Inhalte dienen der sachlichen Einordnung auf Basis verfügbarer
+        Informationen, typischer Zusammensetzungen und öffentlicher Quellen.
+        Rezepturen, Chargen, Herstellerangaben und individuelle Verträglichkeiten
+        können abweichen. Inhalte ersetzen keine medizinische oder rechtliche Beratung.
+      </div>
+
+      <button type="button" onclick="closeLegalPopup()">Schließen</button>
+    </div>
+  `;
+
+  document.body.appendChild(div);
+}
+
+function openLegalPopup() {
+  ensureLegalPopup();
+  const p = document.getElementById("legalPopup");
+  if (p) p.style.display = "flex";
+}
+
+function closeLegalPopup() {
+  const p = document.getElementById("legalPopup");
+  if (p) p.style.display = "none";
+}
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
