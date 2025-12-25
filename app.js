@@ -145,16 +145,41 @@ function renderIndustry(score) {
     </div>`;
 }
 
-function renderScoreBlock(score, processing) {
+/* ================= SCORE BLOCK (EXAKT AUSGERICHTET) ================= */
+/* Ziel: Beschreibungen starten IMMER exakt gleich, Score & Text sind nah, nichts gequetscht */
+function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
+
   if (!h && !i) return "";
+
+  // 80px Balkenbreite + 10px Abstand = feste Textkante
+  const colW = 90;
+
+  const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
+
+  const rowGap = 6;
+  const colGap = 8;
+
   return `
-    <div style="margin:12px 0">
-      ${h ? `<div title="Gesundheitsscore">${h}</div>` : ""}
-      ${i ? `<div title="Industrie-Verarbeitungsgrad">${i}</div>` : ""}
-    </div>`;
+    <div style="margin:12px 0;">
+      ${h ? `
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;margin-bottom:${i ? rowGap : 0}px;">
+          <div style="white-space:nowrap;">${h}</div>
+          <div style="${labelStyle}">Gesundheitsscore</div>
+        </div>
+      ` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;">
+          <div>${i}</div>
+          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
+        </div>
+      ` : ""}
+    </div>
+  `;
 }
+
 
 /* ================= LIST / DETAIL ================= */
 function renderList(data) {
