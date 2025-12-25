@@ -22,32 +22,78 @@
 .ms-title{ font-size:20px !important; font-weight:800 !important; margin:0 0 6px 0 !important; }
 .ms-snippet{ margin-top:6px !important; }
 
-/* SCOREBLOCK: exakt ausgerichtet, unkaputtbar */
-.ms-scoreblock{ margin:12px 0 !important; }
-.ms-score-row{
-  display:grid !important;
-  grid-template-columns:90px 1fr !important;
-  column-gap:8px !important;
-  align-items:center !important;
+/* ================= SCORES ================= */
+function renderHealth(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n >= 80) return "💚💚💚";
+  if (n >= 60) return "💚💚";
+  if (n >= 40) return "💚";
+  if (n >= 20) return "💛";
+  return "⚠️❗⚠️";
 }
-.ms-score-row-health{ margin-bottom:6px !important; }
-.ms-score-left{ white-space:nowrap !important; }
-.ms-score-label{ font-size:13px !important; opacity:.85 !important; line-height:1.2 !important; }
 
-/* Industriescore Balken: robust */
-.ms-industry-bar{
-  width:80px !important;
-  height:8px !important;
-  background:#e0e0e0 !important;
-  border-radius:6px !important;
-  overflow:hidden !important;
-  display:block !important;
+function renderIndustry(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+
+  // Industrie 0–10 → 80px Balken
+  const w = Math.round((n / 10) * 80);
+
+  return `
+    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
+      <div style="width:${w}px;height:8px;background:#2e7d32;"></div>
+    </div>
+  `;
 }
-.ms-industry-fill{
-  height:8px !important;
-  background:#2e7d32 !important;
-  display:block !important;
+
+/* ================= SCORE BLOCK (FINAL / EXAKT) ================= */
+/* Ziel:
+   - feste linke Score-Spalte
+   - Text startet IMMER exakt gleich
+   - Score & Text nah beieinander
+   - keine Umbrüche, kein Springen
+*/
+function renderScoreBlock(score, processing, size = 13) {
+  const h = renderHealth(score);
+  const i = renderIndustry(processing);
+
+  if (!h && !i) return "";
+
+  // 80px Balken + 10px Reserve = feste Textkante
+  const colW = 90;
+  const colGap = 8;
+  const rowGap = 6;
+  const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
+
+  return `
+    <div style="margin:12px 0;">
+      ${h ? `
+        <div style="
+          display:grid;
+          grid-template-columns:${colW}px 1fr;
+          column-gap:${colGap}px;
+          align-items:center;
+          margin-bottom:${i ? rowGap : 0}px;">
+          <div style="white-space:nowrap;">${h}</div>
+          <div style="${labelStyle}">Gesundheitsscore</div>
+        </div>
+      ` : ""}
+
+      ${i ? `
+        <div style="
+          display:grid;
+          grid-template-columns:${colW}px 1fr;
+          column-gap:${colGap}px;
+          align-items:center;">
+          <div style="white-space:nowrap;">${i}</div>
+          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
+        </div>
+      ` : ""}
+    </div>
+  `;
 }
+
 
 /* Tooltip (Warnung) */
 .ms-tooltip{ position:relative !important; cursor:help !important; }
