@@ -1435,3 +1435,35 @@ button {
 .ms-score-block * {
   box-sizing: content-box;
 }
+/* === MarketShield Fix-Zone === */
+
+/* Content-Kante wie bei #results */
+.ms-fix-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Echter Tooltip, kein Balken */
+.ms-legal-tooltip {
+  position: absolute !important;
+  display: inline-block !important;
+  width: max-content !important;
+  max-width: 260px !important;
+  min-width: unset !important;
+  padding: 6px 8px !important;
+  background: #222 !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.25) !important;
+  white-space: normal !important;
+  z-index: 9999 !important;
+}
+
+/* Absätze stabil */
+.ms-fix-wrap p {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
