@@ -10,10 +10,7 @@ const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    }
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   });
   return r.json();
 }
@@ -22,13 +19,10 @@ async function supa(query) {
 const $ = (id) => document.getElementById(id);
 
 function escapeHtml(s = "") {
-  return String(s)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
-/* KI-Artefakte entfernen – ABSÄTZE BLEIBEN */
+/* KI-Artefakte entfernen – Absätze bleiben */
 function cleanGeneratedArtifacts(text) {
   return String(text || "")
     .replace(/:contentReference\[[^\]]*]\{[^}]*}/g, "")
@@ -48,14 +42,14 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= ZURÜCK-BUTTON (JS-ERZEUGT) ================= */
+/* ================= ZURÜCK-BUTTON (JS-ERZEUGT, RICHTIG POSITIONIERT) ================= */
 function ensureBackHomeButton() {
   let btn = $("backHome");
   if (btn) return btn;
 
   btn = document.createElement("button");
   btn.id = "backHome";
-  btn.textContent = "← Zurück";
+  btn.textContent = "← Zur Startseite";
   btn.style.cssText = `
     display:none;
     margin:10px 0;
@@ -68,13 +62,13 @@ function ensureBackHomeButton() {
   `;
 
   const results = $("results");
-  if (results && results.parentNode) {
-    results.parentNode.insertBefore(btn, results);
-  }
+  if (results) results.prepend(btn); // gleiche Startkante wie Titel
 
   btn.onclick = () => {
     history.pushState(null, "", location.pathname);
     $("results").innerHTML = "";
+    loadCategories();
+    initSearch();
     updateBackHome();
   };
 
@@ -86,15 +80,13 @@ function updateBackHome() {
   btn.style.display = location.search.includes("id=") ? "inline-block" : "none";
 }
 
-/* ================= TEXT + TABELLEN ================= */
+/* ================= TEXT + TABELLEN (ABSÄTZE KORREKT) ================= */
 function renderMarkdownTables(text) {
   const lines = normalizeText(text).split("\n");
   let html = "";
   let i = 0;
 
-  const isSep = s =>
-    /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test((s||"").trim());
-
+  const isSep = s => /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test((s||"").trim());
   const splitRow = r => {
     let a = r.split("|").map(v=>v.trim());
     if (a[0]==="") a.shift();
@@ -107,15 +99,11 @@ function renderMarkdownTables(text) {
       const head = splitRow(lines[i]);
       html += `<div style="overflow-x:auto;margin:12px 0">
         <table style="border-collapse:collapse;min-width:600px;width:100%">
-        <thead><tr>${head.map(h =>
-          `<th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">${escapeHtml(h)}</th>`
-        ).join("")}</tr></thead><tbody>`;
+        <thead><tr>${head.map(h=>`<th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">${escapeHtml(h)}</th>`).join("")}</tr></thead><tbody>`;
       i += 2;
       while (lines[i] && lines[i].includes("|")) {
         const c = splitRow(lines[i]);
-        html += `<tr>${head.map((_,k)=>
-          `<td style="border:1px solid #ddd;padding:8px">${escapeHtml(c[k]||"")}</td>`
-        ).join("")}</tr>`;
+        html += `<tr>${head.map((_,k)=>`<td style="border:1px solid #ddd;padding:8px">${escapeHtml(c[k]||"")}</td>`).join("")}</tr>`;
         i++;
       }
       html += `</tbody></table></div>`;
@@ -152,14 +140,12 @@ function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
   const w = Math.round((n / 10) * 80);
-  return `
-    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden">
-      <div style="width:${w}px;height:8px;background:#2e7d32"></div>
-    </div>
-  `;
+  return `<div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden">
+    <div style="width:${w}px;height:8px;background:#2e7d32"></div>
+  </div>`;
 }
 
-/* ================= SCORE BLOCK (REFERENZ) ================= */
+/* ================= SCORE BLOCK (REFERENZ – NICHT ÄNDERN) ================= */
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
@@ -187,7 +173,7 @@ function renderScoreBlock(score, processing, size = 13) {
   `;
 }
 
-/* ================= MINI-KLICK-TOOLTIP ================= */
+/* ================= ECHTER KLEINER CLICK-TOOLTIP (KEIN BALKEN) ================= */
 function toggleLegalTooltip(btn) {
   let tip = document.getElementById("legalTooltip");
   if (tip) { tip.remove(); return; }
@@ -200,6 +186,8 @@ function toggleLegalTooltip(btn) {
   tip.style.cssText = `
     position:absolute;
     z-index:9999;
+    display:inline-block;
+    width:fit-content;
     max-width:220px;
     padding:6px 8px;
     background:#222;
@@ -208,10 +196,10 @@ function toggleLegalTooltip(btn) {
     line-height:1.3;
     border-radius:4px;
     box-shadow:0 4px 10px rgba(0,0,0,.25);
+    white-space:normal;
   `;
 
   document.body.appendChild(tip);
-
   const r = btn.getBoundingClientRect();
   tip.style.top  = `${window.scrollY + r.bottom + 6}px`;
   tip.style.left = `${window.scrollX + r.left}px`;
@@ -226,7 +214,7 @@ function toggleLegalTooltip(btn) {
   }, 0);
 }
 
-/* ================= LIST / DETAIL ================= */
+/* ================= LISTE / DETAIL ================= */
 function renderList(data) {
   $("results").innerHTML = (data||[]).map(e=>`
     <div class="entry-card" data-id="${e.id}">
@@ -237,13 +225,12 @@ function renderList(data) {
   `).join("");
 }
 
-/* Klick-Delegation – macht Suche & Kategorien anklickbar */
+/* Klick-Delegation: Liste & Suche anklickbar */
 document.addEventListener("click", (e) => {
   const card = e.target.closest(".entry-card");
   if (!card) return;
-  const id = card.dataset.id;
-  history.pushState(null, "", "?id=" + id);
-  loadEntry(id);
+  history.pushState(null, "", "?id=" + card.dataset.id);
+  loadEntry(card.dataset.id);
 });
 
 /* ================= DETAIL ================= */
@@ -267,9 +254,51 @@ async function loadEntry(id) {
     ${renderTextBlock("Zusammenfassung", e.summary)}
     ${renderTextBlock("Wirkmechanismus", e.mechanism)}
     ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
+
+    <div id="entryActions"></div>
   `;
 
+  renderEntryActions(e.title);
   updateBackHome();
+}
+
+/* ================= SOCIAL / KOPIEREN / DRUCKEN ================= */
+function renderEntryActions(title) {
+  const box = $("entryActions");
+  if (!box) return;
+
+  const url = encodeURIComponent(location.href);
+  const text = encodeURIComponent(title || document.title);
+
+  box.innerHTML = `
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="navigator.clipboard.writeText(location.href)">🔗 Kopieren</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${url}','_blank')">Facebook</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${url}&text=${text}','_blank')">X</button>
+      <button onclick="window.open('https://wa.me/?text=${text}%20${url}','_blank')">WhatsApp</button>
+      <button onclick="window.open('https://t.me/share/url?url=${url}&text=${text}','_blank')">Telegram</button>
+      <button onclick="window.print()">🖨️ Drucken</button>
+    </div>
+  `;
+}
+
+/* ================= KATEGORIEN ================= */
+async function loadCategories() {
+  const grid = document.querySelector(".category-grid");
+  if (!grid) return;
+  const data = await fetch("categories.json").then(r=>r.json());
+  grid.innerHTML = "";
+  (data.categories||[]).forEach(c=>{
+    const b = document.createElement("button");
+    b.textContent = c.title;
+    b.onclick = ()=>loadCategory(c.title);
+    grid.appendChild(b);
+  });
+}
+
+async function loadCategory(cat) {
+  const d = await supa(`entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`);
+  renderList(d);
 }
 
 /* ================= SUCHE ================= */
@@ -279,10 +308,7 @@ function initSearch() {
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) {
-      $("results").innerHTML = "";
-      return;
-    }
+    if (q.length < 2) { $("results").innerHTML=""; return; }
     const e = encodeURIComponent(q);
     const d = await supa(
       `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${e}%25,summary.ilike.%25${e}%25)`
@@ -325,6 +351,7 @@ function initReport() {
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   ensureBackHomeButton();
+  loadCategories();
   initSearch();
   initReport();
 
@@ -335,7 +362,8 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("popstate", () => {
     const q = new URLSearchParams(location.search);
     const id = q.get("id");
-    if (id) loadEntry(id);
+    $("results").innerHTML = "";
+    if (id) loadEntry(id); else { loadCategories(); initSearch(); }
     updateBackHome();
   });
 
