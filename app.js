@@ -157,6 +157,20 @@ function closeLegalPopup() {
   const p = document.getElementById("legalPopup");
   if (p) p.style.display = "none";
 }
+function renderMiniLegalPopupLink() {
+  return `
+    <div style="
+      font-size:11px;
+      line-height:1.2;
+      opacity:0.6;
+      margin:4px 0 6px 0;
+      cursor:pointer;
+      text-decoration:underline;"
+      onclick="openLegalPopup()">
+      Rechtlicher Hinweis!
+    </div>
+  `;
+}
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
