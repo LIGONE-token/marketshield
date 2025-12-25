@@ -1467,3 +1467,79 @@ button {
   margin: 0 0 12px 0;
   line-height: 1.6;
 }
+/* =====================================================
+   MARKETSHIELD – NOTFALL-FIX (FINAL)
+   NICHT DARÜBER SCHREIBEN
+===================================================== */
+
+/* Zurück zur Startseite – IM CONTENT, NICHT AM RAND */
+#backHome {
+  display: none;
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  margin: 16px auto !important;
+  max-width: 900px;
+  width: calc(100% - 32px);
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* Score-Layout – darf NICHT umbrechen */
+.entry-card div {
+  box-sizing: border-box;
+}
+
+/* Tooltip – MUSS funktionieren */
+.ms-tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.ms-tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 0;
+  bottom: 125%;
+  background: #222;
+  color: #fff;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: normal;
+}
+
+.ms-tooltip:hover::after,
+.ms-tooltip:focus::after {
+  opacity: 1;
+}
+
+/* Text-Darstellung – Absätze erzwingen */
+.ms-text p {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+/* Tabellen – IMMER lesbar */
+.ms-table-wrap {
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.ms-table-wrap table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.ms-table-wrap th,
+.ms-table-wrap td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
