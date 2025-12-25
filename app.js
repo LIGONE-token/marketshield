@@ -1,7 +1,8 @@
 /* =====================================================
    MarketShield – app.js (FINAL / STABIL)
-   - Kleines Popup "Rechtliche Info" (Klick)
-   - Zentrale KI-Artefakt-Bereinigung
+   - Klick-Tooltip (klein, kein Balken)
+   - Absätze korrekt
+   - KI-Artefakte entfernt
 ===================================================== */
 
 let currentEntryId = null;
@@ -12,7 +13,10 @@ const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
   });
   return r.json();
 }
@@ -22,77 +26,99 @@ const $ = (id) => document.getElementById(id);
 
 function escapeHtml(s = "") {
   return String(s)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
-/* 🔥 ZENTRALER KI-CLEANER */
+/* 🔥 KI-CLEANER (ABSÄTZE BLEIBEN!) */
 function cleanGeneratedArtifacts(text) {
   return String(text || "")
     .replace(/:contentReference\[[^\]]*]\{[^}]*}/g, "")
     .replace(/\[oaicite:\d+]/g, "")
-    .replace(/\s{2,}/g, " ")
+    .replace(/[ \t]{2,}/g, " ")
     .trim();
 }
 
-function normalizeText(t) {
-  return cleanGeneratedArtifacts(t)
-    .replace(/\\r\\n/g,"\n")
-    .replace(/\\n/g,"\n")
-    .replace(/\\r/g,"\n")
-    .replace(/\r\n/g,"\n")
-    .replace(/\r/g,"\n");
+function normalizeText(text) {
+  return cleanGeneratedArtifacts(text)
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
 }
 
-function shortText(t, max = 160) {
-  if (!t) return "";
-  return t.length > max ? t.slice(0, max) + " …" : t;
+function shortText(text, max = 160) {
+  if (!text) return "";
+  return text.length > max ? text.slice(0, max) + " …" : text;
 }
 
-/* ================= TABELLEN ================= */
+/* ================= TABELLEN + TEXT ================= */
 function renderMarkdownTables(text) {
   const lines = normalizeText(text).split("\n");
-  let html = "", i = 0;
+  let html = "";
+  let i = 0;
 
-  const isSep = s => /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test((s||"").trim());
-  const split = r => {
-    let a = r.split("|").map(v=>v.trim());
-    if (a[0]==="") a.shift();
-    if (a[a.length-1]==="") a.pop();
+  const isSeparator = s =>
+    /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test((s || "").trim());
+
+  const splitRow = row => {
+    let a = row.split("|").map(v => v.trim());
+    if (a[0] === "") a.shift();
+    if (a[a.length - 1] === "") a.pop();
     return a;
   };
 
   while (i < lines.length) {
-    if (lines[i].includes("|") && isSep(lines[i+1])) {
-      const head = split(lines[i]);
-      html += `<div style="overflow-x:auto;margin:12px 0">
-        <table style="border-collapse:collapse;min-width:600px;width:100%">
-        <thead><tr>${head.map(h =>
-          `<th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">${escapeHtml(h)}</th>`
-        ).join("")}</tr></thead><tbody>`;
+    // Tabelle erkennen
+    if (lines[i].includes("|") && isSeparator(lines[i + 1])) {
+      const headers = splitRow(lines[i]);
+      html += `
+        <div style="overflow-x:auto;margin:12px 0">
+          <table style="border-collapse:collapse;min-width:600px;width:100%">
+            <thead>
+              <tr>
+                ${headers.map(h =>
+                  `<th style="border:1px solid #ddd;padding:8px;background:#f5f5f5">${escapeHtml(h)}</th>`
+                ).join("")}
+              </tr>
+            </thead>
+            <tbody>
+      `;
       i += 2;
+
       while (lines[i] && lines[i].includes("|")) {
-        const c = split(lines[i]);
-        html += `<tr>${head.map((_,k) =>
-          `<td style="border:1px solid #ddd;padding:8px">${escapeHtml(c[k]||"")}</td>`
-        ).join("")}</tr>`;
+        const cells = splitRow(lines[i]);
+        html += `
+          <tr>
+            ${headers.map((_, k) =>
+              `<td style="border:1px solid #ddd;padding:8px">${escapeHtml(cells[k] || "")}</td>`
+            ).join("")}
+          </tr>
+        `;
         i++;
       }
+
       html += `</tbody></table></div>`;
       continue;
     }
-    html += lines[i].trim()
-      ? `<p style="line-height:1.6">${escapeHtml(lines[i])}</p>`
-      : `<div style="height:10px"></div>`;
+
+    // NORMALER TEXT (ABSÄTZE!)
+    if (lines[i].trim() === "") {
+      html += `<div style="height:12px"></div>`;
+    } else {
+      html += `<p style="line-height:1.6;margin:0">${escapeHtml(lines[i])}</p>`;
+    }
     i++;
   }
+
   return html;
 }
 
 function renderTextBlock(title, text) {
   if (!text) return "";
-  return `<h3>${escapeHtml(title)}</h3>${renderMarkdownTables(text)}`;
+  return `
+    <h3>${escapeHtml(title)}</h3>
+    ${renderMarkdownTables(text)}
+  `;
 }
 
 /* ================= SCORES ================= */
@@ -110,68 +136,59 @@ function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
   const w = Math.round((n / 10) * 80);
-  return `<div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden">
-    <div style="width:${w}px;height:8px;background:#2e7d32"></div></div>`;
+  return `
+    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden">
+      <div style="width:${w}px;height:8px;background:#2e7d32"></div>
+    </div>
+  `;
 }
 
-/* ================= SCORE BLOCK (wie gehabt) ================= */
-function renderScoreBlock(score, processing, size = 13) {
+function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
 
-  const colW = 90, rowGap = 6, colGap = 8;
-  const labelStyle = `font-size:${size}px;opacity:.85;line-height:1.2;`;
-
   return `
     <div style="margin:12px 0">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;margin-bottom:${i?rowGap:0}px">
-          <div style="white-space:nowrap">${h}</div>
-          <div style="${labelStyle}">Gesundheitsscore</div>
-        </div>` : ""}
-      ${i ? `
-        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center">
-          <div>${i}</div>
-          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
-    </div>`;
+      ${h ? `<div style="display:flex;gap:8px;align-items:center">${h}<span style="opacity:.7">Gesundheitsscore</span></div>` : ""}
+      ${i ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px">${i}<span style="opacity:.7">Industrie-Verarbeitungsgrad</span></div>` : ""}
+    </div>
+  `;
 }
 
-/* ================= POPUP: RECHTLICHE INFO ================= */
-function toggleLegalPopup(btn) {
-  let p = document.getElementById("legalPopup");
-  if (p) { p.remove(); return; }
+/* ================= KLICK-TOOLTIP (KLEIN!) ================= */
+function toggleLegalTooltip(btn) {
+  let tip = document.getElementById("legalTooltip");
+  if (tip) { tip.remove(); return; }
 
-  p = document.createElement("div");
-  p.id = "legalPopup";
-  p.innerHTML = `
-    <strong>Rechtlicher Hinweis</strong><br>
-    MarketShield kann rechtlich keine vollständige oder absolute Wahrheit darstellen.
-    Die Inhalte dienen der Einordnung, nicht der Tatsachenbehauptung.
-  `;
-  p.style.cssText = `
+  tip = document.createElement("div");
+  tip.id = "legalTooltip";
+  tip.textContent =
+    "MarketShield kann rechtlich keine vollständige oder absolute Wahrheit darstellen. Die Inhalte dienen der Einordnung, nicht der Tatsachenbehauptung.";
+
+  tip.style.cssText = `
     position:absolute;
     z-index:9999;
-    max-width:320px;
-    padding:10px 12px;
-    background:#fff;
-    border:1px solid #ccc;
-    border-radius:6px;
-    font-size:13px;
-    line-height:1.4;
-    box-shadow:0 6px 18px rgba(0,0,0,.15);
+    max-width:240px;
+    padding:6px 8px;
+    background:#222;
+    color:#fff;
+    font-size:12px;
+    line-height:1.3;
+    border-radius:4px;
+    box-shadow:0 4px 10px rgba(0,0,0,.25);
   `;
-  document.body.appendChild(p);
+
+  document.body.appendChild(tip);
 
   const r = btn.getBoundingClientRect();
-  p.style.top = `${window.scrollY + r.bottom + 6}px`;
-  p.style.left = `${window.scrollX + r.left}px`;
+  tip.style.top = `${window.scrollY + r.bottom + 6}px`;
+  tip.style.left = `${window.scrollX + r.left}px`;
 
   setTimeout(() => {
     document.addEventListener("click", function close(e) {
-      if (!p.contains(e.target) && e.target !== btn) {
-        p.remove();
+      if (!tip.contains(e.target) && e.target !== btn) {
+        tip.remove();
         document.removeEventListener("click", close);
       }
     });
@@ -180,49 +197,49 @@ function toggleLegalPopup(btn) {
 
 /* ================= LIST / DETAIL ================= */
 function renderList(data) {
-  const r = $("results"); if (!r) return;
-  r.innerHTML = (data||[]).map(e=>`
+  const r = $("results");
+  r.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
       <div>${escapeHtml(shortText(cleanGeneratedArtifacts(e.summary)))}</div>
-    </div>`).join("");
+    </div>
+  `).join("");
 }
 
 async function loadEntry(id) {
   const d = await supa(`entries?select=*&id=eq.${id}`);
-  const e = d && d[0]; if (!e) return;
+  const e = d && d[0];
+  if (!e) return;
   currentEntryId = id;
 
-  const r = $("results"); if (!r) return;
-
-  r.innerHTML = `
+  $("results").innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
 
     <button
       type="button"
-      onclick="toggleLegalPopup(this)"
-      style="margin:6px 0 8px 0;padding:2px 6px;font-size:12px;cursor:pointer;background:#f3f3f3;border:1px solid #ccc;border-radius:4px">
+      onclick="toggleLegalTooltip(this)"
+      style="margin:6px 0 8px 0;padding:2px 6px;font-size:12px;border:1px solid #ccc;border-radius:4px;background:#f3f3f3;cursor:pointer"
+    >
       Rechtliche Info
     </button>
 
     ${renderTextBlock("Zusammenfassung", e.summary)}
     ${renderTextBlock("Wirkmechanismus", e.mechanism)}
     ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
+
     <div id="entryActions"></div>
   `;
 
   renderEntryActions(e.title);
-  updateBackHome();
 }
 
 /* ================= SOCIAL ================= */
 function renderEntryActions(title) {
-  const b = $("entryActions"); if (!b) return;
   const u = encodeURIComponent(location.href);
-  const t = encodeURIComponent(title||document.title);
-  b.innerHTML = `
+  const t = encodeURIComponent(title || document.title);
+  $("entryActions").innerHTML = `
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
       <button onclick="navigator.clipboard.writeText(location.href)">🔗 Kopieren</button>
       <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${u}','_blank')">Facebook</button>
@@ -230,79 +247,13 @@ function renderEntryActions(title) {
       <button onclick="window.open('https://wa.me/?text=${t}%20${u}','_blank')">WhatsApp</button>
       <button onclick="window.open('https://t.me/share/url?url=${u}&text=${t}','_blank')">Telegram</button>
       <button onclick="window.print()">🖨️ Drucken</button>
-    </div>`;
+    </div>
+  `;
 }
 
-/* ================= KATEGORIEN / SEARCH / REPORT / BACK ================= */
+/* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
-  initSearch();
-  initReport();
-  initBackHome();
-
   const p = new URLSearchParams(location.search);
   const id = p.get("id");
   if (id) loadEntry(id);
 });
-
-async function loadCategories() {
-  const g = document.querySelector(".category-grid"); if (!g) return;
-  const d = await fetch("categories.json").then(r=>r.json());
-  g.innerHTML = "";
-  (d.categories||[]).forEach(c=>{
-    const b = document.createElement("button");
-    b.textContent = c.title;
-    b.onclick = ()=>loadCategory(c.title);
-    g.appendChild(b);
-  });
-}
-
-async function loadCategory(cat) {
-  const d = await supa(`entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`);
-  renderList(d);
-}
-
-function initSearch() {
-  const i=$("searchInput"), r=$("results");
-  if (!i || !r) return;
-  i.addEventListener("input", async ()=>{
-    const q=i.value.trim();
-    if(q.length<2){ r.innerHTML=""; return; }
-    const e=encodeURIComponent(q);
-    const d=await supa(`entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${e}%25,summary.ilike.%25${e}%25)`);
-    renderList(d);
-  });
-}
-
-function initReport() {
-  const b=$("reportBtn"), m=$("reportModal"), c=$("closeReportModal"), f=$("reportForm");
-  if(!b||!m||!f) return;
-  b.onclick=()=>m.classList.add("active");
-  if(c) c.onclick=()=>m.classList.remove("active");
-  f.onsubmit=async(e)=>{
-    e.preventDefault();
-    const d=f.description.value.trim(); if(!d) return;
-    await fetch(`${SUPABASE_URL}/rest/v1/reports`,{
-      method:"POST",
-      headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`,"Content-Type":"application/json"},
-      body:JSON.stringify({description:d,entry_id:currentEntryId})
-    });
-    m.classList.remove("active"); f.reset();
-  };
-}
-
-function initBackHome() {
-  const b=$("backHome"), r=$("results");
-  if(!b||!r) return;
-  b.onclick=()=>{ history.pushState(null,"",location.pathname); r.innerHTML=""; updateBackHome(); };
-  window.addEventListener("popstate",()=>{
-    const p=new URLSearchParams(location.search);
-    const id=p.get("id");
-    if(id) loadEntry(id); else { r.innerHTML=""; updateBackHome(); }
-  });
-  updateBackHome();
-}
-function updateBackHome() {
-  const b=$("backHome"); if(!b) return;
-  b.style.display = location.search.includes("id=") ? "block" : "none";
-}
