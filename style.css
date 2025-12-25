@@ -1543,3 +1543,74 @@ button {
   padding: 8px;
   text-align: left;
 }
+/* =====================================================
+   MARKETSHIELD – VISIBILITY EMERGENCY OVERRIDE
+   GARANTIERT SICHTBAR – NICHT ANFASSEN
+===================================================== */
+
+/* === SOCIAL BUTTONS === */
+.social-buttons,
+.share-buttons,
+.ms-share,
+.ms-social {
+  display: flex !important;
+  gap: 10px !important;
+  margin: 16px 0 !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.social-buttons a,
+.share-buttons a,
+.ms-share a,
+.ms-social a,
+.social-buttons button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 16px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* === KOPIEREN / DRUCKEN / TEILEN === */
+.copy-btn,
+.print-btn,
+.share-btn,
+button[data-action="copy"],
+button[data-action="print"] {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  margin: 8px 8px 8px 0 !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+}
+
+/* === VERSTECKEN VERBOTEN === */
+[hidden],
+[style*="display:none"],
+[style*="visibility:hidden"] {
+  display: revert !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* === KEINE MINI-ICONS === */
+svg,
+.icon,
+.social-buttons svg {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+}
