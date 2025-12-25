@@ -1,49 +1,88 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / MINIMAL FIXED)
+   MarketShield – app.js (STABIL / CRASH-PROOF)
 ===================================================== */
 
 let currentEntryId = null;
-
-/* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
-
-  const params = new URLSearchParams(location.search);
-  const id = params.get("id");
-  if (id) loadEntry(id);
-
-  initReport();
-  initBackHome();
-});
-
-/* ================= GLOBAL CLICK ================= */
-document.addEventListener("click", (e) => {
-  const card = e.target.closest(".entry-card");
-  if (!card) return;
-
-  const id = card.dataset.id;
-  history.pushState(null, "", "?id=" + id);
-  loadEntry(id);
-});
 
 /* ================= SUPABASE ================= */
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
 async function supa(query) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    }
+  const url = `${SUPABASE_URL}/rest/v1/${query}`;
+  const r = await fetch(url, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   });
-  return r.json();
+  // Wenn Supabase Fehler liefert, zeigen wir ihn statt still weiterzumachen:
+  const txt = await r.text();
+  try {
+    const json = JSON.parse(txt || "[]");
+    if (!r.ok) throw new Error(`Supabase ${r.status}: ${txt}`);
+    return json;
+  } catch (e) {
+    if (!r.ok) throw new Error(`Supabase ${r.status}: ${txt}`);
+    throw e;
+  }
 }
 
+/* ================= SAFE DOM ================= */
+const getEl = (id) => document.getElementById(id);
+const getResultsEl = () => getEl("results");
+
+function showFatal(msg) {
+  const box = getResultsEl();
+  if (box) {
+    box.innerHTML = `
+      <div style="padding:12px;border:2px solid #c00;background:#fff3f3;border-radius:10px;">
+        <div style="font-weight:900;margin-bottom:6px;">MarketShield Fehler</div>
+        <div style="white-space:pre-wrap;line-height:1.5;">${escapeHtml(String(msg))}</div>
+        <div style="margin-top:8px;opacity:.75;">Tipp: Öffne die Browser-Konsole (F12) für Details.</div>
+      </div>
+    `;
+  } else {
+    alert("MarketShield Fehler: " + msg);
+  }
+}
+
+window.addEventListener("error", (e) => showFatal(e.message || e.error || "Unbekannter JS-Fehler"));
+window.addEventListener("unhandledrejection", (e) => showFatal(e.reason || "Promise Fehler"));
+
 /* ================= HELPERS ================= */
+function escapeHtml(s = "") {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function shortText(text, max = 160) {
+  if (!text) return "";
+  return text.length > max ? text.slice(0, max) + " …" : text;
+}
+function normalizeText(text) {
+  if (!text) return "";
+  return String(text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+function renderTextBlock(title, text) {
+  if (!text) return "";
+  return `
+    <h3>${escapeHtml(title)}</h3>
+    <div style="white-space:pre-wrap;line-height:1.6;">
+      ${escapeHtml(normalizeText(text))}
+    </div>
+  `;
+}
+function renderJsonList(title, data) {
+  if (!data) return "";
+  let arr;
+  try { arr = Array.isArray(data) ? data : JSON.parse(data); } catch { return ""; }
+  if (!arr.length) return "";
+  return `
+    <h3>${escapeHtml(title)}</h3>
+    <ul style="line-height:1.6;padding-left:18px;">
+      ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
+    </ul>
+  `;
+}
+
 async function saveSearchQuery(query) {
   if (!query || query.length < 2) return;
-
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
       method: "POST",
@@ -52,58 +91,11 @@ async function saveSearchQuery(query) {
         Authorization: `Bearer ${SUPABASE_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        query: query.trim()
-      })
+      body: JSON.stringify({ query: query.trim() })
     });
-  } catch (e) {
-    // Suche darf niemals blockieren
-  }
-}
-
-function escapeHtml(s = "") {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function shortText(text, max = 160) {
-  if (!text) return "";
-  return text.length > max ? text.slice(0, max) + " …" : text;
-}
-
-function normalizeText(text) {
-  if (!text) return "";
-  return String(text)
-    .replace(/\r\n/g, "\n")
-    .replace(/\n/g, "\n")
-    .replace(/\r/g, "\n");
-}
-
-function renderTextBlock(title, text) {
-  if (!text) return "";
-  return `
-    <h3>${title}</h3>
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${normalizeText(text)}
-    </div>
-  `;
-}
-
-function renderJsonList(title, data) {
-  if (!data) return "";
-  let arr;
-  try {
-    arr = Array.isArray(data) ? data : JSON.parse(data);
   } catch {
-    return "";
+    // niemals blockieren
   }
-  if (!arr.length) return "";
-
-  return `
-    <h3>${title}</h3>
-    <ul style="line-height:1.6;padding-left:18px;">
-      ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
-    </ul>
-  `;
 }
 
 /* ================= SCORES ================= */
@@ -116,7 +108,6 @@ function renderHealth(score) {
   if (n >= 20) return "💛";
   return "⚠️❗⚠️";
 }
-
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -127,8 +118,6 @@ function renderIndustry(score) {
     </div>
   `;
 }
-
-/* ================= SCORE BLOCK ================= */
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
@@ -161,12 +150,12 @@ function renderScoreBlock(score, processing, size = 13) {
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
-  if (!grid) return;
+  if (!grid) return; // wenn es nicht existiert, bricht nichts
 
   const data = await fetch("categories.json").then(r => r.json());
   grid.innerHTML = "";
 
-  data.categories.forEach(c => {
+  (data.categories || []).forEach(c => {
     const b = document.createElement("button");
     b.textContent = c.title;
     b.onclick = () => loadCategory(c.title);
@@ -174,67 +163,27 @@ async function loadCategories() {
   });
 }
 
-/* ================= SUCHE ================= */
-const input = document.getElementById("searchInput");
-const results = document.getElementById("results");
-
-if (input) {
-  input.addEventListener("input", async () => {
-    const q = input.value.trim();
-    if (q.length < 2) {
-      results.innerHTML = "";
-      return;
-    }
-
-    const enc = encodeURIComponent(q);
-    const data = await supa(
-      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
-    );
-    renderList(data);
-  });
-
-  input.addEventListener("keydown", async (e) => {
-    if (e.key !== "Enter") return;
-    const q = input.value.trim();
-    if (q.length < 2) return;
-
-    saveSearchQuery(q);
-
-    const enc = encodeURIComponent(q);
-    const data = await supa(
-      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
-    );
-    renderList(data);
-  });
-}
-
-async function loadCategory(cat) {
-  const data = await supa(
-    `entries?select=id,title,summary,score,processing_score&category=eq.${cat}`
-  );
-  renderList(data);
-}
-
+/* ================= LISTE ================= */
 function renderList(data) {
-  results.innerHTML = data.map(e => `
+  const results = getResultsEl();
+  if (!results) return;
+
+  results.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">
-        ${escapeHtml(e.title)}
-      </div>
-
+      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score, 13)}
-
-      <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary, 160))}
-      </div>
+      <div style="font-size:15px;line-height:1.4;">${escapeHtml(shortText(e.summary, 160))}</div>
     </div>
   `).join("");
 }
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
+  const results = getResultsEl();
+  if (!results) return;
+
   const data = await supa(`entries?select=*&id=eq.${id}`);
-  const e = data[0];
+  const e = data && data[0];
   if (!e) return;
 
   currentEntryId = id;
@@ -269,12 +218,12 @@ function renderEntryActions(title) {
 
   box.innerHTML = `
     <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
-      <button onclick="window.print()">🖨️ Drucken</button>
-      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
-      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
-      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+      <button type="button" onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button type="button" onclick="window.print()">🖨️ Drucken</button>
+      <button type="button" onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button type="button" onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button type="button" onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button type="button" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
     </div>
   `;
 }
@@ -285,15 +234,14 @@ function initReport() {
   const modal = document.getElementById("reportModal");
   const close = document.getElementById("closeReportModal");
   const form = document.getElementById("reportForm");
-
-  if (!btn || !modal || !form) return;
+  if (!btn || !modal || !form || !close) return;
 
   btn.onclick = () => modal.classList.add("active");
   close.onclick = () => modal.classList.remove("active");
 
   form.onsubmit = async (e) => {
     e.preventDefault();
-    const description = form.description.value.trim();
+    const description = (form.description?.value || "").trim();
     if (!description) return alert("Bitte Beschreibung eingeben.");
 
     await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
@@ -324,7 +272,8 @@ function initBackHome() {
 
   back.onclick = () => {
     history.pushState(null, "", location.pathname);
-    results.innerHTML = "";
+    const results = getResultsEl();
+    if (results) results.innerHTML = "";
     updateBackHome();
   };
 
@@ -336,3 +285,76 @@ function updateBackHome() {
   if (!back) return;
   back.style.display = location.search.includes("id=") ? "block" : "none";
 }
+
+/* ================= SEARCH ================= */
+function initSearch() {
+  const input = document.getElementById("searchInput");
+  const results = getResultsEl();
+
+  if (!input || !results) return;
+
+  input.addEventListener("input", async () => {
+    try {
+      const q = input.value.trim();
+      if (q.length < 2) { results.innerHTML = ""; return; }
+      const enc = encodeURIComponent(q);
+      const data = await supa(
+        `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+      );
+      renderList(data);
+    } catch (err) {
+      showFatal(err);
+    }
+  });
+
+  input.addEventListener("keydown", async (e) => {
+    if (e.key !== "Enter") return;
+    try {
+      const q = input.value.trim();
+      if (q.length < 2) return;
+      saveSearchQuery(q);
+      const enc = encodeURIComponent(q);
+      const data = await supa(
+        `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+      );
+      renderList(data);
+    } catch (err) {
+      showFatal(err);
+    }
+  });
+}
+
+/* ================= LOAD CATEGORY ================= */
+async function loadCategory(cat) {
+  try {
+    const data = await supa(`entries?select=id,title,summary,score,processing_score&category=eq.${cat}`);
+    renderList(data);
+  } catch (err) {
+    showFatal(err);
+  }
+}
+
+/* ================= CARD CLICK ================= */
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
+  const id = card.dataset.id;
+  history.pushState(null, "", "?id=" + id);
+  loadEntry(id).catch(showFatal);
+});
+
+/* ================= INIT ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    loadCategories().catch(showFatal);
+    initSearch();
+    initReport();
+    initBackHome();
+
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+    if (id) loadEntry(id).catch(showFatal);
+  } catch (err) {
+    showFatal(err);
+  }
+});
