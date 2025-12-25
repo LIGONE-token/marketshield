@@ -1,26 +1,110 @@
 /* =====================================================
-   MARKETSHIELD – FINAL OVERRIDES (LETZTER BLOCK)
-   Zweck: App MUSS funktionieren, egal was davor steht.
+   MarketShield – app.js (STABIL / MINIMAL FIXED)
 ===================================================== */
 
-/* Back-Button: niemals am linken Rand kleben */
-#backHome{
-  display:none;
-  position:relative !important;
-  left:auto !important;
-  right:auto !important;
-  margin:16px auto !important;
-  max-width:900px !important;
-  width:calc(100% - 32px) !important;
-  padding:8px 12px !important;
-  cursor:pointer !important;
-  box-sizing:border-box !important;
+let currentEntryId = null;
+
+/* ================= INIT ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  loadCategories();
+
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  if (id) loadEntry(id);
+
+  initReport();
+  initBackHome();
+});
+
+/* ================= GLOBAL CLICK ================= */
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
+
+  const id = card.dataset.id;
+  history.pushState(null, "", "?id=" + id);
+  loadEntry(id);
+});
+
+/* ================= SUPABASE ================= */
+const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+
+async function supa(query) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
+  });
+  return r.json();
 }
 
-/* Karten: stabil & lesbar */
-.entry-card{ padding:14px !important; border-radius:10px !important; background:#fff !important; }
-.ms-title{ font-size:20px !important; font-weight:800 !important; margin:0 0 6px 0 !important; }
-.ms-snippet{ margin-top:6px !important; }
+/* ================= HELPERS ================= */
+async function saveSearchQuery(query) {
+  if (!query || query.length < 2) return;
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: query.trim()
+      })
+    });
+  } catch (e) {
+    // Suche darf niemals blockieren
+  }
+}
+
+function escapeHtml(s = "") {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function shortText(text, max = 160) {
+  if (!text) return "";
+  return text.length > max ? text.slice(0, max) + " …" : text;
+}
+
+function normalizeText(text) {
+  if (!text) return "";
+  return String(text)
+    .replace(/\r\n/g, "\n")
+    .replace(/\n/g, "\n")
+    .replace(/\r/g, "\n");
+}
+
+function renderTextBlock(title, text) {
+  if (!text) return "";
+  return `
+    <h3>${title}</h3>
+    <div style="white-space:pre-wrap;line-height:1.6;">
+      ${normalizeText(text)}
+    </div>
+  `;
+}
+
+function renderJsonList(title, data) {
+  if (!data) return "";
+  let arr;
+  try {
+    arr = Array.isArray(data) ? data : JSON.parse(data);
+  } catch {
+    return "";
+  }
+  if (!arr.length) return "";
+
+  return `
+    <h3>${title}</h3>
+    <ul style="line-height:1.6;padding-left:18px;">
+      ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
+    </ul>
+  `;
+}
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
@@ -44,6 +128,7 @@ function renderIndustry(score) {
   `;
 }
 
+/* ================= SCORE BLOCK ================= */
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
@@ -73,75 +158,181 @@ function renderScoreBlock(score, processing, size = 13) {
   `;
 }
 
+/* ================= KATEGORIEN ================= */
+async function loadCategories() {
+  const grid = document.querySelector(".category-grid");
+  if (!grid) return;
 
-/* Tooltip (Warnung) */
-.ms-tooltip{ position:relative !important; cursor:help !important; }
-.ms-tooltip::after{
-  content:attr(data-tip);
-  position:absolute;
-  left:0;
-  bottom:125%;
-  background:#222;
-  color:#fff;
-  padding:6px 8px;
-  font-size:12px;
-  line-height:1.35;
-  border-radius:4px;
-  opacity:0;
-  pointer-events:none;
-  z-index:9999;
-  white-space:normal;
-  min-width:220px;
-}
-.ms-tooltip:hover::after,
-.ms-tooltip:focus::after{ opacity:1; }
+  const data = await fetch("categories.json").then(r => r.json());
+  grid.innerHTML = "";
 
-/* Text & Tabellen: Absätze sichtbar, Tabellen lesbar */
-.ms-text p{ margin:0 0 12px 0 !important; line-height:1.6 !important; }
-.ms-table-wrap{ overflow-x:auto !important; margin:12px 0 !important; }
-.ms-table-wrap table{ border-collapse:collapse !important; width:100% !important; }
-.ms-table-wrap th,.ms-table-wrap td{ border:1px solid #ddd !important; padding:8px !important; text-align:left !important; }
-.ms-table-wrap th{ background:#f5f5f5 !important; font-weight:600 !important; }
-
-/* Detail & Actions: Social + Copy + Print immer sichtbar (unten) */
-.ms-detail{ max-width:900px !important; margin:0 auto !important; padding:0 16px !important; }
-.ms-h2{ margin:10px 0 6px 0 !important; }
-.ms-h3{ margin:16px 0 8px 0 !important; }
-
-.ms-actions{
-  display:flex !important;
-  flex-wrap:wrap !important;
-  gap:10px !important;
-  align-items:center !important;
-  margin:16px 0 8px 0 !important;
-}
-.ms-btn{
-  display:inline-block !important;
-  padding:7px 10px !important;
-  font-size:13px !important;
-  cursor:pointer !important;
-}
-.ms-social{
-  display:flex !important;
-  gap:8px !important;
-  align-items:center !important;
-}
-.ms-icon-btn{
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  width:36px !important;
-  height:36px !important;
-  border-radius:8px !important;
-  text-decoration:none !important;
-  font-weight:700 !important;
-  background:#f2f2f2 !important;
-  color:#111 !important;
+  data.categories.forEach(c => {
+    const b = document.createElement("button");
+    b.textContent = c.title;
+    b.onclick = () => loadCategory(c.title);
+    grid.appendChild(b);
+  });
 }
 
-/* Schutz gegen „alles verstecken“-Regeln */
-.ms-actions, .ms-social, .ms-btn, .ms-icon-btn{
-  visibility:visible !important;
-  opacity:1 !important;
-  pointer-events:auto !important;
+/* ================= SUCHE ================= */
+const input = document.getElementById("searchInput");
+const results = document.getElementById("results");
+
+if (input) {
+  input.addEventListener("input", async () => {
+    const q = input.value.trim();
+    if (q.length < 2) {
+      results.innerHTML = "";
+      return;
+    }
+
+    const enc = encodeURIComponent(q);
+    const data = await supa(
+      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+    );
+    renderList(data);
+  });
+
+  input.addEventListener("keydown", async (e) => {
+    if (e.key !== "Enter") return;
+    const q = input.value.trim();
+    if (q.length < 2) return;
+
+    saveSearchQuery(q);
+
+    const enc = encodeURIComponent(q);
+    const data = await supa(
+      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+    );
+    renderList(data);
+  });
+}
+
+async function loadCategory(cat) {
+  const data = await supa(
+    `entries?select=id,title,summary,score,processing_score&category=eq.${cat}`
+  );
+  renderList(data);
+}
+
+function renderList(data) {
+  results.innerHTML = data.map(e => `
+    <div class="entry-card" data-id="${e.id}">
+      <div style="font-size:20px;font-weight:800;">
+        ${escapeHtml(e.title)}
+      </div>
+
+      ${renderScoreBlock(e.score, e.processing_score, 13)}
+
+      <div style="font-size:15px;line-height:1.4;">
+        ${escapeHtml(shortText(e.summary, 160))}
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ================= DETAIL ================= */
+async function loadEntry(id) {
+  const data = await supa(`entries?select=*&id=eq.${id}`);
+  const e = data[0];
+  if (!e) return;
+
+  currentEntryId = id;
+
+  results.innerHTML = `
+    <h2>${escapeHtml(e.title)}</h2>
+    ${renderScoreBlock(e.score, e.processing_score, 14)}
+    ${renderTextBlock("Zusammenfassung", e.summary)}
+    ${renderTextBlock("Wirkmechanismus", e.mechanism)}
+    ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
+    ${renderJsonList("Positive Effekte", e.effects_positive)}
+    ${renderJsonList("Negative Effekte", e.effects_negative)}
+    ${renderJsonList("Risikogruppen", e.risk_groups)}
+    ${renderJsonList("Synergien / Wechselwirkungen", e.synergy)}
+    ${renderJsonList("Natürliche Quellen", e.natural_sources)}
+    ${renderJsonList("Tags", e.tags)}
+    <div id="entryActions"></div>
+  `;
+
+  renderEntryActions(e.title);
+  updateBackHome();
+}
+
+/* ================= SHARE / ACTIONS ================= */
+function renderEntryActions(title) {
+  const box = document.getElementById("entryActions");
+  if (!box) return;
+
+  const url = location.href;
+  const encUrl = encodeURIComponent(url);
+  const encTitle = encodeURIComponent(title + " – MarketShield");
+
+  box.innerHTML = `
+    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button onclick="window.print()">🖨️ Drucken</button>
+      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+    </div>
+  `;
+}
+
+/* ================= REPORT ================= */
+function initReport() {
+  const btn = document.getElementById("reportBtn");
+  const modal = document.getElementById("reportModal");
+  const close = document.getElementById("closeReportModal");
+  const form = document.getElementById("reportForm");
+
+  if (!btn || !modal || !form) return;
+
+  btn.onclick = () => modal.classList.add("active");
+  close.onclick = () => modal.classList.remove("active");
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const description = form.description.value.trim();
+    if (!description) return alert("Bitte Beschreibung eingeben.");
+
+    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        description,
+        source: "community",
+        status: "new",
+        entry_id: currentEntryId || null
+      })
+    });
+
+    form.reset();
+    modal.classList.remove("active");
+    alert("Meldung gesendet. Danke!");
+  };
+}
+
+/* ================= BACK HOME ================= */
+function initBackHome() {
+  const back = document.getElementById("backHome");
+  if (!back) return;
+
+  back.onclick = () => {
+    history.pushState(null, "", location.pathname);
+    results.innerHTML = "";
+    updateBackHome();
+  };
+
+  window.addEventListener("popstate", updateBackHome);
+}
+
+function updateBackHome() {
+  const back = document.getElementById("backHome");
+  if (!back) return;
+  back.style.display = location.search.includes("id=") ? "block" : "none";
 }
