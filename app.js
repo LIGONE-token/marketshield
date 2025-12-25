@@ -125,10 +125,10 @@ function injectGlobalStyles() {
 /* ================= MARKDOWN TABLE + TEXT ================= */
 function renderMarkdownTables(text) {
   if (!text) return "";
+
   const lines = normalizeText(text).split("\n");
   let html = "";
-  let inTable = false;
-  let colCount = 0;
+  let i = 0;
 
   const isSeparator = s =>
     /^(\|?\s*:?-{3,}:?\s*)+(\|?\s*)$/.test((s || "").trim());
@@ -136,61 +136,62 @@ function renderMarkdownTables(text) {
   const splitRow = row =>
     row.split("|").map(s => s.trim()).filter(Boolean);
 
-  for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i];
-    const line = raw.trim();
+  while (i < lines.length) {
+    const line = lines[i].trim();
 
-    if (!inTable && line.includes("|") && isSeparator(lines[i + 1])) {
-      inTable = true;
-      const headers = splitRow(line);
-      colCount = headers.length;
+    /* ---------- TABLE DETECT ---------- */
+    if (line.includes("|") && isSeparator(lines[i + 1])) {
+      const headers = splitRow(lines[i]);
+      const colCount = headers.length;
 
       html += `<div class="ms-table">`;
+
+      /* header */
       html += `<div class="ms-row ms-head" style="grid-template-columns:repeat(${colCount},1fr)">`;
       headers.forEach(h => html += `<div>${escapeHtml(h)}</div>`);
       html += `</div>`;
-      i++;
+
+      i += 2; // skip header + separator
+
+      /* rows */
+      while (i < lines.length && lines[i].includes("|")) {
+        const cells = splitRow(lines[i]);
+
+        html += `<div class="ms-row" style="grid-template-columns:repeat(${colCount},1fr)">`;
+        for (let c = 0; c < colCount; c++) {
+          html += `<div>${escapeHtml(cells[c] || "")}</div>`;
+        }
+        html += `</div>`;
+        i++;
+      }
+
+      html += `</div>`;
       continue;
     }
 
-    if (inTable) {
-      if (line.includes("|")) {
-        const cells = splitRow(line);
-        html += `<div class="ms-row" style="grid-template-columns:repeat(${colCount},1fr)">`;
-        cells.forEach(c => html += `<div>${escapeHtml(c)}</div>`);
-        html += `</div>`;
-        continue;
-      } else {
-        html += `</div>`;
-        inTable = false;
-      }
-    }
-
-    if (raw === "") {
+    /* ---------- NORMAL TEXT ---------- */
+    if (line === "") {
       html += `<div style="height:10px;"></div>`;
     } else {
+      const raw = stripOaiCiteArtifacts(lines[i]);
       const isWarning = raw.trim().toUpperCase().startsWith("NICHT DEKLARIERT");
+
       html += `
         <p
           style="margin:8px 0;line-height:1.6;"
-          ${isWarning ? 'data-tooltip="Diese Bestandteile sind rechtlich nicht deklarationspflichtig, können aber technisch oder prozessbedingt vorhanden sein."' : ""}
+          ${isWarning
+            ? 'data-tooltip="Diese Bestandteile sind rechtlich nicht deklarationspflichtig, können aber technisch oder prozessbedingt vorhanden sein."'
+            : ""}
         >
           ${escapeHtml(raw)}
         </p>
       `;
     }
+
+    i++;
   }
 
-  if (inTable) html += `</div>`;
   return html;
-}
-
-function renderTextBlock(title, text) {
-  if (!text) return "";
-  return `
-    <h3>${escapeHtml(title)}</h3>
-    <div>${renderMarkdownTables(text)}</div>
-  `;
 }
 
 /* ================= SCORES (ORIGINAL-LOGIK) ================= */
