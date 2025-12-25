@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / KORREKT)
+   MarketShield – app.js (FINAL / WIRKSAM)
 ===================================================== */
 
 let currentEntryId = null;
@@ -42,6 +42,15 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
+/* ================= CONTENT-WRAPPER FINDEN ================= */
+/* Sucht den echten inneren Content-Container deines Layouts */
+function getContentAnchor() {
+  return (
+    document.querySelector(".content, .container, .main, .page, .wrapper, article") ||
+    document.getElementById("results")
+  );
+}
+
 /* ================= ZURÜCK-BUTTON (JS-ERZEUGT, RICHTIG POSITIONIERT & FUNKTIONAL) ================= */
 function ensureBackHomeButton() {
   let btn = $("backHome");
@@ -61,18 +70,12 @@ function ensureBackHomeButton() {
     border-radius:4px;
   `;
 
-  const results = $("results");
-  // 🔑 In denselben inneren Flow wie Titel/Text einfügen
-  const anchor = results?.querySelector("h2, h1, .entry-card");
-  if (anchor && anchor.parentNode) {
-    anchor.parentNode.insertBefore(btn, anchor);
-  } else if (results) {
-    results.prepend(btn); // Fallback
-  }
+  const anchor = getContentAnchor();
+  anchor.prepend(btn); // exakt gleiche Startkante wie Titel/Text
 
   btn.onclick = () => {
     history.pushState(null, "", location.pathname);
-    results.innerHTML = "";
+    $("results").innerHTML = "";
     loadCategories();
     initSearch();
     updateBackHome();
@@ -157,9 +160,7 @@ function renderScoreBlock(score, processing, size = 13) {
   const i = renderIndustry(processing);
   if (!h && !i) return "";
 
-  const colW = 90;
-  const colGap = 8;
-  const rowGap = 6;
+  const colW = 90, colGap = 8, rowGap = 6;
   const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
 
   return `
@@ -169,17 +170,15 @@ function renderScoreBlock(score, processing, size = 13) {
           <div style="white-space:nowrap">${h}</div>
           <div style="${labelStyle}">Gesundheitsscore</div>
         </div>` : ""}
-
       ${i ? `
         <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;">
           <div>${i}</div>
           <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
         </div>` : ""}
-    </div>
-  `;
+    </div>`;
 }
 
-/* ================= ECHTES KLEINES CLICK-TOOLTIP (KEIN BALKEN) ================= */
+/* ================= ECHTES KLEINES CLICK-TOOLTIP (GEGEN GLOBAL CSS) ================= */
 function toggleLegalTooltip(btn) {
   let tip = document.getElementById("legalTooltip");
   if (tip) { tip.remove(); return; }
@@ -189,26 +188,25 @@ function toggleLegalTooltip(btn) {
   tip.textContent =
     "MarketShield kann rechtlich keine vollständige oder absolute Wahrheit darstellen. Die Inhalte dienen der Einordnung, nicht der Tatsachenbehauptung.";
 
-  // ENTSCHEIDEND: kein Balken
-  tip.style.cssText = `
-    position:absolute;
-    z-index:9999;
-    display:inline-block;
-    width:max-content;
-    max-width:220px;
-    min-width:unset;
-    box-sizing:content-box;
-    padding:6px 8px;
-    background:#222;
-    color:#fff;
-    font-size:12px;
-    line-height:1.3;
-    border-radius:4px;
-    box-shadow:0 4px 10px rgba(0,0,0,.25);
-    white-space:normal;
-  `;
-
   document.body.appendChild(tip);
+
+  // ALLES mit !important, um globale CSS-Regeln zu schlagen
+  tip.style.setProperty("position", "absolute", "important");
+  tip.style.setProperty("z-index", "9999", "important");
+  tip.style.setProperty("display", "inline-block", "important");
+  tip.style.setProperty("width", "max-content", "important");
+  tip.style.setProperty("max-width", "220px", "important");
+  tip.style.setProperty("min-width", "unset", "important");
+  tip.style.setProperty("box-sizing", "content-box", "important");
+  tip.style.setProperty("padding", "6px 8px", "important");
+  tip.style.setProperty("background", "#222", "important");
+  tip.style.setProperty("color", "#fff", "important");
+  tip.style.setProperty("font-size", "12px", "important");
+  tip.style.setProperty("line-height", "1.3", "important");
+  tip.style.setProperty("border-radius", "4px", "important");
+  tip.style.setProperty("box-shadow", "0 4px 10px rgba(0,0,0,.25)", "important");
+  tip.style.setProperty("white-space", "normal", "important");
+
   const r = btn.getBoundingClientRect();
   tip.style.top  = `${window.scrollY + r.bottom + 6}px`;
   tip.style.left = `${window.scrollX + r.left}px`;
@@ -234,7 +232,7 @@ function renderList(data) {
   `).join("");
 }
 
-/* Klick-Delegation: Liste & Suche anklickbar */
+/* Klick-Delegation */
 document.addEventListener("click", (e) => {
   const card = e.target.closest(".entry-card");
   if (!card) return;
@@ -252,21 +250,15 @@ async function loadEntry(id) {
   $("results").innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
-
-    <button
-      type="button"
-      onclick="toggleLegalTooltip(this)"
+    <button type="button" onclick="toggleLegalTooltip(this)"
       style="margin:6px 0 8px 0;padding:2px 6px;font-size:12px;border:1px solid #ccc;border-radius:4px;background:#f3f3f3;cursor:pointer">
       Rechtliche Info
     </button>
-
     ${renderTextBlock("Zusammenfassung", e.summary)}
     ${renderTextBlock("Wirkmechanismus", e.mechanism)}
     ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
-
     <div id="entryActions"></div>
   `;
-
   renderEntryActions(e.title);
   updateBackHome();
 }
@@ -314,7 +306,6 @@ async function loadCategory(cat) {
 function initSearch() {
   const input = $("searchInput");
   if (!input) return;
-
   input.addEventListener("input", async () => {
     const q = input.value.trim();
     if (q.length < 2) { $("results").innerHTML=""; return; }
