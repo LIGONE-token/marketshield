@@ -238,15 +238,45 @@ function renderIndustry(score) {
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
+
   if (!h && !i) return "";
+
+  // feste Spaltenbreite für saubere Kante
+  const colW = 90;
+  const colGap = 8;
+  const rowGap = 6;
+  const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
 
   return `
     <div style="margin:12px 0;">
-      ${h ? `<div>${h} <span style="opacity:.7;font-size:${size}px;">Gesundheitsscore</span></div>` : ""}
-      ${i ? `<div style="margin-top:6px;">${i} <span style="opacity:.7;font-size:${size}px;">Industrie-Verarbeitungsgrad</span></div>` : ""}
+      ${h ? `
+        <div style="
+          display:grid;
+          grid-template-columns:${colW}px 1fr;
+          column-gap:${colGap}px;
+          align-items:center;
+          margin-bottom:${i ? rowGap : 0}px;
+        ">
+          <div style="white-space:nowrap;">${h}</div>
+          <div style="${labelStyle}">Gesundheitsscore</div>
+        </div>
+      ` : ""}
+
+      ${i ? `
+        <div style="
+          display:grid;
+          grid-template-columns:${colW}px 1fr;
+          column-gap:${colGap}px;
+          align-items:center;
+        ">
+          <div>${i}</div>
+          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
+        </div>
+      ` : ""}
     </div>
   `;
 }
+
 
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
