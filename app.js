@@ -157,19 +157,17 @@ function renderEntryActions(title) {
 
 /* ================= SEARCH ================= */
 async function smartSearch(q) {
-  const enc = encodeURIComponent(q);
+  const term = q.trim();
+  if (term.length < 2) return [];
 
-  const exact = await supa(
-    `entries?select=id,title,summary,score,processing_score&title.ilike.${enc}%25`
+  const enc = encodeURIComponent(term);
+
+  // ✅ NUR Titel durchsuchen
+  return await supa(
+    `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
   );
-  const ids = new Set(exact.map(e => e.id));
-
-  const broad = await supa(
-    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
-  );
-
-  return [...exact, ...broad.filter(e => !ids.has(e.id))];
 }
+
 
 function initSearch() {
   const input = $("searchInput");
