@@ -1,5 +1,9 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / SUCHLOGIK FIX)
+   MarketShield – app.js (FINAL / STABIL)
+   ✔ Suche korrekt priorisiert
+   ✔ Kategorien sichtbar
+   ✔ Markdown-Reste entfernt
+   ✔ Keys unverändert
 ===================================================== */
 
 let currentEntryId = null;
@@ -30,7 +34,7 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-/* 🔥 TEXT CLEAN (Markdown & Generator-Reste entfernen) */
+/* Text bereinigen (## ** usw.) */
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
@@ -47,9 +51,9 @@ function normalizeText(text) {
     .trim();
 }
 
-function shortText(t, n = 160) {
+function shortText(t, max = 160) {
   t = normalizeText(t);
-  return t.length > n ? t.slice(0, n) + " …" : t;
+  return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
 /* ================= SCORES ================= */
@@ -127,25 +131,25 @@ async function loadEntry(id) {
   `;
 }
 
-/* ================= 🔍 SMART SEARCH (FIX!) ================= */
+/* ================= 🔍 SMART SEARCH ================= */
 async function smartSearch(q) {
   const enc = encodeURIComponent(q);
 
-  // 1️⃣ Titel beginnt exakt
+  // 1️⃣ Titel beginnt mit Suchwort (höchste Priorität)
   const exact = await supa(
-    `entries?select=id,title,summary,score,processing_score&title.ilike=${enc}%`
+    `entries?select=id,title,summary,score,processing_score&title.ilike.${enc}%25`
   );
 
-  const exactIds = new Set(exact.map(e => e.id));
+  const exactIds = new Set((exact || []).map(e => e.id));
 
-  // 2️⃣ Enthält (Titel + Summary)
+  // 2️⃣ Enthält Suchwort (Titel oder Summary)
   const broad = await supa(
     `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
   );
 
   return [
-    ...exact,
-    ...broad.filter(e => !exactIds.has(e.id))
+    ...(exact || []),
+    ...(broad || []).filter(e => !exactIds.has(e.id))
   ];
 }
 
@@ -157,9 +161,17 @@ function initSearch() {
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) return box.innerHTML = "";
-    const data = await smartSearch(q);
-    renderList(data);
+    if (q.length < 2) {
+      box.innerHTML = "";
+      return;
+    }
+    try {
+      const data = await smartSearch(q);
+      renderList(data);
+    } catch (e) {
+      console.error(e);
+      box.innerHTML = "<div style='opacity:.6'>Keine Treffer</div>";
+    }
   });
 
   input.addEventListener("keydown", async (e) => {
@@ -169,6 +181,29 @@ function initSearch() {
     const data = await smartSearch(q);
     renderList(data);
   });
+}
+
+/* ================= KATEGORIEN ================= */
+async function loadCategories() {
+  const grid = document.querySelector(".category-grid");
+  if (!grid) return;
+
+  const data = await fetch("categories.json").then(r => r.json());
+  grid.innerHTML = "";
+
+  (data.categories || []).forEach(c => {
+    const b = document.createElement("button");
+    b.textContent = c.title;
+    b.onclick = () => loadCategory(c.title);
+    grid.appendChild(b);
+  });
+}
+
+async function loadCategory(cat) {
+  const data = await supa(
+    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
+  );
+  renderList(data);
 }
 
 /* ================= CLICK ================= */
@@ -181,7 +216,9 @@ document.addEventListener("click", (e) => {
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
+  loadCategories();
   initSearch();
+
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
