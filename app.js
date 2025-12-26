@@ -1,9 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL)
-   ✔ Suche korrekt priorisiert
-   ✔ Kategorien sichtbar
-   ✔ Markdown-Reste entfernt
-   ✔ Keys unverändert
+   MarketShield – app.js (STABIL / REPARIERT)
 ===================================================== */
 
 let currentEntryId = null;
@@ -34,7 +30,7 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-/* Text bereinigen (## ** usw.) */
+/* Textbereinigung */
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
@@ -43,7 +39,6 @@ function normalizeText(text) {
     .replace(/__+/g, "")
     .replace(/~~+/g, "")
     .replace(/`+/g, "")
-    .replace(/\\n\\n/g, "\n\n")
     .replace(/\\n/g, "\n")
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
@@ -56,10 +51,10 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= SCORES ================= */
+/* ================= SCORES (LOCKED) ================= */
 function renderHealth(score) {
   const n = Number(score);
-  if (!n || n <= 0) return "";
+  if (!Number.isFinite(n) || n <= 0) return "";
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
@@ -69,7 +64,7 @@ function renderHealth(score) {
 
 function renderIndustry(score) {
   const n = Number(score);
-  if (!n || n <= 0) return "";
+  if (!Number.isFinite(n) || n <= 0) return "";
   const w = Math.round((n / 10) * 80);
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
@@ -77,19 +72,24 @@ function renderIndustry(score) {
     </div>`;
 }
 
-function renderScoreBlock(score, processing) {
+function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
 
   return `
     <div style="margin:12px 0;">
-      ${h ? `<div style="display:flex;gap:8px;align-items:center">
-        <div>${h}</div><div style="opacity:.8">Gesundheitsscore</div>
-      </div>` : ""}
-      ${i ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px">
-        <div>${i}</div><div style="opacity:.8">Industrie-Verarbeitungsgrad</div>
-      </div>` : ""}
+      ${h ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
+          <div>${h}</div>
+          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
+        </div>` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+          <div>${i}</div>
+          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
+        </div>` : ""}
     </div>`;
 }
 
@@ -100,9 +100,9 @@ function renderList(data) {
 
   box.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800">${escapeHtml(e.title)}</div>
+      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4">
+      <div style="font-size:15px;line-height:1.4;">
         ${escapeHtml(shortText(e.summary))}
       </div>
     </div>
@@ -125,35 +125,52 @@ async function loadEntry(id) {
     ${renderScoreBlock(e.score, e.processing_score)}
 
     <h3>Zusammenfassung</h3>
-    <div style="white-space:pre-wrap;line-height:1.6">
+    <div style="white-space:pre-wrap;line-height:1.6;">
       ${escapeHtml(normalizeText(e.summary))}
     </div>
+
+    <div id="entryActions"></div>
   `;
+
+  renderEntryActions(e.title);
 }
 
-/* ================= 🔍 SMART SEARCH ================= */
+/* ================= SOCIAL ================= */
+function renderEntryActions(title) {
+  const box = $("entryActions");
+  if (!box) return;
+
+  const url = location.href;
+  const encUrl = encodeURIComponent(url);
+  const encTitle = encodeURIComponent(title + " – MarketShield");
+
+  box.innerHTML = `
+    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button onclick="window.print()">🖨️ Drucken</button>
+      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+    </div>`;
+}
+
+/* ================= SEARCH ================= */
 async function smartSearch(q) {
   const enc = encodeURIComponent(q);
 
-  // 1️⃣ Titel beginnt mit Suchwort (höchste Priorität)
   const exact = await supa(
     `entries?select=id,title,summary,score,processing_score&title.ilike.${enc}%25`
   );
+  const ids = new Set(exact.map(e => e.id));
 
-  const exactIds = new Set((exact || []).map(e => e.id));
-
-  // 2️⃣ Enthält Suchwort (Titel oder Summary)
   const broad = await supa(
     `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
   );
 
-  return [
-    ...(exact || []),
-    ...(broad || []).filter(e => !exactIds.has(e.id))
-  ];
+  return [...exact, ...broad.filter(e => !ids.has(e.id))];
 }
 
-/* ================= SEARCH ================= */
 function initSearch() {
   const input = $("searchInput");
   const box = $("results");
@@ -161,25 +178,8 @@ function initSearch() {
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) {
-      box.innerHTML = "";
-      return;
-    }
-    try {
-      const data = await smartSearch(q);
-      renderList(data);
-    } catch (e) {
-      console.error(e);
-      box.innerHTML = "<div style='opacity:.6'>Keine Treffer</div>";
-    }
-  });
-
-  input.addEventListener("keydown", async (e) => {
-    if (e.key !== "Enter") return;
-    const q = input.value.trim();
-    if (q.length < 2) return;
-    const data = await smartSearch(q);
-    renderList(data);
+    if (q.length < 2) return box.innerHTML = "";
+    renderList(await smartSearch(q));
   });
 }
 
@@ -200,13 +200,12 @@ async function loadCategories() {
 }
 
 async function loadCategory(cat) {
-  const data = await supa(
+  renderList(await supa(
     `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
-  );
-  renderList(data);
+  ));
 }
 
-/* ================= CLICK ================= */
+/* ================= NAV ================= */
 document.addEventListener("click", (e) => {
   const c = e.target.closest(".entry-card");
   if (!c) return;
