@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / FEHLERFREI)
+   MarketShield – app.js (STABIL / FINAL / REPARIERT)
 ===================================================== */
 
 let currentEntryId = null;
@@ -20,6 +20,21 @@ async function supa(query) {
   return JSON.parse(t || "[]");
 }
 
+/* POST für reports (und später optional search_queue) */
+async function supaPost(table, payload) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
 
@@ -30,7 +45,7 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-/* Textbereinigung (nur störende Markdown-Reste) */
+/* Textbereinigung */
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
@@ -39,6 +54,7 @@ function normalizeText(text) {
     .replace(/__+/g, "")
     .replace(/~~+/g, "")
     .replace(/`+/g, "")
+    .replace(/\\n/g, "\n")
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
@@ -50,42 +66,56 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= PIPE-TABELLEN (KORREKT) ================= */
+/* ================= PIPE-TABELLEN (ZEILENBASIERT, ROBUST) ================= */
 function renderSummary(text) {
   const lines = normalizeText(text).split("\n");
   let html = "";
   let tableLines = [];
 
   const flushTable = () => {
-    if (tableLines.length < 2) {
-      html += `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(tableLines.join("\n"))}</div>`;
+    // Separatorzeilen raus, aber erst NACH dem Sammeln
+    const cleaned = tableLines.filter(l => l.trim().length > 0);
+
+    // Wenn es doch keine echte Tabelle ist -> als Text
+    const pipeCount = cleaned.filter(l => l.includes("|")).length;
+    if (pipeCount < 2) {
+      html += `<div style="white-space:pre-wrap;line-height:1.6;margin:6px 0;">${escapeHtml(cleaned.join("\n"))}</div>`;
       tableLines = [];
       return;
     }
 
-    const rows = tableLines
-      .filter(l => !/^[-\s|]+$/.test(l))
+    const rows = cleaned
+      .filter(l => !/^[-\s|:]+$/.test(l)) // typische Trennzeile entfernen
       .map(l => l.split("|").map(c => c.trim()).filter(Boolean));
 
     if (rows.length < 2) {
+      html += `<div style="white-space:pre-wrap;line-height:1.6;margin:6px 0;">${escapeHtml(cleaned.join("\n"))}</div>`;
       tableLines = [];
       return;
     }
 
     const head = rows.shift();
+    const cols = head.length;
+
+    const norm = (r) => {
+      const out = r.slice(0, cols);
+      while (out.length < cols) out.push("");
+      return out;
+    };
 
     html += `
       <table class="ms-table">
         <thead>
-          <tr>${head.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+          <tr>${norm(head).map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
         </thead>
         <tbody>
           ${rows.map(r =>
-            `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
+            `<tr>${norm(r).map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
           ).join("")}
         </tbody>
       </table>
     `;
+
     tableLines = [];
   };
 
@@ -95,7 +125,7 @@ function renderSummary(text) {
     } else {
       if (tableLines.length) flushTable();
       if (line.trim()) {
-        html += `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(line)}</div>`;
+        html += `<div style="white-space:pre-wrap;line-height:1.6;margin:6px 0;">${escapeHtml(line)}</div>`;
       }
     }
   }
@@ -115,13 +145,21 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
+/* Industrie 0–10 + Farbe grün/gelb/rot */
 function renderIndustry(score) {
-  const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
+  const n0 = Number(score);
+  if (!Number.isFinite(n0) || n0 <= 0) return "";
+
+  const n = Math.max(0, Math.min(10, n0));
   const w = Math.round((n / 10) * 80);
+
+  let color = "#2e7d32";      // grün
+  if (n >= 4) color = "#f9a825"; // gelb
+  if (n >= 7) color = "#c62828"; // rot
+
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
-      <div style="width:${w}px;height:8px;background:#2e7d32;border-radius:6px;"></div>
+      <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
     </div>`;
 }
 
@@ -162,6 +200,25 @@ function renderList(data) {
   `).join("");
 }
 
+/* ================= HOME / BACK ================= */
+function showBackHome(show) {
+  const back = $("backHome");
+  if (!back) return;
+  back.style.display = show ? "block" : "none";
+}
+
+function goHome() {
+  // URL sauber zurücksetzen (wichtig für GitHub Pages)
+  history.pushState(null, "", location.pathname);
+  currentEntryId = null;
+
+  // Ergebnisbereich leeren (Startseite zeigt Kategorien/Intro ohnehin außerhalb)
+  const box = $("results");
+  if (box) box.innerHTML = `<div id="shareBox"></div>`;
+
+  showBackHome(false);
+}
+
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
   const box = $("results");
@@ -172,6 +229,7 @@ async function loadEntry(id) {
   if (!e) return;
 
   currentEntryId = id;
+  showBackHome(true);
 
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
@@ -182,8 +240,28 @@ async function loadEntry(id) {
       ${renderSummary(e.summary)}
     </div>
 
+    <div style="margin-top:10px;">
+      <a href="#" id="legalLink" style="font-size:12px;opacity:.75;">⚖️ Rechtlicher Hinweis</a>
+      <div id="legalPopup" style="display:none;margin-top:6px;padding:8px 10px;border:1px solid #ddd;border-radius:10px;background:#fafafa;font-size:12px;line-height:1.5;">
+        MarketShield dient der Information und Orientierung. Inhalte und Bewertungen sind eine
+        transparente Einschätzung ohne Anspruch auf Vollständigkeit oder Aktualität.
+        Keine Rechts- oder Gesundheitsberatung. Bitte prüfe Angaben auf Verpackung und
+        offiziellen Quellen.
+      </div>
+    </div>
+
     <div id="entryActions"></div>
   `;
+
+  // Legal: Link → Popup toggle (Text NICHT sofort sichtbar)
+  const legalLink = $("legalLink");
+  const legalPopup = $("legalPopup");
+  if (legalLink && legalPopup) {
+    legalLink.onclick = (ev) => {
+      ev.preventDefault();
+      legalPopup.style.display = (legalPopup.style.display === "none") ? "block" : "none";
+    };
+  }
 
   renderEntryActions(e.title);
 }
@@ -212,8 +290,10 @@ function renderEntryActions(title) {
 async function smartSearch(q) {
   const term = q.trim();
   if (term.length < 2) return [];
+
   const enc = encodeURIComponent(term);
 
+  // ✅ NUR Titel durchsuchen (dein Originalverhalten)
   return await supa(
     `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
   );
@@ -228,6 +308,8 @@ function initSearch() {
     const q = input.value.trim();
     if (q.length < 2) return box.innerHTML = "";
     renderList(await smartSearch(q));
+    showBackHome(false); // Suche ist Startseiten-Modus
+    currentEntryId = null;
   });
 }
 
@@ -251,6 +333,8 @@ async function loadCategory(cat) {
   renderList(await supa(
     `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
   ));
+  showBackHome(false);
+  currentEntryId = null;
 }
 
 /* ================= NAV ================= */
@@ -261,11 +345,57 @@ document.addEventListener("click", (e) => {
   loadEntry(c.dataset.id);
 });
 
+/* ================= REPORT (Modal + Supabase) ================= */
+function initReport() {
+  const reportBtn = $("reportBtn");
+  const modal = $("reportModal");
+  const closeBtn = $("closeReportModal");
+  const form = $("reportForm");
+
+  if (!reportBtn || !modal || !closeBtn || !form) return;
+
+  reportBtn.onclick = () => { modal.style.display = "flex"; };
+  closeBtn.onclick = () => { modal.style.display = "none"; };
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const desc = (form.description?.value || "").trim();
+    if (desc.length < 5) return;
+
+    // entry_id darf null sein (Report auch von Startseite)
+    await supaPost("reports", {
+      entry_id: currentEntryId || null,
+      description: desc,
+      created_at: new Date().toISOString()
+    });
+
+    form.reset();
+    modal.style.display = "none";
+  };
+}
+
+/* ================= BACKHOME LINK (oben links) ================= */
+function initBackHome() {
+  const back = $("backHome");
+  if (!back) return;
+  back.onclick = goHome;
+}
+
+/* ================= POPSTATE (Browser Zurück/Weiter) ================= */
+window.addEventListener("popstate", () => {
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) loadEntry(id);
+  else goHome();
+});
+
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
   initSearch();
+  initBackHome();
+  initReport();
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
+  else showBackHome(false);
 });
