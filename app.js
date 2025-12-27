@@ -59,15 +59,10 @@ function cleanText(t = "") {
     .trim();
 }
 
-function shortText(t, max = 160) {
-  t = cleanText(t);
-  return t.length > max ? t.slice(0, max) + " …" : t;
-}
-
-function setResults(html) {
-  const box = $("results");
-  if (!box) return;
-  box.innerHTML = html;
+function oneLine(t = "", max = 220) {
+  t = cleanText(t).replace(/\s+/g, " ").trim();
+  if (t.length > max) t = t.slice(0, max) + "…";
+  return t;
 }
 
 function showBackHome(show) {
@@ -78,66 +73,120 @@ function showBackHome(show) {
 
 function setUrlId(idOrNull) {
   const base = location.pathname;
-  if (!idOrNull) {
-    history.pushState(null, "", base);
-  } else {
-    history.pushState(null, "", `${base}?id=${encodeURIComponent(idOrNull)}`);
-  }
+  if (!idOrNull) history.pushState(null, "", base);
+  else history.pushState(null, "", `${base}?id=${encodeURIComponent(idOrNull)}`);
 }
 
-/* ================= RECHTLICHER HINWEIS (TOP LINK + POPUP) ================= */
-function ensureTopLegalLink() {
-  const header = document.querySelector("header");
-  if (!header) return;
+/* ================= RECHTLICHER HINWEIS (LINK + POPUP) ================= */
+/*
+  Du wolltest: Popup ja, aber KEIN falscher Text.
+  -> Deshalb ist der Inhalt bewusst "neutral/leer" und kommt aus LEGAL_HTML.
+  -> Du kannst LEGAL_HTML später exakt mit deinem Text füllen (ohne dass ich dir Müll reinsetze).
+*/
+const LEGAL_HTML = ""; // <- HIER deinen echten Hinweistext (HTML erlaubt) einfügen
 
-  if ($("msLegalTopWrap")) return;
+function openLegalPopup() {
+  const modal = $("msLegalModal");
+  const box = $("msLegalBox");
+  if (!modal || !box) return;
 
-  const wrap = document.createElement("div");
-  wrap.id = "msLegalTopWrap";
-  wrap.style.display = "flex";
-  wrap.style.justifyContent = "center";
-  wrap.style.marginTop = "6px";
+  box.innerHTML = LEGAL_HTML ? LEGAL_HTML : `
+    <div style="opacity:.75;line-height:1.5">
+      (Hier kommt dein eigener „Rechtlicher Hinweis“-Text rein.)
+    </div>
+  `;
 
-  const link = document.createElement("a");
-  link.href = "#";
-  link.id = "msLegalTopLink";
-  link.textContent = "Rechtlicher Hinweis";
-  link.style.fontSize = "12px";
-  link.style.opacity = ".75";
-  link.style.textDecoration = "underline";
-  link.style.cursor = "pointer";
+  modal.style.display = "flex";
+}
 
-  const popup = document.createElement("div");
-  popup.id = "msLegalTopPopup";
-  popup.style.display = "none";
-  popup.style.maxWidth = "900px";
-  popup.style.margin = "8px auto 0 auto";
-  popup.style.padding = "10px 12px";
-  popup.style.border = "1px solid #ddd";
-  popup.style.borderRadius = "10px";
-  popup.style.background = "#fafafa";
-  popup.style.fontSize = "12px";
-  popup.style.lineHeight = "1.5";
+function closeLegalPopup() {
+  const modal = $("msLegalModal");
+  if (!modal) return;
+  modal.style.display = "none";
+}
 
-  popup.textContent =
-    "MarketShield dient der Information und Orientierung. Inhalte und Bewertungen sind Einschätzungen ohne Anspruch auf Vollständigkeit/Aktualität. Keine Rechts- oder Gesundheitsberatung. Bitte prüfe Angaben auf Verpackung und in offiziellen Quellen.";
+function ensureLegalModal() {
+  if ($("msLegalModal")) return;
 
-  link.addEventListener("click", (e) => {
-    e.preventDefault();
-    popup.style.display = popup.style.display === "none" ? "block" : "none";
+  const modal = document.createElement("div");
+  modal.id = "msLegalModal";
+  modal.style.display = "none";
+  modal.style.position = "fixed";
+  modal.style.inset = "0";
+  modal.style.zIndex = "99999";
+  modal.style.background = "rgba(0,0,0,.45)";
+  modal.style.alignItems = "center";
+  modal.style.justifyContent = "center";
+  modal.style.padding = "18px";
+
+  const inner = document.createElement("div");
+  inner.style.width = "min(900px, 96vw)";
+  inner.style.maxHeight = "80vh";
+  inner.style.overflow = "auto";
+  inner.style.background = "#fff";
+  inner.style.borderRadius = "14px";
+  inner.style.boxShadow = "0 20px 80px rgba(0,0,0,.35)";
+  inner.style.padding = "14px 16px";
+
+  const top = document.createElement("div");
+  top.style.display = "flex";
+  top.style.justifyContent = "space-between";
+  top.style.alignItems = "center";
+  top.style.gap = "10px";
+
+  const title = document.createElement("div");
+  title.textContent = "Rechtlicher Hinweis";
+  title.style.fontWeight = "800";
+  title.style.fontSize = "16px";
+
+  // Kein "Close"-Zwang: kleines X, aber optional
+  const x = document.createElement("button");
+  x.type = "button";
+  x.textContent = "✕";
+  x.style.border = "0";
+  x.style.background = "transparent";
+  x.style.fontSize = "18px";
+  x.style.cursor = "pointer";
+  x.onclick = closeLegalPopup;
+
+  const box = document.createElement("div");
+  box.id = "msLegalBox";
+  box.style.marginTop = "10px";
+  box.style.fontSize = "13px";
+
+  top.appendChild(title);
+  top.appendChild(x);
+  inner.appendChild(top);
+  inner.appendChild(box);
+  modal.appendChild(inner);
+
+  // Klick außerhalb schließt
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeLegalPopup();
   });
 
-  wrap.appendChild(link);
-  header.appendChild(wrap);
-  header.appendChild(popup);
+  document.body.appendChild(modal);
 }
 
-/* ================= TABELLEN (ECHTE HTML-TABLES) ================= */
+function renderLegalLinkHtml(linkId) {
+  return `<a href="#" id="${linkId}" style="font-size:12px;opacity:.75;text-decoration:underline;">Rechtlicher Hinweis</a>`;
+}
+
+function bindLegalLink(linkId) {
+  const a = $(linkId);
+  if (!a) return;
+  a.onclick = (ev) => {
+    ev.preventDefault();
+    openLegalPopup();
+  };
+}
+
+/* ================= TABELLEN (ECHT) ================= */
 /*
-  Erkennung: echte Markdown-Pipe-Tabelle nur wenn:
-  1) Header-Zeile enthält |
-  2) direkt danach Separator-Zeile nur aus - | space
-  3) danach mind. 1 Datenzeile mit |
+  Pipe-Table nur wenn:
+  Header enthält |
+  nächste Zeile ist Separator (----|----)
+  danach mind. 1 Zeile mit |
 */
 function renderSummary(text) {
   const lines = cleanText(text).split("\n");
@@ -146,46 +195,46 @@ function renderSummary(text) {
 
   const isSep = (s) => /^[-\s|:]+$/.test((s || "").trim());
 
+  const splitRow = (line) => {
+    let s = (line || "").trim();
+    if (s.startsWith("|")) s = s.slice(1);
+    if (s.endsWith("|")) s = s.slice(0, -1);
+    return s.split("|").map(c => c.trim());
+  };
+
   while (i < lines.length) {
     const line = lines[i];
 
     if (line.includes("|") && isSep(lines[i + 1])) {
-      // Sammle Header + Datenzeilen
-      const headerLine = lines[i];
-      i += 2; // sep skip
+      const header = splitRow(line);
+      const cols = header.length;
 
-      const rowLines = [];
+      i += 2; // skip sep
+      const rows = [];
+
       while (i < lines.length && lines[i].includes("|")) {
-        rowLines.push(lines[i]);
+        rows.push(splitRow(lines[i]));
         i++;
       }
 
-      // Nur echte Tabelle, wenn mindestens 1 Datenzeile existiert
-      if (rowLines.length >= 1) {
-        const head = headerLine.split("|").map(c => c.trim()).filter(Boolean);
-        const cols = head.length;
-
-        const norm = (arr) => {
-          const out = arr.slice(0, cols);
+      if (rows.length >= 1 && cols >= 2) {
+        const norm = (r) => {
+          const out = r.slice(0, cols);
           while (out.length < cols) out.push("");
           return out;
         };
-
-        const bodyRows = rowLines.map(r =>
-          norm(r.split("|").map(c => c.trim()).filter(Boolean))
-        );
 
         html += `
           <table class="ms-table" style="width:100%;border-collapse:collapse;margin:12px 0;">
             <thead>
               <tr>
-                ${norm(head).map(h => `<th style="border:1px solid #ccc;padding:6px 8px;background:#f4f4f4;text-align:left;">${escapeHtml(h)}</th>`).join("")}
+                ${norm(header).map(h => `<th style="border:1px solid #ccc;padding:6px 8px;background:#f4f4f4;text-align:left;">${escapeHtml(h)}</th>`).join("")}
               </tr>
             </thead>
             <tbody>
-              ${bodyRows.map(r => `
+              ${rows.map(r => `
                 <tr>
-                  ${r.map(c => `<td style="border:1px solid #ccc;padding:6px 8px;vertical-align:top;">${escapeHtml(c)}</td>`).join("")}
+                  ${norm(r).map(c => `<td style="border:1px solid #ccc;padding:6px 8px;vertical-align:top;">${escapeHtml(c)}</td>`).join("")}
                 </tr>
               `).join("")}
             </tbody>
@@ -193,10 +242,7 @@ function renderSummary(text) {
         `;
         continue;
       }
-
-      // Keine Datenzeilen -> normaler Text
-      html += `<p style="white-space:pre-wrap;line-height:1.6;margin:6px 0;">${escapeHtml(line)}</p>`;
-      continue;
+      // fallthrough: wenn keine echte Tabelle, als Text rendern
     }
 
     if (line.trim()) {
@@ -219,7 +265,7 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
-// Industrie 0–10; Farbe: grün -> gelb -> rot
+// Industrie 0–10: grün -> gelb -> rot
 function renderIndustry(score) {
   const n0 = Number(score);
   if (!Number.isFinite(n0) || n0 <= 0) return "";
@@ -257,7 +303,7 @@ function renderScoreBlock(score, processing, size = 13) {
     </div>`;
 }
 
-/* ================= SOCIAL (DETAIL) ================= */
+/* ================= SOCIAL (Detail) ================= */
 function renderEntryActions(title) {
   const box = $("entryActions");
   if (!box) return;
@@ -278,34 +324,36 @@ function renderEntryActions(title) {
   `;
 }
 
-/* ================= LISTE ================= */
+/* ================= LISTE (Kurzansicht 1 Zeile) ================= */
 function renderList(data) {
-  const list = (data || []).map(e => `
+  const html = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title || "")}</div>
+      <div style="font-size:18px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        ${escapeHtml(e.title || "")}
+      </div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;">${escapeHtml(shortText(e.summary || ""))}</div>
+      <div style="font-size:14px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        ${escapeHtml(oneLine(e.summary || ""))}
+      </div>
     </div>
   `).join("");
 
-  setResults(list);
+  const box = $("results");
+  if (box) box.innerHTML = html;
 }
 
-/* ================= STARTSEITE ================= */
+/* ================= HOME / BACK ================= */
 function renderHome() {
   currentEntryId = null;
   showBackHome(false);
   setUrlId(null);
 
-  // results wieder in "Startzustand" bringen (dein HTML enthält shareBox im results)
-  setResults(`<div id="shareBox"></div>`);
+  const box = $("results");
+  if (box) box.innerHTML = `<div id="shareBox"></div>`;
 }
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
-  const box = $("results");
-  if (!box) return;
-
   const d = await supa(`entries?select=*&id=eq.${encodeURIComponent(id)}`);
   const e = d && d[0];
   if (!e) return;
@@ -314,16 +362,13 @@ async function loadEntry(id) {
   showBackHome(true);
   setUrlId(e.id);
 
+  const box = $("results");
+  if (!box) return;
+
   box.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
       <h2 style="margin:0;">${escapeHtml(e.title || "")}</h2>
-      <a href="#" id="legalLinkDetail" style="font-size:12px;opacity:.75;text-decoration:underline;">Rechtlicher Hinweis</a>
-    </div>
-
-    <div id="legalPopupDetail"
-         style="display:none;margin:8px 0 12px 0;padding:10px 12px;border:1px solid #ddd;border-radius:10px;background:#fafafa;font-size:12px;line-height:1.5;">
-      MarketShield dient der Information und Orientierung. Inhalte und Bewertungen sind Einschätzungen ohne Anspruch auf Vollständigkeit/Aktualität.
-      Keine Rechts- oder Gesundheitsberatung. Bitte prüfe Angaben auf Verpackung und in offiziellen Quellen.
+      ${renderLegalLinkHtml("legalLinkDetail")}
     </div>
 
     ${renderScoreBlock(e.score, e.processing_score)}
@@ -336,26 +381,16 @@ async function loadEntry(id) {
     <div id="entryActions"></div>
   `;
 
-  const link = $("legalLinkDetail");
-  const pop = $("legalPopupDetail");
-  if (link && pop) {
-    link.onclick = (ev) => {
-      ev.preventDefault();
-      pop.style.display = pop.style.display === "none" ? "block" : "none";
-    };
-  }
-
+  bindLegalLink("legalLinkDetail");
   renderEntryActions(e.title || "");
 }
 
-/* ================= SEARCH (inkl. search_queue) ================= */
+/* ================= SEARCH (title+summary OR + search_queue on Enter) ================= */
 async function saveSearchQuery(q) {
-  // Minimal payload, damit nichts an "fehlenden Spalten" scheitert:
-  // erwartet typischerweise: query (text) + created_at (optional default)
   try {
     await supaPost("search_queue", { query: q });
   } catch (e) {
-    // bewusst still: Suche darf NICHT kaputtgehen, nur weil logging nicht geht
+    // Suche darf NICHT kaputtgehen, wenn logging scheitert
     console.error("search_queue insert failed:", e);
   }
 }
@@ -364,33 +399,25 @@ async function smartSearch(term) {
   const q = term.trim();
   if (q.length < 2) return [];
 
-  const like = `%${q}%`;
-  const encLike = encodeURIComponent(like);
-
-  // OR korrekt: ganzer Ausdruck muss URL-konform sein
-  const orExpr = `or=(title.ilike.${encLike},summary.ilike.${encLike})`;
+  const like = encodeURIComponent(`%${q}%`);
+  const orExpr = `or=(title.ilike.${like},summary.ilike.${like})`;
 
   return await supa(
-    `entries?select=id,title,summary,score,processing_score&${orExpr}&order=idx.asc&limit=50`
+    `entries?select=id,title,summary,score,processing_score&${orExpr}&order=idx.asc&limit=60`
   );
 }
 
 function initSearch() {
   const input = $("searchInput");
-  const results = $("results");
-  if (!input || !results) return;
+  if (!input) return;
 
-  let last = "";
   let timer = null;
 
   input.addEventListener("input", () => {
     const q = input.value.trim();
-    last = q;
-
     clearTimeout(timer);
     timer = setTimeout(async () => {
       if (q.length < 2) {
-        // zurück zur Startseite, aber ohne Kategorien zu zerstören
         renderHome();
         return;
       }
@@ -402,10 +429,9 @@ function initSearch() {
       } catch (e) {
         console.error("search failed:", e);
       }
-    }, 180);
+    }, 160);
   });
 
-  // Enter: Search-Query loggen (wie von dir gefordert)
   input.addEventListener("keydown", async (e) => {
     if (e.key !== "Enter") return;
     const q = input.value.trim();
@@ -425,7 +451,6 @@ async function loadCategories() {
     const data = await r.json();
 
     grid.innerHTML = "";
-
     (data.categories || []).forEach(c => {
       const b = document.createElement("button");
       b.type = "button";
@@ -435,7 +460,6 @@ async function loadCategories() {
     });
   } catch (e) {
     console.error("loadCategories failed:", e);
-    // keine Zerstörung der Seite, nur still
   }
 }
 
@@ -453,7 +477,7 @@ async function loadCategory(cat) {
   }
 }
 
-/* ================= REPORT (Modal + Insert) ================= */
+/* ================= REPORT (anklickbar + Insert) ================= */
 function initReport() {
   const btn = $("reportBtn");
   const modal = $("reportModal");
@@ -462,7 +486,20 @@ function initReport() {
 
   if (!btn || !modal || !closeBtn || !form) return;
 
-  // status text (ohne alerts)
+  // Erzwinge, dass das Modal NICHT die Seite blockiert, wenn CSS kaputt ist
+  modal.style.display = "none";
+  modal.style.position = "fixed";
+  modal.style.inset = "0";
+  modal.style.zIndex = "99998";
+  modal.style.background = "rgba(0,0,0,.45)";
+  modal.style.alignItems = "center";
+  modal.style.justifyContent = "center";
+
+  // Falls CSS pointer-events vermurkst ist:
+  btn.style.pointerEvents = "auto";
+  btn.style.cursor = "pointer";
+
+  // Statuszeile
   let status = $("reportStatus");
   if (!status) {
     status = document.createElement("div");
@@ -473,59 +510,74 @@ function initReport() {
     form.appendChild(status);
   }
 
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     status.textContent = "";
     modal.style.display = "flex";
   });
 
-  closeBtn.addEventListener("click", () => {
+  closeBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     modal.style.display = "none";
+  });
+
+  // Klick außerhalb schließt
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
   });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    e.stopPropagation();
 
     const desc = (form.description?.value || "").trim();
     if (desc.length < 5) {
-      status.textContent = "Bitte eine kurze Beschreibung eingeben (mind. 5 Zeichen).";
+      status.textContent = "Bitte Beschreibung eingeben (mind. 5 Zeichen).";
       return;
     }
 
     status.textContent = "Sende …";
 
     try {
-      // Minimal payload für maximale Kompatibilität:
-      // erwartet typischerweise: description (text), entry_id (uuid nullable)
       await supaPost("reports", {
         description: desc,
-        entry_id: currentEntryId || null
+        entry_id: currentEntryId || null,
+        url: location.href
       });
-
       form.reset();
-      status.textContent = "Danke! Meldung wurde gesendet.";
+      status.textContent = "Gesendet. Danke!";
       setTimeout(() => {
         modal.style.display = "none";
         status.textContent = "";
-      }, 600);
+      }, 450);
     } catch (err) {
       console.error("report insert failed:", err);
-      status.textContent = "Fehler beim Senden. Bitte später erneut versuchen.";
+      status.textContent = "Fehler beim Senden. Bitte später erneut.";
     }
   });
 }
 
-/* ================= BACK HOME ================= */
+/* ================= BACK HOME + NAV ================= */
 function initBackHome() {
   const back = $("backHome");
   if (!back) return;
-  back.addEventListener("click", () => {
+  back.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     renderHome();
   });
 }
 
-/* ================= NAV (Cards + Browser Back/Forward) ================= */
 function initNavigation() {
   document.addEventListener("click", (e) => {
+    // Report / Modals dürfen NICHT als Entry-Click interpretiert werden
+    if (e.target.closest("#reportModal") || e.target.closest("#reportBtn")) return;
+    if (e.target.closest("#msLegalModal")) return;
+    if (e.target.closest("#backHome")) return;
+    if (e.target.closest("#legalLinkDetail") || e.target.closest("#msLegalTopLink")) return;
+
     const card = e.target.closest(".entry-card");
     if (!card) return;
     const id = card.dataset.id;
@@ -540,16 +592,39 @@ function initNavigation() {
   });
 }
 
+/* ================= TOP LEGAL LINK (Startseite) ================= */
+function ensureTopLegalLink() {
+  const header = document.querySelector("header");
+  if (!header) return;
+  if ($("msLegalTopLink")) return;
+
+  const wrap = document.createElement("div");
+  wrap.style.display = "flex";
+  wrap.style.justifyContent = "center";
+  wrap.style.marginTop = "6px";
+
+  wrap.innerHTML = renderLegalLinkHtml("msLegalTopLink");
+  header.appendChild(wrap);
+
+  const a = $("msLegalTopLink");
+  if (a) {
+    a.onclick = (ev) => {
+      ev.preventDefault();
+      openLegalPopup();
+    };
+  }
+}
+
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  ensureTopLegalLink();   // oben als Link auf der Startseite
+  ensureLegalModal();     // Popup-Struktur
+  ensureTopLegalLink();   // Link oben
   loadCategories();       // Kategorien
   initSearch();           // Suche
-  initReport();           // Report-Button + Modal
-  initBackHome();         // ← Zur Startseite
-  initNavigation();       // Karten-Klick + Browser Back/Forward
+  initReport();           // Report
+  initBackHome();         // Back
+  initNavigation();       // Navigation
 
-  // initial state
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
   else renderHome();
