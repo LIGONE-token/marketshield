@@ -80,12 +80,20 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-  const w = Math.round((n / 10) * 80);
+
+  const maxWidth = 80;
+  const w = Math.round((n / 10) * maxWidth);
+
+  let color = "#2e7d32"; // grün (niedrig)
+  if (n >= 5) color = "#f9a825"; // gelb (mittel)
+  if (n >= 8) color = "#c62828"; // rot (hoch)
+
   return `
-    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
-      <div style="width:${w}px;height:8px;background:#2e7d32;border-radius:6px;"></div>
+    <div style="width:${maxWidth}px;height:8px;background:#e0e0e0;border-radius:6px;">
+      <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
     </div>`;
 }
+
 
 function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
