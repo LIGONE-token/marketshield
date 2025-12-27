@@ -1,5 +1,6 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / VOLLSTÄNDIG)
+   MarketShield – app.js
+   FINAL / FUNKTIONSKOMPLETT / STABIL
 ===================================================== */
 
 let currentEntryId = null;
@@ -8,16 +9,16 @@ let currentEntryId = null;
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-async function supa(query, options = {}) {
+async function supa(query, opts = {}) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    method: options.method || "GET",
+    method: opts.method || "GET",
     headers: {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${SUPABASE_KEY}`,
       "Content-Type": "application/json",
       Prefer: "return=minimal"
     },
-    body: options.body ? JSON.stringify(options.body) : undefined
+    body: opts.body ? JSON.stringify(opts.body) : undefined
   });
   if (!r.ok) throw new Error(await r.text());
   return r.status === 204 ? null : r.json();
@@ -47,11 +48,8 @@ function normalizeText(text) {
     .trim();
 }
 
-/* =====================================================
-   TABELLEN-RENDER (ZWINGEND / ROBUST)
-===================================================== */
+/* ================= TABELLEN (ZWINGEND) ================= */
 function renderSummaryWithTables(text) {
-  if (!text) return "";
   const lines = normalizeText(text).split("\n");
   let html = "";
   let i = 0;
@@ -64,15 +62,20 @@ function renderSummaryWithTables(text) {
     ) {
       const headers = lines[i].split("|").map(c => c.trim()).filter(Boolean);
       html += `<table style="border-collapse:collapse;width:100%;margin:12px 0;">`;
-      html += `<thead><tr>` + headers.map(h =>
-        `<th style="border:1px solid #ccc;padding:6px;text-align:left;">${escapeHtml(h)}</th>`
-      ).join("") + `</tr></thead><tbody>`;
+      html += `<thead><tr>` +
+        headers.map(h =>
+          `<th style="border:1px solid #ccc;padding:6px;text-align:left;">${escapeHtml(h)}</th>`
+        ).join("") +
+        `</tr></thead><tbody>`;
+
       i += 2;
       while (i < lines.length && lines[i].includes("|")) {
         const cells = lines[i].split("|").map(c => c.trim()).filter(Boolean);
-        html += `<tr>` + cells.map(c =>
-          `<td style="border:1px solid #ccc;padding:6px;">${escapeHtml(c)}</td>`
-        ).join("") + `</tr>`;
+        html += `<tr>` +
+          cells.map(c =>
+            `<td style="border:1px solid #ccc;padding:6px;">${escapeHtml(c)}</td>`
+          ).join("") +
+          `</tr>`;
         i++;
       }
       html += `</tbody></table>`;
@@ -118,13 +121,13 @@ function renderScoreBlock(score, processing) {
   const i = renderIndustry(processing);
   if (!h && !i) return "";
   return `
-    <div style="margin:12px 0;display:flex;flex-direction:column;gap:6px;">
+    <div style="margin:12px 0;display:flex;flex-direction:column;gap:6px;font-size:14px;">
       ${h ? `<div style="display:flex;gap:10px;align-items:center;">
-        <div style="min-width:90px;font-size:15px;">${h}</div>
+        <div style="min-width:80px;">${h}</div>
         <div>Gesundheitsscore</div>
       </div>` : ""}
       ${i ? `<div style="display:flex;gap:10px;align-items:center;">
-        <div style="min-width:90px;">${i}</div>
+        <div style="min-width:80px;">${i}</div>
         <div>Industrie-Verarbeitungsgrad</div>
       </div>` : ""}
     </div>`;
@@ -133,7 +136,7 @@ function renderScoreBlock(score, processing) {
 /* ================= LISTE ================= */
 function renderList(data) {
   $("results").innerHTML = (data || []).map(e => `
-    <div class="entry-card" data-id="${e.id}">
+    <div class="entry-card" data-id="${e.id}" style="cursor:pointer;margin-bottom:18px;">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
       <div style="font-size:15px;">
@@ -151,6 +154,7 @@ async function loadEntry(id) {
   currentEntryId = id;
 
   $("results").innerHTML = `
+    <button onclick="goHome()">⬅️ Zurück zur Startseite</button>
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
     <div style="font-size:16px;line-height:1.7;">
@@ -158,60 +162,56 @@ async function loadEntry(id) {
     </div>
     <div id="entryActions"></div>
   `;
+
   renderEntryActions(e.title);
 }
 
 /* ================= ACTIONS ================= */
 function renderEntryActions(title) {
-  const url = location.href;
+  const url = encodeURIComponent(location.href);
+  const t = encodeURIComponent(title);
+
   $("entryActions").innerHTML = `
     <div style="margin-top:24px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="goHome()">⬅️ Startseite</button>
-      <button onclick="share('tg')">📨 Telegram</button>
-      <button onclick="share('wa')">💬 WhatsApp</button>
-      <button onclick="share('x')">✖️ X</button>
-      <button onclick="share('fb')">📘 Facebook</button>
+      <button onclick="share('tg','${t}','${url}')">Telegram</button>
+      <button onclick="share('wa','${t}','${url}')">WhatsApp</button>
+      <button onclick="share('x','${t}','${url}')">X</button>
+      <button onclick="share('fb','${t}','${url}')">Facebook</button>
       <button onclick="sendReport()">🚨 Melden</button>
     </div>`;
 }
 
-function goHome() {
-  history.pushState(null, "", location.pathname);
-  location.reload();
-}
-
-function share(t) {
-  const u = encodeURIComponent(location.href);
-  const tlt = encodeURIComponent(document.title);
+function share(type, title, url) {
   const map = {
-    tg: `https://t.me/share/url?url=${u}&text=${tlt}`,
-    wa: `https://wa.me/?text=${tlt}%20${u}`,
-    x: `https://x.com/intent/tweet?text=${tlt}&url=${u}`,
-    fb: `https://www.facebook.com/sharer/sharer.php?u=${u}`
+    tg: `https://t.me/share/url?url=${url}&text=${title}`,
+    wa: `https://wa.me/?text=${title}%20${url}`,
+    x: `https://x.com/intent/tweet?text=${title}&url=${url}`,
+    fb: `https://www.facebook.com/sharer/sharer.php?u=${url}`
   };
-  window.open(map[t], "_blank");
+  window.open(map[type], "_blank");
 }
 
-/* ================= REPORT ================= */
 async function sendReport() {
   if (!currentEntryId) return;
   await supa("reports", {
     method: "POST",
-    body: { entry_id: currentEntryId, created_at: new Date().toISOString() }
+    body: { entry_id: currentEntryId }
   });
-  alert("Report gespeichert. Danke!");
+  alert("Report gespeichert. Danke.");
 }
 
 /* ================= SUCHE ================= */
-const search = $("searchInput");
-if (search) {
-  search.addEventListener("input", async () => {
-    const q = search.value.trim();
+const searchInput = $("searchInput");
+if (searchInput) {
+  searchInput.addEventListener("input", async () => {
+    const q = searchInput.value.trim();
     if (q.length < 2) return;
+
     await supa("search_queue", {
       method: "POST",
-      body: { query: q, created_at: new Date().toISOString() }
+      body: { query: q }
     });
+
     const data = await supa(
       `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${q}%25,summary.ilike.%25${q}%25)`
     );
@@ -220,15 +220,26 @@ if (search) {
 }
 
 /* ================= NAV ================= */
+function goHome() {
+  history.pushState(null, "", location.pathname);
+  loadInitial();
+}
+
+async function loadInitial() {
+  const data = await supa("entries?select=id,title,summary,score,processing_score&limit=50");
+  renderList(data);
+}
+
 document.addEventListener("click", (e) => {
-  const c = e.target.closest(".entry-card");
-  if (!c) return;
-  history.pushState(null, "", "?id=" + c.dataset.id);
-  loadEntry(c.dataset.id);
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
+  history.pushState(null, "", "?id=" + card.dataset.id);
+  loadEntry(card.dataset.id);
 });
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
+  else loadInitial();
 });
