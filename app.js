@@ -106,6 +106,7 @@ function renderMarkdownTables(text) {
 }
 
 
+
 /* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
@@ -205,7 +206,7 @@ async function loadEntry(id) {
     ${renderLegalMiniLink()}
 
     <div style="white-space:pre-wrap;line-height:1.6;">
-      ${escapeHtml(normalizeText(e.summary))}
+      ${renderMarkdownTables(normalizeText(e.summary))}
     </div>
 
     <div id="entryActions"></div>
