@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / FUNKTIONSFÄHIG)
+   MarketShield – app.js (FINAL / STABIL / TABELLEN-SICHER)
 ===================================================== */
 
 let currentEntryId = null;
@@ -33,53 +33,74 @@ function escapeHtml(s = "") {
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
-    .replace(/\*\*/g, "")
-    .replace(/##+/g, "")
-    .replace(/__+/g, "")
-    .replace(/~~+/g, "")
-    .replace(/`+/g, "")
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
-/* ================= TABELLEN-RENDER (ZWINGEND) ================= */
+/* =====================================================
+   TABELLEN-RENDER (ZWINGEND / ROBUST / SUPABASE-SICHER)
+   - erkennt Tabellen überall im Text
+   - beliebig viele Tabellen
+   - Text davor/danach bleibt erhalten
+===================================================== */
 function renderSummaryWithTables(text) {
   if (!text) return "";
 
-  const lines = text.split("\n");
+  const lines = normalizeText(text).split("\n");
+  let html = "";
+  let i = 0;
 
-  const isTable =
-    lines.length >= 3 &&
-    lines[0].includes("|") &&
-    /^[-\s|]+$/.test(lines[1]);
+  while (i < lines.length) {
+    // Tabellenkopf erkannt?
+    if (
+      lines[i].includes("|") &&
+      lines[i + 1] &&
+      /^[-\s|]+$/.test(lines[i + 1])
+    ) {
+      const headers = lines[i]
+        .split("|")
+        .map(c => c.trim())
+        .filter(Boolean);
 
-  if (!isTable) {
-    return `<div style="white-space:pre-wrap;">${text}</div>`;
+      html += `<table style="border-collapse:collapse;width:100%;margin:12px 0;">`;
+      html += `<thead><tr>` +
+        headers.map(h =>
+          `<th style="border:1px solid #ccc;padding:6px;text-align:left;">${escapeHtml(h)}</th>`
+        ).join("") +
+        `</tr></thead><tbody>`;
+
+      i += 2; // Header + Trenner überspringen
+
+      // Tabellenzeilen
+      while (i < lines.length && lines[i].includes("|")) {
+        const cells = lines[i]
+          .split("|")
+          .map(c => c.trim())
+          .filter(Boolean);
+
+        html += `<tr>` +
+          cells.map(c =>
+            `<td style="border:1px solid #ccc;padding:6px;">${escapeHtml(c)}</td>`
+          ).join("") +
+          `</tr>`;
+        i++;
+      }
+
+      html += `</tbody></table>`;
+      continue;
+    }
+
+    // Normaler Text (Absätze erhalten)
+    if (lines[i].trim() === "") {
+      html += `<div style="height:8px;"></div>`;
+    } else {
+      html += `<div style="white-space:pre-wrap;margin:6px 0;">${escapeHtml(lines[i])}</div>`;
+    }
+
+    i++;
   }
 
-  const headers = lines[0].split("|").map(c => c.trim()).filter(Boolean);
-  const rows = lines.slice(2).map(l =>
-    l.split("|").map(c => c.trim()).filter(Boolean)
-  );
-
-  let html = `<table style="border-collapse:collapse;width:100%;margin:12px 0;">`;
-  html += `<thead><tr>` +
-    headers.map(h =>
-      `<th style="border:1px solid #ccc;padding:6px;text-align:left;">${h}</th>`
-    ).join("") +
-    `</tr></thead><tbody>`;
-
-  rows.forEach(r => {
-    html += `<tr>` +
-      r.map(c =>
-        `<td style="border:1px solid #ccc;padding:6px;">${c}</td>`
-      ).join("") +
-      `</tr>`;
-  });
-
-  html += `</tbody></table>`;
   return html;
 }
 
@@ -98,32 +119,37 @@ function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
 
-  const w = Math.round((n / 10) * 80);
+  const w = Math.max(0, Math.min(80, Math.round((n / 10) * 80)));
 
-  let color = "#2e7d32";      // grün
-  if (n >= 7) color = "#f9a825"; // gelb
-  if (n >= 9) color = "#c62828"; // rot
+  let color = "#2e7d32";
+  if (n >= 7) color = "#f9a825";
+  if (n >= 9) color = "#c62828";
 
   return `
-    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
+    <div style="width:80px;min-width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
       <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
     </div>`;
 }
 
-
+/* ================= SCORE BLOCK (STABIL) ================= */
 function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
 
   return `
-    <div style="margin:12px 0;">
-      ${h ? `<div style="display:flex;gap:8px;align-items:center;">
-        <div>${h}</div><div style="opacity:.85;">Gesundheitsscore</div>
-      </div>` : ""}
-      ${i ? `<div style="display:flex;gap:8px;align-items:center;">
-        <div>${i}</div><div style="opacity:.85;">Industrie-Verarbeitungsgrad</div>
-      </div>` : ""}
+    <div style="margin:12px 0;display:flex;flex-direction:column;gap:6px;">
+      ${h ? `
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
+          <div style="min-width:92px;white-space:nowrap;font-size:18px;line-height:1;">${h}</div>
+          <div style="opacity:.85;white-space:nowrap;">Gesundheitsscore</div>
+        </div>` : ""}
+
+      ${i ? `
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:nowrap;">
+          <div style="min-width:92px;">${i}</div>
+          <div style="opacity:.85;white-space:nowrap;">Industrie-Verarbeitungsgrad</div>
+        </div>` : ""}
     </div>`;
 }
 
@@ -159,24 +185,23 @@ async function loadEntry(id) {
     ${renderScoreBlock(e.score, e.processing_score)}
     ${renderLegalMiniLink()}
     <div style="font-size:16px;line-height:1.7;">
-      ${renderSummaryWithTables(normalizeText(e.summary))}
+      ${renderSummaryWithTables(e.summary)}
     </div>
     <div id="entryActions"></div>
   `;
 
-  renderEntryActions(e.title);
+  renderEntryActions();
 }
 
-/* ================= SOCIAL ================= */
-function renderEntryActions(title) {
+/* ================= ACTIONS ================= */
+function renderEntryActions() {
   const box = $("entryActions");
   if (!box) return;
 
-  const url = location.href;
   box.innerHTML = `
     <div style="margin-top:24px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="history.back()">⬅️ Zurück</button>
-      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button onclick="location.href='?'">⬅️ Zur Startseite</button>
+      <button onclick="navigator.clipboard.writeText(location.href)">🔗 Link kopieren</button>
       <button onclick="window.print()">🖨️ Drucken</button>
     </div>`;
 }
@@ -189,22 +214,21 @@ document.addEventListener("click", (e) => {
   loadEntry(c.dataset.id);
 });
 
-/* ================= LEGAL POPUP ================= */
+/* ================= LEGAL ================= */
 function renderLegalMiniLink() {
   return `<div style="font-size:11px;opacity:.6;cursor:pointer;text-decoration:underline;"
     onclick="event.stopPropagation();openLegalPopup()">Rechtlicher Hinweis</div>`;
 }
 
 function ensureLegalPopup() {
-  if (document.getElementById("legalPopup")) return;
+  if ($("legalPopup")) return;
   const d = document.createElement("div");
   d.id = "legalPopup";
   d.style.cssText = "display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;";
   d.innerHTML = `
     <div style="background:#fff;margin:10% auto;padding:16px;max-width:420px;">
       <b>Rechtlicher Hinweis</b><br><br>
-      Rechtliche Vorgaben verbieten es, bestimmte Sachverhalte offen zu benennen.
-      Die Darstellung ist daher bewusst eingeschränkt.
+      Die Darstellung dient der Information und ersetzt keine Beratung.
       <br><br>
       <button onclick="closeLegalPopup()">Schließen</button>
     </div>`;
