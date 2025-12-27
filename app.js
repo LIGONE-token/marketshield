@@ -32,17 +32,29 @@ function escapeHtml(s = "") {
 
 function normalizeText(text) {
   if (!text) return "";
+
   return String(text)
+    // harte Artefakte entfernen
     .replace(/\*\*/g, "")
     .replace(/##+/g, "")
     .replace(/__+/g, "")
     .replace(/~~+/g, "")
     .replace(/`+/g, "")
+    .replace(/:contentReference\[.*?\]/g, "")
+    .replace(/\{.*?\}/g, "")
+
+    // saubere Zeilenumbrüche
     .replace(/\\n/g, "\n")
-    .replace(/\r/g, "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+
+    // Listen lesbar machen
+    .replace(/^\s*-\s+/gm, "• ")
     .replace(/\n{3,}/g, "\n\n")
+
     .trim();
 }
+
 
 function shortText(t, max = 160) {
   t = normalizeText(t);
