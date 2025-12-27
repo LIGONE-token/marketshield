@@ -68,42 +68,70 @@ function renderLegalMiniLink() {
 function renderMarkdownTables(text) {
   const lines = text.split("\n");
 
-  // einfache Erkennung: Header | --- | Zeile
-  if (lines.length < 2 || !lines[0].includes("|") || !lines[1].includes("---")) {
-    return escapeHtml(text);
+  // Mindestens: Header | ---- | Zeile
+  if (
+    lines.length < 3 ||
+    !lines[0].includes("|") ||
+    !/^-{3,}/.test(lines[1].trim())
+  ) {
+    return escapeHtml(text).replace(/\n/g, "<br>");
   }
 
+  // Tabellenzeilen sammeln (nur Zeilen mit |)
   const rows = lines
     .filter(l => l.includes("|"))
-    .map(l => l.split("|").map(c => c.trim()).filter(Boolean));
+    .map(l =>
+      l.split("|")
+        .map(c => c.trim())
+        .filter(c => c.length > 0)
+    );
 
-  if (rows.length < 2) return escapeHtml(text);
+  if (rows.length < 2) {
+    return escapeHtml(text).replace(/\n/g, "<br>");
+  }
 
   const header = rows.shift();
   const body = rows;
 
   return `
-    <table style="border-collapse:collapse;margin:12px 0;width:100%;">
+    <table style="
+      border-collapse:collapse;
+      margin:14px 0;
+      width:100%;
+      font-size:14px;
+    ">
       <thead>
         <tr>
-          ${header.map(h =>
-            `<th style="border-bottom:2px solid #ccc;padding:6px 8px;text-align:left;">
+          ${header.map(h => `
+            <th style="
+              text-align:left;
+              padding:6px 8px;
+              border-bottom:2px solid #ccc;
+            ">
               ${escapeHtml(h)}
-            </th>`).join("")}
+            </th>
+          `).join("")}
         </tr>
       </thead>
       <tbody>
-        ${body.map(r => `
+        ${body.map(row => `
           <tr>
-            ${r.map(c =>
-              `<td style="border-bottom:1px solid #eee;padding:6px 8px;">
-                ${escapeHtml(c)}
-              </td>`).join("")}
-          </tr>`).join("")}
+            ${row.map(cell => `
+              <td style="
+                padding:6px 8px;
+                border-bottom:1px solid #eee;
+                vertical-align:top;
+              ">
+                ${escapeHtml(cell)}
+              </td>
+            `).join("")}
+          </tr>
+        `).join("")}
       </tbody>
     </table>
   `;
 }
+
 
 
 
