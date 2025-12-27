@@ -233,9 +233,10 @@ async function loadEntry(id) {
     ${renderScoreBlock(e.score, e.processing_score)}
     ${renderLegalMiniLink()}
 
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${renderMarkdownTables(normalizeText(e.summary))}
+    <div style="line-height:1.6;">
+     ${renderMarkdownTables(normalizeText(e.summary))}
     </div>
+
 
     <div id="entryActions"></div>
   `;
