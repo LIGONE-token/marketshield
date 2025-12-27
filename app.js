@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / ALLES KORRIGIERT)
+   MarketShield – app.js (STABIL / FEHLERFREI)
 ===================================================== */
 
 let currentEntryId = null;
@@ -20,20 +20,6 @@ async function supa(query) {
   return JSON.parse(t || "[]");
 }
 
-async function supaPost(table, payload) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify(payload)
-  });
-  if (!r.ok) throw new Error(await r.text());
-}
-
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
 
@@ -44,53 +30,84 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
+/* Textbereinigung (nur störende Markdown-Reste) */
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
+    .replace(/\*\*/g, "")
+    .replace(/##+/g, "")
+    .replace(/__+/g, "")
+    .replace(/~~+/g, "")
+    .replace(/`+/g, "")
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
-/* ================= TABELLEN (ROBUST) ================= */
-function renderSummary(text) {
-  const blocks = normalizeText(text).split(/\n\s*\n/);
-
-  return blocks.map(block => {
-    const lines = block.split("\n");
-    const pipeLines = lines.filter(l => l.includes("|"));
-
-    if (pipeLines.length >= 2) {
-      const rows = pipeLines
-        .filter(l => !/^[-\s|]+$/.test(l))
-        .map(l => l.split("|").map(c => c.trim()).filter(Boolean));
-
-      if (rows.length >= 2) {
-        const head = rows.shift();
-        return `
-          <table class="ms-table">
-            <thead>
-              <tr>${head.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
-            </thead>
-            <tbody>
-              ${rows.map(r =>
-                `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
-              ).join("")}
-            </tbody>
-          </table>
-        `;
-      }
-    }
-
-    return `<div style="white-space:pre-wrap;line-height:1.6;margin:6px 0;">${escapeHtml(block)}</div>`;
-  }).join("");
+function shortText(t, max = 160) {
+  t = normalizeText(t);
+  return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= SCORES ================= */
+/* ================= PIPE-TABELLEN (KORREKT) ================= */
+function renderSummary(text) {
+  const lines = normalizeText(text).split("\n");
+  let html = "";
+  let tableLines = [];
+
+  const flushTable = () => {
+    if (tableLines.length < 2) {
+      html += `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(tableLines.join("\n"))}</div>`;
+      tableLines = [];
+      return;
+    }
+
+    const rows = tableLines
+      .filter(l => !/^[-\s|]+$/.test(l))
+      .map(l => l.split("|").map(c => c.trim()).filter(Boolean));
+
+    if (rows.length < 2) {
+      tableLines = [];
+      return;
+    }
+
+    const head = rows.shift();
+
+    html += `
+      <table class="ms-table">
+        <thead>
+          <tr>${head.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${rows.map(r =>
+            `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
+          ).join("")}
+        </tbody>
+      </table>
+    `;
+    tableLines = [];
+  };
+
+  for (const line of lines) {
+    if (line.includes("|")) {
+      tableLines.push(line);
+    } else {
+      if (tableLines.length) flushTable();
+      if (line.trim()) {
+        html += `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(line)}</div>`;
+      }
+    }
+  }
+  if (tableLines.length) flushTable();
+
+  return html;
+}
+
+/* ================= SCORES (LOCKED) ================= */
 function renderHealth(score) {
   const n = Number(score);
-  if (!n) return "";
+  if (!Number.isFinite(n) || n <= 0) return "";
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
@@ -99,115 +116,155 @@ function renderHealth(score) {
 }
 
 function renderIndustry(score) {
-  const n = Math.min(10, Math.max(0, Number(score)));
-  if (!n) return "";
-
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
   const w = Math.round((n / 10) * 80);
-  let color = "#2e7d32";
-  if (n >= 4) color = "#f9a825";
-  if (n >= 7) color = "#c62828";
-
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
-      <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
+      <div style="width:${w}px;height:8px;background:#2e7d32;border-radius:6px;"></div>
     </div>`;
 }
 
-function renderScoreBlock(score, processing) {
+function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
 
   return `
     <div style="margin:12px 0;">
-      ${h ? `<div style="display:grid;grid-template-columns:90px 1fr;"><div>${h}</div><div>Gesundheit</div></div>` : ""}
-      ${i ? `<div style="display:grid;grid-template-columns:90px 1fr;"><div>${i}</div><div>Industrie</div></div>` : ""}
+      ${h ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
+          <div>${h}</div>
+          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
+        </div>` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+          <div>${i}</div>
+          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
+        </div>` : ""}
     </div>`;
 }
 
 /* ================= LISTE ================= */
 function renderList(data) {
-  $("results").innerHTML = (data || []).map(e => `
+  const box = $("results");
+  if (!box) return;
+
+  box.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <strong>${escapeHtml(e.title)}</strong>
+      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
+      <div style="font-size:15px;line-height:1.4;">
+        ${escapeHtml(shortText(e.summary))}
+      </div>
     </div>
   `).join("");
 }
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
-  const e = (await supa(`entries?select=*&id=eq.${id}`))[0];
+  const box = $("results");
+  if (!box) return;
+
+  const d = await supa(`entries?select=*&id=eq.${id}`);
+  const e = d[0];
   if (!e) return;
 
   currentEntryId = id;
-  $("backHome").style.display = "block";
 
-  $("results").innerHTML = `
+  box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
-    ${renderSummary(e.summary)}
 
-    <div style="margin-top:8px;font-size:12px;">
-      <a href="#" id="legalLink">⚖️ Rechtlicher Hinweis</a>
-      <div id="legalPopup" style="display:none;margin-top:6px;padding:8px;border:1px solid #ddd;border-radius:8px;background:#fafafa;">
-        Die Inhalte dienen der Information und stellen keine Tatsachenbehauptung,
-        Rechts- oder Gesundheitsberatung dar. Angaben können unvollständig oder
-        fehlerhaft sein.
-      </div>
+    <h3>Zusammenfassung</h3>
+    <div class="entry-content">
+      ${renderSummary(e.summary)}
     </div>
+
+    <div id="entryActions"></div>
   `;
 
-  $("legalLink").onclick = e => {
-    e.preventDefault();
-    const p = $("legalPopup");
-    p.style.display = p.style.display === "none" ? "block" : "none";
-  };
+  renderEntryActions(e.title);
+}
+
+/* ================= SOCIAL ================= */
+function renderEntryActions(title) {
+  const box = $("entryActions");
+  if (!box) return;
+
+  const url = location.href;
+  const encUrl = encodeURIComponent(url);
+  const encTitle = encodeURIComponent(title + " – MarketShield");
+
+  box.innerHTML = `
+    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button onclick="window.print()">🖨️ Drucken</button>
+      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+    </div>`;
+}
+
+/* ================= SEARCH ================= */
+async function smartSearch(q) {
+  const term = q.trim();
+  if (term.length < 2) return [];
+  const enc = encodeURIComponent(term);
+
+  return await supa(
+    `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
+  );
+}
+
+function initSearch() {
+  const input = $("searchInput");
+  const box = $("results");
+  if (!input || !box) return;
+
+  input.addEventListener("input", async () => {
+    const q = input.value.trim();
+    if (q.length < 2) return box.innerHTML = "";
+    renderList(await smartSearch(q));
+  });
+}
+
+/* ================= KATEGORIEN ================= */
+async function loadCategories() {
+  const grid = document.querySelector(".category-grid");
+  if (!grid) return;
+
+  const data = await fetch("categories.json").then(r => r.json());
+  grid.innerHTML = "";
+
+  (data.categories || []).forEach(c => {
+    const b = document.createElement("button");
+    b.textContent = c.title;
+    b.onclick = () => loadCategory(c.title);
+    grid.appendChild(b);
+  });
+}
+
+async function loadCategory(cat) {
+  renderList(await supa(
+    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
+  ));
 }
 
 /* ================= NAV ================= */
-document.addEventListener("click", e => {
+document.addEventListener("click", (e) => {
   const c = e.target.closest(".entry-card");
   if (!c) return;
   history.pushState(null, "", "?id=" + c.dataset.id);
   loadEntry(c.dataset.id);
 });
 
-/* ================= BACK HOME ================= */
-function initBackHome() {
-  $("backHome").onclick = () => {
-    history.pushState(null, "", location.pathname);
-    currentEntryId = null;
-    $("backHome").style.display = "none";
-    $("results").innerHTML = "";
-  };
-}
-
-/* ================= REPORT ================= */
-function initReport() {
-  $("reportBtn").onclick = () => $("reportModal").style.display = "flex";
-  $("closeReportModal").onclick = () => $("reportModal").style.display = "none";
-
-  $("reportForm").onsubmit = async e => {
-    e.preventDefault();
-    const text = e.target.description.value.trim();
-    if (text.length < 5) return;
-
-    await supaPost("reports", {
-      entry_id: currentEntryId,
-      description: text,
-      created_at: new Date().toISOString()
-    });
-
-    e.target.reset();
-    $("reportModal").style.display = "none";
-  };
-}
-
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  initBackHome();
-  initReport();
+  loadCategories();
+  initSearch();
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
