@@ -84,9 +84,9 @@ function renderIndustry(score) {
   const maxWidth = 80;
   const w = Math.round((n / 10) * maxWidth);
 
-  let color = "#2e7d32"; // grün (niedrig)
-  if (n >= 5) color = "#f9a825"; // gelb (mittel)
-  if (n >= 8) color = "#c62828"; // rot (hoch)
+  let color = "#2e7d32";       // grün
+  if (n >= 5) color = "#f9a825"; // gelb
+  if (n >= 8) color = "#c62828"; // rot
 
   return `
     <div style="width:${maxWidth}px;height:8px;background:#e0e0e0;border-radius:6px;">
@@ -94,7 +94,7 @@ function renderIndustry(score) {
     </div>`;
 }
 
-
+/* ================= SCOREBLOCK (FIXED) ================= */
 function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
@@ -102,11 +102,36 @@ function renderScoreBlock(score, processing) {
 
   return `
     <div style="margin:12px 0;">
-      ${h ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
-        <div>${h}</div><div>Gesundheitsscore</div></div>` : ""}
-      ${i ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
-        <div>${i}</div><div>Industrie-Verarbeitungsgrad</div></div>` : ""}
-    </div>`;
+      ${h ? `
+        <div style="
+          display:grid;
+          grid-template-columns:90px 1fr;
+          gap:8px;
+          align-items:center;
+          margin-bottom:${i ? 6 : 0}px;
+        ">
+          <div>${h}</div>
+          <div style="font-size:13px;opacity:.85;">
+            Gesundheitsscore
+          </div>
+        </div>
+      ` : ""}
+
+      ${i ? `
+        <div style="
+          display:grid;
+          grid-template-columns:90px 1fr;
+          gap:8px;
+          align-items:center;
+        ">
+          <div>${i}</div>
+          <div style="font-size:13px;opacity:.85;">
+            Industrie-Verarbeitungsgrad
+          </div>
+        </div>
+      ` : ""}
+    </div>
+  `;
 }
 
 /* ================= LISTE ================= */
@@ -147,7 +172,7 @@ async function loadEntry(id) {
   `;
 
   renderEntryActions(e.title);
-  bindReportButton(); // bestehender Button wird hier nur angebunden
+  bindReportButton();
 }
 
 /* ================= SOCIAL (UNVERÄNDERT) ================= */
@@ -165,7 +190,7 @@ function renderEntryActions(title) {
       <button onclick="window.print()">🖨️ Drucken</button>
       <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
       <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}','_blank')">X</button>
       <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
     </div>`;
 }
@@ -185,8 +210,7 @@ async function saveSearchQuery(q) {
       headers: {
         apikey: SUPABASE_KEY,
         Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({ query: q, url: location.href })
     });
@@ -200,7 +224,8 @@ function initSearch() {
   input.addEventListener("input", async () => {
     const q = input.value.trim();
     if (q.length < 2) return;
-    saveSearchQuery(q);
+
+    await saveSearchQuery(q);
     renderList(await smartSearch(q));
   });
 }
@@ -267,16 +292,24 @@ function closeReportPopup(){$("reportPopup").style.display="none";}
 async function submitReport() {
   const text = $("reportText").value.trim();
   if (!text) return alert("Bitte Text eingeben");
-  await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
     method:"POST",
     headers:{
       apikey:SUPABASE_KEY,
       Authorization:`Bearer ${SUPABASE_KEY}`,
-      "Content-Type":"application/json",
-      Prefer:"return=minimal"
+      "Content-Type":"application/json"
     },
     body:JSON.stringify({ entry_id: currentEntryId, text, url: location.href })
   });
+
+  if (!r.ok) {
+    const err = await r.text();
+    console.error("REPORT FAILED:", err);
+    alert("Report konnte nicht gespeichert werden.");
+    return;
+  }
+
   closeReportPopup();
   alert("Danke für den Hinweis");
 }
