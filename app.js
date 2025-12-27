@@ -242,12 +242,20 @@ async function loadEntry(id) {
 
     ${!isHouseholdHelp ? renderScoreBlock(e.score, e.processing_score) : ""}
 
-    <div style="white-space:pre-wrap;line-height:1.7;font-size:16px;">
-      ${escapeHtml(normalizeText(e.summary))}
+    <div style="line-height:1.7;font-size:16px;">
+      ${renderMarkdownTables(normalizeText(e.summary))}
     </div>
 
+    ${renderLegalMiniLink()}
+
     ${isHouseholdHelp ? `
-      <div style="margin-top:24px;padding:12px;border-left:4px solid #4caf50;background:#f6fff6;font-size:14px;">
+      <div style="
+        margin-top:24px;
+        padding:12px;
+        border-left:4px solid #4caf50;
+        background:#f6fff6;
+        font-size:14px;
+      ">
         Hinweis: Hausmittel beruhen auf traditioneller Erfahrung.
         Sie ersetzen keine ärztliche Diagnose oder Behandlung.
       </div>
