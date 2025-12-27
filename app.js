@@ -65,6 +65,46 @@ function renderLegalMiniLink() {
     </div>
   `;
 }
+function renderMarkdownTables(text) {
+  const lines = text.split("\n");
+
+  // einfache Erkennung: Header | --- | Zeile
+  if (lines.length < 2 || !lines[0].includes("|") || !lines[1].includes("---")) {
+    return escapeHtml(text);
+  }
+
+  const rows = lines
+    .filter(l => l.includes("|"))
+    .map(l => l.split("|").map(c => c.trim()).filter(Boolean));
+
+  if (rows.length < 2) return escapeHtml(text);
+
+  const header = rows.shift();
+  const body = rows;
+
+  return `
+    <table style="border-collapse:collapse;margin:12px 0;width:100%;">
+      <thead>
+        <tr>
+          ${header.map(h =>
+            `<th style="border-bottom:2px solid #ccc;padding:6px 8px;text-align:left;">
+              ${escapeHtml(h)}
+            </th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>
+        ${body.map(r => `
+          <tr>
+            ${r.map(c =>
+              `<td style="border-bottom:1px solid #eee;padding:6px 8px;">
+                ${escapeHtml(c)}
+              </td>`).join("")}
+          </tr>`).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
