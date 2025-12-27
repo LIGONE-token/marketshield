@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / FUNKTIONIERT)
+   MarketShield – app.js (STABIL / FINAL / REPORT FORM OK)
 ===================================================== */
 
 let currentEntryId = null;
@@ -20,34 +20,46 @@ async function supa(query) {
   return JSON.parse(t || "[]");
 }
 
+async function supaPost(table, payload) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
 
 function escapeHtml(s = "") {
   return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
 }
 
-/* Textbereinigung */
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
-    .replace(/\*\*/g, "")
-    .replace(/##+/g, "")
-    .replace(/__+/g, "")
-    .replace(/~~+/g, "")
-    .replace(/`+/g, "")
-    .replace(/\\n/g, "\n")
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(/\*\*/g,"")
+    .replace(/##+/g,"")
+    .replace(/__+/g,"")
+    .replace(/~~+/g,"")
+    .replace(/`+/g,"")
+    .replace(/\r\n/g,"\n")
+    .replace(/\r/g,"\n")
+    .replace(/\n{3,}/g,"\n\n")
     .trim();
 }
 
 function shortText(t, max = 160) {
-  t = normalizeText(t).replace(/\s+/g, " ").trim();
+  t = normalizeText(t).replace(/\s+/g," ").trim();
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
@@ -65,13 +77,12 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-
-  const value = Math.max(0, Math.min(10, n));
-  const w = Math.round((value / 10) * 80);
+  const v = Math.max(0, Math.min(10, n));
+  const w = Math.round((v / 10) * 80);
 
   let color = "#2e7d32";
-  if (value >= 4) color = "#f9a825";
-  if (value >= 7) color = "#c62828";
+  if (v >= 4) color = "#f9a825";
+  if (v >= 7) color = "#c62828";
 
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
@@ -79,23 +90,17 @@ function renderIndustry(score) {
     </div>`;
 }
 
-function renderScoreBlock(score, processing, size = 13) {
+function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
 
   return `
     <div style="margin:12px 0;">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
-          <div>${h}</div>
-          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
-        </div>` : ""}
-      ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-top:6px;">
-          <div>${i}</div>
-          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
+      ${h ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
+        <div>${h}</div><div>Gesundheitsscore</div></div>` : ""}
+      ${i ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;margin-top:6px;">
+        <div>${i}</div><div>Industrie-Verarbeitungsgrad</div></div>` : ""}
     </div>`;
 }
 
@@ -110,7 +115,7 @@ function renderList(data) {
         ${escapeHtml(e.title)}
       </div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+      <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
         ${escapeHtml(shortText(e.summary))}
       </div>
     </div>
@@ -134,10 +139,11 @@ async function loadEntry(id) {
       ${renderScoreBlock(e.score, e.processing_score)}
 
       <h3>Zusammenfassung</h3>
-      <div style="white-space:pre-wrap;line-height:1.6;">
+      <div style="white-space:pre-wrap;">
         ${escapeHtml(normalizeText(e.summary))}
       </div>
 
+      <!-- REPORT BUTTON: TEXT & POSITION UNVERÄNDERT -->
       <button id="reportBtn" type="button">
         Produkt / Problem melden<br>
         <small>Anonym · in 1 Minute · hilft allen</small>
@@ -146,59 +152,92 @@ async function loadEntry(id) {
       <div id="entryActions"></div>
     </div>
   `;
-
-  renderEntryActions(e.title);
 }
 
-/* ================= REPORT (FIX – ENTSCHEIDEND) ================= */
+/* ================= REPORT FORM (JETZT VOLLSTÄNDIG) ================= */
+function ensureReportModal() {
+  if ($("reportModal")) return;
+
+  const m = document.createElement("div");
+  m.id = "reportModal";
+  m.style.cssText =
+    "display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);align-items:center;justify-content:center;";
+
+  m.innerHTML = `
+    <form id="reportForm"
+      style="background:#fff;padding:16px;border-radius:12px;width:90%;max-width:420px">
+      <b>Produkt / Problem melden</b>
+      <textarea name="description" required
+        style="width:100%;height:120px;margin-top:8px"></textarea>
+      <div id="reportStatus" style="font-size:12px;margin-top:6px"></div>
+      <div style="margin-top:10px;text-align:right">
+        <button type="submit">Senden</button>
+        <button type="button" id="closeReport">Abbrechen</button>
+      </div>
+    </form>
+  `;
+
+  m.addEventListener("click", e => {
+    if (e.target === m) m.style.display = "none";
+  });
+
+  document.body.appendChild(m);
+
+  $("closeReport").onclick = () => m.style.display = "none";
+
+  $("reportForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const desc = e.target.description.value.trim();
+    if (desc.length < 5) {
+      $("reportStatus").textContent = "Bitte mindestens 5 Zeichen eingeben.";
+      return;
+    }
+    $("reportStatus").textContent = "Sende …";
+
+    await supaPost("reports", {
+      description: desc,
+      entry_id: currentEntryId,
+      url: location.href
+    });
+
+    $("reportStatus").textContent = "Gesendet. Danke!";
+    setTimeout(() => {
+      m.style.display = "none";
+      e.target.reset();
+      $("reportStatus").textContent = "";
+    }, 600);
+  };
+}
+
+/* Klick auf Reportbutton */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("#reportBtn");
   if (!btn) return;
 
   e.preventDefault();
-  e.stopPropagation();           // 🔥 verhindert Navigation
-  e.stopImmediatePropagation();  // 🔥 verhindert JEDEN weiteren Listener
+  e.stopPropagation();
+  e.stopImmediatePropagation();
 
-  alert("Reportbutton funktioniert jetzt zuverlässig.");
+  ensureReportModal();
+  $("reportModal").style.display = "flex";
 });
-
-/* ================= SOCIAL ================= */
-function renderEntryActions(title) {
-  const box = $("entryActions");
-  if (!box) return;
-
-  const url = location.href;
-  const encUrl = encodeURIComponent(url);
-  const encTitle = encodeURIComponent(title + " – MarketShield");
-
-  box.innerHTML = `
-    <div style="margin-top:24px;border-top:1px solid #ddd;padding-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
-      <button onclick="window.print()">🖨️ Drucken</button>
-      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
-      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
-      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
-    </div>`;
-}
 
 /* ================= SEARCH ================= */
 async function smartSearch(q) {
-  const term = q.trim();
-  if (term.length < 2) return [];
-
-  const enc = encodeURIComponent(term);
+  const t = q.trim();
+  if (t.length < 2) return [];
+  const enc = encodeURIComponent(t);
   return await supa(
     `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
   );
 }
 
 function initSearch() {
-  const input = $("searchInput");
-  if (!input) return;
+  const i = $("searchInput");
+  if (!i) return;
 
-  input.addEventListener("input", async () => {
-    const q = input.value.trim();
+  i.addEventListener("input", async () => {
+    const q = i.value.trim();
     if (q.length < 2) return;
     renderList(await smartSearch(q));
   });
@@ -206,18 +245,17 @@ function initSearch() {
 
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
-  const grid = document.querySelector(".category-grid");
-  if (!grid) return;
+  const g = document.querySelector(".category-grid");
+  if (!g) return;
 
-  const data = await fetch("categories.json").then(r => r.json());
-  grid.innerHTML = "";
-
-  (data.categories || []).forEach(c => {
+  const d = await fetch("categories.json").then(r => r.json());
+  g.innerHTML = "";
+  (d.categories || []).forEach(c => {
     const b = document.createElement("button");
     b.type = "button";
     b.textContent = c.title;
     b.onclick = () => loadCategory(c.title);
-    grid.appendChild(b);
+    g.appendChild(b);
   });
 }
 
@@ -227,13 +265,12 @@ async function loadCategory(cat) {
   ));
 }
 
-/* ================= NAVIGATION (JETZT RICHTIG) ================= */
+/* ================= NAVIGATION ================= */
 document.addEventListener("click", (e) => {
+  if (e.target.closest("#reportBtn")) return;
+
   const card = e.target.closest(".entry-card");
   if (!card) return;
-
-  // ❗ wenn Reportbutton geklickt wurde → NICHT navigieren
-  if (e.target.closest("#reportBtn")) return;
 
   history.pushState(null, "", "?id=" + card.dataset.id);
   loadEntry(card.dataset.id);
