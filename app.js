@@ -1,6 +1,6 @@
 /* =====================================================
    MarketShield – app.js
-   FINAL / KORREKT / FUNKTIONSVOLLSTÄNDIG
+   FINAL / KOMPLETT / STABIL
 ===================================================== */
 
 let currentEntryId = null;
@@ -164,7 +164,6 @@ async function loadEntry(id) {
   currentEntryId = id;
 
   $("results").innerHTML = `
-    <button onclick="goHome()">⬅️ Zurück zur Startseite</button>
     <h2>${escapeHtml(e.title)}</h2>
     ${renderTruthHint()}
     ${renderScoreBlock(e.score, e.processing_score)}
@@ -180,69 +179,50 @@ async function loadEntry(id) {
 /* ================= ACTIONS ================= */
 function renderEntryActions(title) {
   if (!exists("entryActions")) return;
-  const url = encodeURIComponent(location.href);
-  const t = encodeURIComponent(title);
+  const url = location.href;
 
   $("entryActions").innerHTML = `
     <div style="margin-top:24px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="share('tg','${t}','${url}')">Telegram</button>
-      <button onclick="share('wa','${t}','${url}')">WhatsApp</button>
-      <button onclick="share('x','${t}','${url}')">X</button>
-      <button onclick="share('fb','${t}','${url}')">Facebook</button>
+      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button onclick="window.print()">🖨️ Drucken</button>
       <button onclick="sendReport()">🚨 Melden</button>
     </div>`;
 }
 
-function share(type, title, url) {
-  const map = {
-    tg: `https://t.me/share/url?url=${url}&text=${title}`,
-    wa: `https://wa.me/?text=${title}%20${url}`,
-    x: `https://x.com/intent/tweet?text=${title}&url=${url}`,
-    fb: `https://www.facebook.com/sharer/sharer.php?u=${url}`
-  };
-  window.open(map[type], "_blank");
-}
-
 async function sendReport() {
-  if (!currentEntryId) return;
+  if (!currentEntryId) {
+    alert("Kein Eintrag ausgewählt.");
+    return;
+  }
   try {
     await supa("reports", { method: "POST", body: { entry_id: currentEntryId } });
     alert("Report gespeichert.");
-  } catch (e) {
+  } catch (_) {
     alert("Report konnte nicht gespeichert werden.");
   }
 }
 
 /* ================= SUCHE ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  if (!exists("searchInput")) return;
+  if (!exists("searchInput") || !exists("results")) return;
+
   $("searchInput").addEventListener("input", async () => {
     const q = $("searchInput").value.trim();
     if (q.length < 2) return;
 
     const data = await supa(
-      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${q}%25,summary.ilike.%25${q}%25)`
+      `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${encodeURIComponent(q)}%25,summary.ilike.%25${encodeURIComponent(q)}%25)`
     );
     renderList(data);
 
-    // Logging darf fehlschlagen
+    // Logging darf niemals die Anzeige stören
     try {
       await supa("search_queue", { method: "POST", body: { query: q } });
-    } catch (e) {}
+    } catch (_) {}
   });
 });
 
-/* ================= NAV ================= */
-function goHome() {
-  history.pushState(null, "", location.pathname);
-  loadInitial();
-}
-
-async function loadInitial() {
-  const data = await supa("entries?select=id,title,summary,score,processing_score&limit=50");
-  renderList(data);
-}
-
+/* ================= NAV (BESTEHENDES ZURÜCK BLEIBT) ================= */
 document.addEventListener("click", (e) => {
   const card = e.target.closest(".entry-card");
   if (!card) return;
@@ -251,8 +231,12 @@ document.addEventListener("click", (e) => {
 });
 
 /* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const id = new URLSearchParams(location.search).get("id");
-  if (id) loadEntry(id);
-  else loadInitial();
+  if (id) {
+    await loadEntry(id);
+  } else {
+    const data = await supa("entries?select=id,title,summary,score,processing_score&limit=50");
+    renderList(data);
+  }
 });
