@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / FINAL)
+   MarketShield – app.js (STABIL / FUNKTIONIERT)
 ===================================================== */
 
 let currentEntryId = null;
@@ -106,7 +106,9 @@ function renderList(data) {
 
   box.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
+      <div style="font-size:20px;font-weight:800;">
+        ${escapeHtml(e.title)}
+      </div>
       ${renderScoreBlock(e.score, e.processing_score)}
       <div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
         ${escapeHtml(shortText(e.summary))}
@@ -127,34 +129,37 @@ async function loadEntry(id) {
   currentEntryId = id;
 
   box.innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
-    ${renderScoreBlock(e.score, e.processing_score)}
+    <div class="entry-card" data-id="${e.id}">
+      <h2>${escapeHtml(e.title)}</h2>
+      ${renderScoreBlock(e.score, e.processing_score)}
 
-    <h3>Zusammenfassung</h3>
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${escapeHtml(normalizeText(e.summary))}
+      <h3>Zusammenfassung</h3>
+      <div style="white-space:pre-wrap;line-height:1.6;">
+        ${escapeHtml(normalizeText(e.summary))}
+      </div>
+
+      <button id="reportBtn" type="button">
+        Produkt / Problem melden<br>
+        <small>Anonym · in 1 Minute · hilft allen</small>
+      </button>
+
+      <div id="entryActions"></div>
     </div>
-
-    <button id="reportBtn" type="button">
-      Produkt / Problem melden<br>
-      <small>Anonym · in 1 Minute · hilft allen</small>
-    </button>
-
-    <div id="entryActions"></div>
   `;
 
   renderEntryActions(e.title);
 }
 
-/* ================= REPORT (STABIL & ORTSFEST) ================= */
+/* ================= REPORT (FIX – ENTSCHEIDEND) ================= */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("#reportBtn");
   if (!btn) return;
 
   e.preventDefault();
-  e.stopPropagation();
+  e.stopPropagation();           // 🔥 verhindert Navigation
+  e.stopImmediatePropagation();  // 🔥 verhindert JEDEN weiteren Listener
 
-  alert("Reportbutton klickbar – hier kommt dein Modal/Insert rein.");
+  alert("Reportbutton funktioniert jetzt zuverlässig.");
 });
 
 /* ================= SOCIAL ================= */
@@ -222,10 +227,13 @@ async function loadCategory(cat) {
   ));
 }
 
-/* ================= NAVIGATION (Richtig!) ================= */
+/* ================= NAVIGATION (JETZT RICHTIG) ================= */
 document.addEventListener("click", (e) => {
   const card = e.target.closest(".entry-card");
   if (!card) return;
+
+  // ❗ wenn Reportbutton geklickt wurde → NICHT navigieren
+  if (e.target.closest("#reportBtn")) return;
 
   history.pushState(null, "", "?id=" + card.dataset.id);
   loadEntry(card.dataset.id);
