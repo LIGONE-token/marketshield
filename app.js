@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / LOCKED)
+   MarketShield – app.js (STABIL / FREEZE / TABELLEN-SAFE)
 ===================================================== */
 
 let currentEntryId = null;
@@ -32,110 +32,22 @@ function escapeHtml(s = "") {
 
 function normalizeText(text) {
   if (!text) return "";
-
   return String(text)
-    // harte Artefakte entfernen
     .replace(/\*\*/g, "")
     .replace(/##+/g, "")
     .replace(/__+/g, "")
     .replace(/~~+/g, "")
     .replace(/`+/g, "")
-    .replace(/:contentReference\[.*?\]/g, "")
-    .replace(/\{.*?\}/g, "")
-
-    // saubere Zeilenumbrüche
     .replace(/\\n/g, "\n")
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
-
-    // Listen lesbar machen
-    .replace(/^\s*-\s+/gm, "• ")
     .replace(/\n{3,}/g, "\n\n")
-
     .trim();
 }
-
 
 function shortText(t, max = 160) {
   t = normalizeText(t);
   return t.length > max ? t.slice(0, max) + " …" : t;
-}
-
-/* ================= LEGAL MINI LINK (LOCKED) ================= */
-function renderLegalMiniLink() {
-  return `
-    <div
-      style="
-        font-size:11px;
-        opacity:0.6;
-        margin:4px 0 8px;
-        cursor:pointer;
-        text-decoration:underline;
-      "
-      onclick="event.stopPropagation(); openLegalPopup();">
-      Rechtlicher Hinweis
-    </div>
-  `;
-}
-function renderMarkdownTables(text) {
-  const lines = text.split("\n");
-  let html = "";
-  let i = 0;
-
-  while (i < lines.length) {
-    // Tabellen-Header erkennen
-    if (
-      lines[i].includes("|") &&
-      i + 1 < lines.length &&
-      /^-{3,}$/.test(lines[i + 1].trim())
-    ) {
-      const header = lines[i]
-        .split("|")
-        .map(c => c.trim())
-        .filter(Boolean);
-
-      i += 2; // Header + Trennlinie
-
-      const rows = [];
-      while (i < lines.length && lines[i].includes("|")) {
-        rows.push(
-          lines[i]
-            .split("|")
-            .map(c => c.trim())
-            .filter(Boolean)
-        );
-        i++;
-      }
-
-      html += `
-        <table style="border-collapse:collapse;width:100%;margin:16px 0;">
-          <thead>
-            <tr>
-              ${header.map(h => `
-                <th style="text-align:left;padding:8px;border-bottom:2px solid #ccc;">
-                  ${escapeHtml(h)}
-                </th>`).join("")}
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(r => `
-              <tr>
-                ${r.map(c => `
-                  <td style="padding:8px;border-bottom:1px solid #eee;vertical-align:top;">
-                    ${escapeHtml(c)}
-                  </td>`).join("")}
-              </tr>`).join("")}
-          </tbody>
-        </table>
-      `;
-    } else {
-      // normaler Text
-      html += escapeHtml(lines[i]) + "<br>";
-      i++;
-    }
-  }
-
-  return html;
 }
 
 /* ================= SCORES ================= */
@@ -152,22 +64,14 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-
-  const maxWidth = 80;
-  const w = Math.round((n / 10) * maxWidth);
-
-  let color = "#2e7d32";       // grün
-  if (n >= 5) color = "#f9a825"; // gelb
-  if (n >= 8) color = "#c62828"; // rot
-
+  const w = Math.round((n / 10) * 80);
   return `
-    <div style="width:${maxWidth}px;height:8px;background:#e0e0e0;border-radius:6px;">
-      <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
+    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
+      <div style="width:${w}px;height:8px;background:#2e7d32;border-radius:6px;"></div>
     </div>`;
 }
 
-/* ================= SCOREBLOCK (FIXED) ================= */
-function renderScoreBlock(score, processing) {
+function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
@@ -175,35 +79,17 @@ function renderScoreBlock(score, processing) {
   return `
     <div style="margin:12px 0;">
       ${h ? `
-        <div style="
-          display:grid;
-          grid-template-columns:90px 1fr;
-          gap:8px;
-          align-items:center;
-          margin-bottom:${i ? 6 : 0}px;
-        ">
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
           <div>${h}</div>
-          <div style="font-size:13px;opacity:.85;">
-            Gesundheitsscore
-          </div>
-        </div>
-      ` : ""}
+          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
+        </div>` : ""}
 
       ${i ? `
-        <div style="
-          display:grid;
-          grid-template-columns:90px 1fr;
-          gap:8px;
-          align-items:center;
-        ">
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
           <div>${i}</div>
-          <div style="font-size:13px;opacity:.85;">
-            Industrie-Verarbeitungsgrad
-          </div>
-        </div>
-      ` : ""}
-    </div>
-  `;
+          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
+        </div>` : ""}
+    </div>`;
 }
 
 /* ================= LISTE ================= */
@@ -215,7 +101,9 @@ function renderList(data) {
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div>${escapeHtml(shortText(e.summary))}</div>
+      <div style="font-size:15px;line-height:1.4;white-space:pre-wrap;">
+        ${escapeHtml(shortText(e.summary))}
+      </div>
     </div>
   `).join("");
 }
@@ -231,35 +119,16 @@ async function loadEntry(id) {
 
   currentEntryId = id;
 
-  const isHouseholdHelp =
-    e.category === "Gesundheit" &&
-    e.type === "thema" &&
-    (!e.score || e.score <= 0) &&
-    (!e.processing_score || e.processing_score <= 0);
-
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
 
-    ${!isHouseholdHelp ? renderScoreBlock(e.score, e.processing_score) : ""}
-
-    <div style="line-height:1.7;font-size:16px;">
-      ${renderMarkdownTables(normalizeText(e.summary))}
-    </div>
+    ${renderScoreBlock(e.score, e.processing_score)}
 
     ${renderLegalMiniLink()}
 
-    ${isHouseholdHelp ? `
-      <div style="
-        margin-top:24px;
-        padding:12px;
-        border-left:4px solid #4caf50;
-        background:#f6fff6;
-        font-size:14px;
-      ">
-        Hinweis: Hausmittel beruhen auf traditioneller Erfahrung.
-        Sie ersetzen keine ärztliche Diagnose oder Behandlung.
-      </div>
-    ` : ""}
+    <div style="white-space:pre-wrap;line-height:1.7;font-size:16px;">
+      ${escapeHtml(normalizeText(e.summary))}
+    </div>
 
     <div id="entryActions"></div>
   `;
@@ -267,8 +136,7 @@ async function loadEntry(id) {
   renderEntryActions(e.title);
 }
 
-
-/* ================= SOCIAL (UNVERÄNDERT) ================= */
+/* ================= SOCIAL ================= */
 function renderEntryActions(title) {
   const box = $("entryActions");
   if (!box) return;
@@ -278,52 +146,78 @@ function renderEntryActions(title) {
   const encTitle = encodeURIComponent(title + " – MarketShield");
 
   box.innerHTML = `
-    <div style="margin-top:16px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
       <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
       <button onclick="window.print()">🖨️ Drucken</button>
       <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
       <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}','_blank')">X</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
       <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
     </div>`;
 }
 
 /* ================= SEARCH ================= */
 async function smartSearch(q) {
-  const enc = encodeURIComponent(q);
+  const term = q.trim();
+  if (term.length < 2) return [];
+  const enc = encodeURIComponent(term);
   return await supa(
     `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
   );
 }
 
-async function saveSearchQuery(q) {
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ query: q, url: location.href })
-    });
-  } catch {}
-}
-
 function initSearch() {
   const input = $("searchInput");
-  if (!input) return;
+  const box = $("results");
+  if (!input || !box) return;
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) return;
-
-    await saveSearchQuery(q);
+    if (q.length < 2) return box.innerHTML = "";
     renderList(await smartSearch(q));
   });
 }
 
+/* ================= KATEGORIEN ================= */
+async function loadCategories() {
+  const grid = document.querySelector(".category-grid");
+  if (!grid) return;
+
+  const data = await fetch("categories.json").then(r => r.json());
+  grid.innerHTML = "";
+
+  (data.categories || []).forEach(c => {
+    const b = document.createElement("button");
+    b.textContent = c.title;
+    b.onclick = () => loadCategory(c.title);
+    grid.appendChild(b);
+  });
+}
+
+async function loadCategory(cat) {
+  renderList(await supa(
+    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
+  ));
+}
+
+/* ================= NAV ================= */
+document.addEventListener("click", (e) => {
+  const c = e.target.closest(".entry-card");
+  if (!c) return;
+  history.pushState(null, "", "?id=" + c.dataset.id);
+  loadEntry(c.dataset.id);
+});
+
 /* ================= LEGAL POPUP ================= */
+function renderLegalMiniLink() {
+  return `
+    <div
+      style="font-size:11px;opacity:.6;margin:4px 0 8px;cursor:pointer;text-decoration:underline;"
+      onclick="event.stopPropagation(); openLegalPopup();">
+      Rechtlicher Hinweis
+    </div>`;
+}
+
 function ensureLegalPopup() {
   if (document.getElementById("legalPopup")) return;
 
@@ -333,98 +227,27 @@ function ensureLegalPopup() {
   d.innerHTML = `
     <div style="background:#fff;margin:10% auto;padding:16px;max-width:420px;">
       <b>Rechtlicher Hinweis</b><br><br>
-      MarketShield kann rechtlich nicht alle Informationen vollständig darstellen.
-      Inhalte dienen der sachlichen Einordnung und ersetzen keine Beratung.
+      Rechtliche Vorgaben verbieten es, bestimmte Sachverhalte offen zu benennen.
+      Die Darstellung ist daher bewusst eingeschränkt.
       <br><br>
       <button onclick="closeLegalPopup()">Schließen</button>
     </div>`;
   document.body.appendChild(d);
 }
-function openLegalPopup(){ensureLegalPopup();$("legalPopup").style.display="block";}
-function closeLegalPopup(){$("legalPopup").style.display="none";}
 
-/* ================= REPORT (BESTEHENDER BUTTON) ================= */
-function findReportButton() {
-  return (
-    document.getElementById("reportBtn") ||
-    document.querySelector("[data-action='report']") ||
-    document.querySelector(".report-btn")
-  );
+function openLegalPopup() {
+  ensureLegalPopup();
+  $("legalPopup").style.display = "block";
 }
 
-function bindReportButton() {
-  const btn = findReportButton();
-  if (!btn || btn.dataset.bound) return;
-  btn.dataset.bound = "1";
-
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    openReportPopup();
-  });
+function closeLegalPopup() {
+  $("legalPopup").style.display = "none";
 }
-
-function ensureReportPopup() {
-  if (document.getElementById("reportPopup")) return;
-
-  const d = document.createElement("div");
-  d.id = "reportPopup";
-  d.style.cssText = "display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;";
-  d.innerHTML = `
-    <div style="background:#fff;margin:10% auto;padding:16px;max-width:420px;">
-      <b>Fehler melden</b><br><br>
-      <textarea id="reportText" style="width:100%;height:80px;"></textarea><br><br>
-      <button onclick="submitReport()">Senden</button>
-      <button onclick="closeReportPopup()">Abbrechen</button>
-    </div>`;
-  document.body.appendChild(d);
-}
-function openReportPopup(){ensureReportPopup();$("reportPopup").style.display="block";}
-function closeReportPopup(){$("reportPopup").style.display="none";}
-
-async function submitReport() {
-  const text = $("reportText").value.trim();
-  if (!text) return alert("Bitte Text eingeben");
-
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-    method:"POST",
-    headers:{
-      apikey:SUPABASE_KEY,
-      Authorization:`Bearer ${SUPABASE_KEY}`,
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({ entry_id: currentEntryId, text, url: location.href })
-  });
-
-  if (!r.ok) {
-    const err = await r.text();
-    console.error("REPORT FAILED:", err);
-    alert("Report konnte nicht gespeichert werden.");
-    return;
-  }
-
-  closeReportPopup();
-  alert("Danke für den Hinweis");
-}
-
-/* ================= NAV ================= */
-document.addEventListener("click", (e) => {
-  if (
-    e.target.closest("#legalPopup") ||
-    e.target.closest("#reportPopup") ||
-    e.target.closest("#entryActions")
-  ) return;
-
-  const c = e.target.closest(".entry-card");
-  if (!c) return;
-  history.pushState(null, "", "?id=" + c.dataset.id);
-  loadEntry(c.dataset.id);
-});
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
+  loadCategories();
   initSearch();
-  bindReportButton();
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
