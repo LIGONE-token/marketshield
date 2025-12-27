@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / REPARIERT / JS-FIX)
+   MarketShield – app.js (STABIL / TABELLEN ENDLICH RICHTIG)
 ===================================================== */
 
 let currentEntryId = null;
@@ -20,20 +20,6 @@ async function supa(query) {
   return JSON.parse(t || "[]");
 }
 
-async function supaPost(table, payload) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify(payload)
-  });
-  if (!r.ok) throw new Error(await r.text());
-}
-
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
 
@@ -44,8 +30,7 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-function normalizeText(text) {
-  if (!text) return "";
+function cleanText(text = "") {
   return String(text)
     .replace(/\*\*/g, "")
     .replace(/##+/g, "")
@@ -58,92 +43,68 @@ function normalizeText(text) {
     .trim();
 }
 
-/* ================= TABELLEN (KORREKT) ================= */
+/* ================= TABELLEN – ENDGÜLTIG KORREKT ================= */
 function renderSummary(text) {
-  const lines = normalizeText(text).split("\n");
+  const lines = cleanText(text).split("\n");
   let html = "";
   let i = 0;
 
   while (i < lines.length) {
-    const line = lines[i].trim();
+    const line = lines[i];
 
-    if (line.includes("|") && lines[i + 1] && /^[-\s|]+$/.test(lines[i + 1])) {
-      const rows = [];
-      rows.push(lines[i]);
-      i += 2;
+    // 👉 echte Markdown-Tabelle erkennen
+    if (
+      line.includes("|") &&
+      lines[i + 1] &&
+      /^[-\s|]+$/.test(lines[i + 1])
+    ) {
+      const tableLines = [];
+      tableLines.push(line); // Header
+      i += 2;                // Separator überspringen
 
       while (i < lines.length && lines[i].includes("|")) {
-        rows.push(lines[i]);
+        tableLines.push(lines[i]);
         i++;
       }
 
-      const cells = rows.map(r =>
-        r.split("|").map(c => c.trim()).filter(Boolean)
+      const rows = tableLines.map(l =>
+        l.split("|").map(c => c.trim()).filter(Boolean)
       );
 
-      if (cells.length >= 2) {
-        const head = cells.shift();
+      if (rows.length >= 2) {
+        const head = rows.shift();
+        const cols = head.length;
+
+        const norm = r => {
+          const out = r.slice(0, cols);
+          while (out.length < cols) out.push("");
+          return out;
+        };
+
         html += `
           <table class="ms-table">
-            <thead><tr>${head.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
+            <thead>
+              <tr>${norm(head).map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+            </thead>
             <tbody>
-              ${cells.map(r =>
-                `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
+              ${rows.map(r =>
+                `<tr>${norm(r).map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
               ).join("")}
             </tbody>
-          </table>`;
+          </table>
+        `;
       }
       continue;
     }
 
-    if (line) {
-      html += `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(line)}</div>`;
+    // 👉 normaler Text
+    if (line.trim()) {
+      html += `<p>${escapeHtml(line)}</p>`;
     }
     i++;
   }
+
   return html;
-}
-
-/* ================= SCORES (UNVERÄNDERT) ================= */
-function renderHealth(score) {
-  const n = Number(score);
-  if (!n) return "";
-  if (n >= 80) return "💚💚💚";
-  if (n >= 60) return "💚💚";
-  if (n >= 40) return "💚";
-  if (n >= 20) return "💛";
-  return "⚠️❗⚠️";
-}
-
-function renderIndustry(score) {
-  const n = Math.min(10, Math.max(0, Number(score)));
-  if (!n) return "";
-  const w = Math.round((n / 10) * 80);
-  return `
-    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
-      <div style="width:${w}px;height:8px;background:#2e7d32;border-radius:6px;"></div>
-    </div>`;
-}
-
-function renderScoreBlock(score, processing) {
-  const h = renderHealth(score);
-  const i = renderIndustry(processing);
-  if (!h && !i) return "";
-  return `
-    <div style="margin:12px 0;">
-      ${h ? `<div style="display:grid;grid-template-columns:90px 1fr;"><div>${h}</div><div>Gesundheit</div></div>` : ""}
-      ${i ? `<div style="display:grid;grid-template-columns:90px 1fr;"><div>${i}</div><div>Industrie</div></div>` : ""}
-    </div>`;
-}
-
-/* ================= LISTE ================= */
-function renderList(data) {
-  $("results").innerHTML = (data || []).map(e => `
-    <div class="entry-card" data-id="${e.id}">
-      <strong>${escapeHtml(e.title)}</strong>
-      ${renderScoreBlock(e.score, e.processing_score)}
-    </div>
-  `).join("");
 }
 
 /* ================= DETAIL ================= */
@@ -151,84 +112,23 @@ async function loadEntry(id) {
   const e = (await supa(`entries?select=*&id=eq.${id}`))[0];
   if (!e) return;
 
-  currentEntryId = id;
-  $("backHome").style.display = "block";
-
   $("results").innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h2>${escapeHtml(e.title)}</h2>
-      <a href="#" id="legalLink" style="font-size:12px;opacity:.75;">
-        Rechtlicher Hinweis
-      </a>
+    <h2>${escapeHtml(e.title)}</h2>
+    <div class="entry-content">
+      ${renderSummary(e.summary)}
     </div>
-
-    <div id="legalPopup"
-         style="display:none;margin:6px 0 12px 0;
-                padding:8px 10px;
-                border:1px solid #ddd;
-                border-radius:8px;
-                background:#fafafa;
-                font-size:12px;
-                line-height:1.5;">
-      MarketShield dient der Information und Orientierung.
-      Inhalte stellen keine Tatsachenbehauptung,
-      Rechts- oder Gesundheitsberatung dar.
-      Angaben ohne Gewähr.
-    </div>
-
-    ${renderScoreBlock(e.score, e.processing_score)}
-    ${renderSummary(e.summary)}
   `;
-
-  // 🔗 Rechtlicher Hinweis → Popup toggeln
-  const link = $("legalLink");
-  const popup = $("legalPopup");
-  if (link && popup) {
-    link.onclick = (ev) => {
-      ev.preventDefault();
-      popup.style.display =
-        popup.style.display === "none" ? "block" : "none";
-    };
-  }
 }
 
-
-/* ================= ZUR STARTSEITE (JETZT 100 %) ================= */
-function goHome() {
-  currentEntryId = null;
-  history.pushState(null, "", location.pathname);
-  $("results").innerHTML = "";
-  $("backHome").style.display = "none";
-}
-
-/* ================= REPORT (JETZT STABIL) ================= */
-function initReport() {
-  const btn = $("reportBtn");
-  const modal = $("reportModal");
-  const close = $("closeReportModal");
-  const form = $("reportForm");
-
-  btn.onclick = () => modal.style.display = "flex";
-  close.onclick = () => modal.style.display = "none";
-
-  form.onsubmit = async (e) => {
-    e.preventDefault();
-    const text = form.description.value.trim();
-    if (!text) return;
-
-    await supaPost("reports", {
-      entry_id: currentEntryId || null,
-      description: text,
-      created_at: new Date().toISOString()
-    });
-
-    form.reset();
-    modal.style.display = "none";
-  };
-}
+/* ================= NAV ================= */
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
+  loadEntry(card.dataset.id);
+});
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  $("backHome").onclick = goHome;
-  initReport();
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) loadEntry(id);
 });
