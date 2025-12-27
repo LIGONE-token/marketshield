@@ -155,11 +155,43 @@ async function loadEntry(id) {
   $("backHome").style.display = "block";
 
   $("results").innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2>${escapeHtml(e.title)}</h2>
+      <a href="#" id="legalLink" style="font-size:12px;opacity:.75;">
+        Rechtlicher Hinweis
+      </a>
+    </div>
+
+    <div id="legalPopup"
+         style="display:none;margin:6px 0 12px 0;
+                padding:8px 10px;
+                border:1px solid #ddd;
+                border-radius:8px;
+                background:#fafafa;
+                font-size:12px;
+                line-height:1.5;">
+      MarketShield dient der Information und Orientierung.
+      Inhalte stellen keine Tatsachenbehauptung,
+      Rechts- oder Gesundheitsberatung dar.
+      Angaben ohne Gewähr.
+    </div>
+
     ${renderScoreBlock(e.score, e.processing_score)}
     ${renderSummary(e.summary)}
   `;
+
+  // 🔗 Rechtlicher Hinweis → Popup toggeln
+  const link = $("legalLink");
+  const popup = $("legalPopup");
+  if (link && popup) {
+    link.onclick = (ev) => {
+      ev.preventDefault();
+      popup.style.display =
+        popup.style.display === "none" ? "block" : "none";
+    };
+  }
 }
+
 
 /* ================= ZUR STARTSEITE (JETZT 100 %) ================= */
 function goHome() {
