@@ -126,9 +126,10 @@ async function loadEntry(id) {
 
     ${renderLegalMiniLink()}
 
-    <div style="white-space:pre-wrap;line-height:1.7;font-size:16px;">
-      ${escapeHtml(normalizeText(e.summary))}
-    </div>
+    <div style="line-height:1.7;font-size:16px;">
+  ${renderSummaryWithTables(normalizeText(e.summary))}
+</div>
+
 
     <div id="entryActions"></div>
   `;
