@@ -124,6 +124,19 @@ async function loadEntry(id) {
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
 
+    <!-- LEGAL MINI LINK (wie gewünscht: kleiner Link zum Popup) -->
+    <div
+      style="
+        font-size:11px;
+        opacity:0.6;
+        margin:4px 0 8px;
+        cursor:pointer;
+        text-decoration:underline;
+      "
+      onclick="event.stopPropagation(); openLegalPopup()">
+      Rechtlicher Hinweis
+    </div>
+
     <h3>Zusammenfassung</h3>
     <div style="white-space:pre-wrap;line-height:1.6;">
       ${escapeHtml(normalizeText(e.summary))}
@@ -133,9 +146,12 @@ async function loadEntry(id) {
   `;
 
   renderEntryActions(e.title);
+
+  // ✅ wichtig: nach Render der Detailansicht nochmal Report-Binding versuchen
+  bindReportButton();
 }
 
-/* ================= SOCIAL ================= */
+/* ================= SOCIAL (UNVERÄNDERT!) ================= */
 function renderEntryActions(title) {
   const box = $("entryActions");
   if (!box) return;
@@ -168,6 +184,30 @@ async function smartSearch(q) {
   );
 }
 
+/* ✅ Suchanfragen in search_queue speichern (wie früher) */
+async function saveSearchQuery(q) {
+  const term = (q || "").trim();
+  if (term.length < 2) return;
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        query: term,
+        url: location.href
+      })
+    });
+  } catch (e) {
+    // niemals UI kaputt machen, nur still loggen
+    console.warn("search_queue insert failed", e);
+  }
+}
 
 function initSearch() {
   const input = $("searchInput");
@@ -177,6 +217,10 @@ function initSearch() {
   input.addEventListener("input", async () => {
     const q = input.value.trim();
     if (q.length < 2) return box.innerHTML = "";
+
+    // ✅ ZWINGEND: Suchanfrage speichern
+    saveSearchQuery(q);
+
     renderList(await smartSearch(q));
   });
 }
@@ -203,8 +247,198 @@ async function loadCategory(cat) {
   ));
 }
 
+/* ================= LEGAL POPUP (LOCKED) ================= */
+function ensureLegalPopup() {
+  if (document.getElementById("legalPopup")) return;
+
+  const div = document.createElement("div");
+  div.id = "legalPopup";
+  div.style.cssText = `
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    z-index:99999;
+    align-items:center;
+    justify-content:center;
+  `;
+
+  div.innerHTML = `
+    <div style="
+      background:#fff;
+      max-width:420px;
+      padding:16px 18px;
+      border-radius:12px;
+      font-size:14px;
+      line-height:1.45;
+    ">
+      <div style="font-weight:900;margin-bottom:6px;">
+        Rechtlicher Hinweis
+      </div>
+
+      <div style="margin-bottom:12px;">
+        MarketShield kann rechtlich nicht alle Informationen vollständig darstellen.
+        Inhalte unterliegen gesetzlichen, regulatorischen und haftungsrechtlichen Grenzen
+        sowie unvollständiger öffentlicher Informationslage.
+        Die Informationen dienen der sachlichen Einordnung und ersetzen keine medizinische
+        oder rechtliche Beratung.
+      </div>
+
+      <button onclick="closeLegalPopup()">Schließen</button>
+    </div>
+  `;
+
+  document.body.appendChild(div);
+}
+
+function openLegalPopup() {
+  ensureLegalPopup();
+  document.getElementById("legalPopup").style.display = "flex";
+}
+
+function closeLegalPopup() {
+  const p = document.getElementById("legalPopup");
+  if (p) p.style.display = "none";
+}
+
+/* ================= REPORT (LOCKED) =================
+   WICHTIG: Der Report-Button EXISTIERT bereits im HTML.
+   Wir ersetzen ihn nicht. Wir machen ihn nur klickbar und senden an Supabase.
+===================================================== */
+
+function findReportButton() {
+  // Unterstützt mehrere typische Varianten, ohne HTML ändern zu müssen:
+  return (
+    document.getElementById("reportBtn") ||
+    document.getElementById("reportButton") ||
+    document.querySelector("[data-action='report']") ||
+    document.querySelector(".report-btn") ||
+    document.querySelector("#report") ||
+    null
+  );
+}
+
+function bindReportButton() {
+  const btn = findReportButton();
+  if (!btn) return;
+
+  // Mehrfach-Bind verhindern
+  if (btn.dataset.bound === "1") return;
+  btn.dataset.bound = "1";
+
+  btn.addEventListener("click", (e) => {
+    // ✅ sonst frisst dein globaler entry-card click-handler den Klick
+    e.preventDefault();
+    e.stopPropagation();
+    openReportPopup();
+  });
+}
+
+function ensureReportPopup() {
+  if (document.getElementById("reportPopup")) return;
+
+  const div = document.createElement("div");
+  div.id = "reportPopup";
+  div.style.cssText = `
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    z-index:99999;
+    align-items:center;
+    justify-content:center;
+  `;
+
+  div.innerHTML = `
+    <div style="
+      background:#fff;
+      max-width:420px;
+      padding:16px 18px;
+      border-radius:12px;
+      font-size:14px;
+      line-height:1.45;
+    ">
+      <div style="font-weight:900;margin-bottom:8px;">
+        Fehler melden
+      </div>
+
+      <textarea id="reportText"
+        style="width:100%;height:90px;margin-bottom:10px;"
+        placeholder="Was ist falsch oder problematisch?"></textarea>
+
+      <div style="display:flex;gap:8px;">
+        <button onclick="submitReport()">Absenden</button>
+        <button onclick="closeReportPopup()">Abbrechen</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(div);
+}
+
+function openReportPopup() {
+  ensureReportPopup();
+  document.getElementById("reportPopup").style.display = "flex";
+}
+
+function closeReportPopup() {
+  const p = document.getElementById("reportPopup");
+  if (p) p.style.display = "none";
+}
+
+async function submitReport() {
+  const text = (document.getElementById("reportText")?.value || "").trim();
+  if (!text) return alert("Bitte kurz beschreiben.");
+
+  try {
+    const payload = {
+      entry_id: currentEntryId || null,
+      text: text,
+      url: location.href
+    };
+
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!r.ok) {
+      const err = await r.text();
+      throw new Error(err);
+    }
+
+    closeReportPopup();
+    alert("Danke! Hinweis wurde übermittelt.");
+  } catch (e) {
+    console.error("REPORT ERROR:", e);
+    alert("Fehler beim Senden. Bitte später erneut versuchen.");
+  }
+}
+
 /* ================= NAV ================= */
 document.addEventListener("click", (e) => {
+  // ✅ Klicks auf Popups/Buttons dürfen NICHT zur Card-Navigation führen
+  if (
+    e.target.closest("#legalPopup") ||
+    e.target.closest("#reportPopup") ||
+    e.target.closest("#entryActions") // Social Buttons sollen nicht Navigation triggern
+  ) return;
+
+  // ✅ Report-Button (egal welche Variante) niemals durch Navigation kaputt machen
+  if (
+    e.target.closest("#reportBtn") ||
+    e.target.closest("#reportButton") ||
+    e.target.closest("[data-action='report']") ||
+    e.target.closest(".report-btn") ||
+    e.target.closest("#report")
+  ) return;
+
   const c = e.target.closest(".entry-card");
   if (!c) return;
   history.pushState(null, "", "?id=" + c.dataset.id);
@@ -215,6 +449,9 @@ document.addEventListener("click", (e) => {
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
   initSearch();
+
+  // ✅ Report-Button binding (falls er auf Startseite schon existiert)
+  bindReportButton();
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
