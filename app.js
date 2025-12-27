@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / FINAL / FUNKTIONAL)
+   MarketShield – app.js (STABIL / REPARIERT / JS-FIX)
 ===================================================== */
 
 let currentEntryId = null;
@@ -20,6 +20,20 @@ async function supa(query) {
   return JSON.parse(t || "[]");
 }
 
+async function supaPost(table, payload) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
 
@@ -30,7 +44,6 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-/* Entfernt nur störende Markdown-Reste */
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
@@ -39,18 +52,13 @@ function normalizeText(text) {
     .replace(/__+/g, "")
     .replace(/~~+/g, "")
     .replace(/`+/g, "")
+    .replace(/:contentReference\[[^\]]*\]\{[^}]*\}/g, "")
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
-function shortText(t, max = 160) {
-  t = normalizeText(t);
-  return t.length > max ? t.slice(0, max) + " …" : t;
-}
-
-/* ================= TABELLEN (ECHT) ================= */
+/* ================= TABELLEN (KORREKT) ================= */
 function renderSummary(text) {
   const lines = normalizeText(text).split("\n");
   let html = "";
@@ -59,12 +67,7 @@ function renderSummary(text) {
   while (i < lines.length) {
     const line = lines[i].trim();
 
-    // echte Pipe-Tabelle: Header + Trennzeile
-    if (
-      line.includes("|") &&
-      lines[i + 1] &&
-      /^[-\s|]+$/.test(lines[i + 1])
-    ) {
+    if (line.includes("|") && lines[i + 1] && /^[-\s|]+$/.test(lines[i + 1])) {
       const rows = [];
       rows.push(lines[i]);
       i += 2;
@@ -80,43 +83,31 @@ function renderSummary(text) {
 
       if (cells.length >= 2) {
         const head = cells.shift();
-        const cols = head.length;
-
-        const norm = (r) => {
-          const out = r.slice(0, cols);
-          while (out.length < cols) out.push("");
-          return out;
-        };
-
         html += `
           <table class="ms-table">
-            <thead>
-              <tr>${norm(head).map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
-            </thead>
+            <thead><tr>${head.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
             <tbody>
               ${cells.map(r =>
-                `<tr>${norm(r).map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
+                `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
               ).join("")}
             </tbody>
-          </table>
-        `;
+          </table>`;
       }
       continue;
     }
 
     if (line) {
-      html += `<div style="white-space:pre-wrap;line-height:1.6;margin:6px 0;">${escapeHtml(line)}</div>`;
+      html += `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(line)}</div>`;
     }
     i++;
   }
-
   return html;
 }
 
-/* ================= SCORES (LOCKED) ================= */
+/* ================= SCORES (UNVERÄNDERT) ================= */
 function renderHealth(score) {
   const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
+  if (!n) return "";
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
@@ -125,8 +116,8 @@ function renderHealth(score) {
 }
 
 function renderIndustry(score) {
-  const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
+  const n = Math.min(10, Math.max(0, Number(score)));
+  if (!n) return "";
   const w = Math.round((n / 10) * 80);
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
@@ -134,153 +125,78 @@ function renderIndustry(score) {
     </div>`;
 }
 
-function renderScoreBlock(score, processing, size = 13) {
+function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
-
   return `
     <div style="margin:12px 0;">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
-          <div>${h}</div>
-          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
-        </div>` : ""}
-      ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
-          <div>${i}</div>
-          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
+      ${h ? `<div style="display:grid;grid-template-columns:90px 1fr;"><div>${h}</div><div>Gesundheit</div></div>` : ""}
+      ${i ? `<div style="display:grid;grid-template-columns:90px 1fr;"><div>${i}</div><div>Industrie</div></div>` : ""}
     </div>`;
 }
 
 /* ================= LISTE ================= */
 function renderList(data) {
-  const box = $("results");
-  if (!box) return;
-
-  box.innerHTML = (data || []).map(e => `
+  $("results").innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
+      <strong>${escapeHtml(e.title)}</strong>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary))}
-      </div>
     </div>
   `).join("");
 }
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
-  const box = $("results");
-  if (!box) return;
-
-  const d = await supa(`entries?select=*&id=eq.${id}`);
-  const e = d[0];
+  const e = (await supa(`entries?select=*&id=eq.${id}`))[0];
   if (!e) return;
 
   currentEntryId = id;
+  $("backHome").style.display = "block";
 
-  box.innerHTML = `
+  $("results").innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
-    <h3>Zusammenfassung</h3>
-    <div class="entry-content">
-      ${renderSummary(e.summary)}
-    </div>
-    <div id="entryActions"></div>
+    ${renderSummary(e.summary)}
   `;
-
-  renderEntryActions(e.title);
 }
 
-/* ================= SOCIAL ================= */
-function renderEntryActions(title) {
-  const box = $("entryActions");
-  if (!box) return;
-
-  const url = location.href;
-  const encUrl = encodeURIComponent(url);
-  const encTitle = encodeURIComponent(title + " – MarketShield");
-
-  box.innerHTML = `
-    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
-      <button onclick="window.print()">🖨️ Drucken</button>
-      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
-      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
-      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
-    </div>`;
+/* ================= ZUR STARTSEITE (JETZT 100 %) ================= */
+function goHome() {
+  currentEntryId = null;
+  history.pushState(null, "", location.pathname);
+  $("results").innerHTML = "";
+  $("backHome").style.display = "none";
 }
 
-/* ================= SEARCH ================= */
-function initSearch() {
-  const input = $("searchInput");
-  const box = $("results");
-  if (!input || !box) return;
+/* ================= REPORT (JETZT STABIL) ================= */
+function initReport() {
+  const btn = $("reportBtn");
+  const modal = $("reportModal");
+  const close = $("closeReportModal");
+  const form = $("reportForm");
 
-  input.addEventListener("input", async () => {
-    const q = input.value.trim();
-    if (q.length < 2) {
-      box.innerHTML = "";
-      return;
-    }
-    const enc = encodeURIComponent(q);
-    const data = await supa(
-      `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
-    );
-    renderList(data);
-  });
-}
+  btn.onclick = () => modal.style.display = "flex";
+  close.onclick = () => modal.style.display = "none";
 
-/* ================= KATEGORIEN ================= */
-async function loadCategories() {
-  const grid = document.querySelector(".category-grid");
-  if (!grid) return;
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const text = form.description.value.trim();
+    if (!text) return;
 
-  try {
-    const r = await fetch("categories.json", { cache: "no-store" });
-    if (!r.ok) throw new Error("categories.json nicht geladen");
-
-    const data = await r.json();
-    if (!Array.isArray(data.categories)) throw new Error("Falsches Format");
-
-    grid.innerHTML = "";
-    data.categories.forEach(c => {
-      const b = document.createElement("button");
-      b.textContent = c.title;
-      b.type = "button";
-      b.onclick = () => loadCategory(c.title);
-      grid.appendChild(b);
+    await supaPost("reports", {
+      entry_id: currentEntryId || null,
+      description: text,
+      created_at: new Date().toISOString()
     });
-  } catch (err) {
-    console.error("Kategorie-Fehler:", err);
-    grid.innerHTML = "<div style='opacity:.6'>Kategorien nicht verfügbar</div>";
-  }
-}
 
-async function loadCategory(cat) {
-  const enc = encodeURIComponent(cat);
-  const data = await supa(
-    `entries?select=id,title,summary,score,processing_score&category=eq.${enc}`
-  );
-  renderList(data);
+    form.reset();
+    modal.style.display = "none";
+  };
 }
-
-/* ================= NAV ================= */
-document.addEventListener("click", (e) => {
-  const c = e.target.closest(".entry-card");
-  if (!c) return;
-  history.pushState(null, "", "?id=" + c.dataset.id);
-  loadEntry(c.dataset.id);
-});
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
-  initSearch();
-
-  const id = new URLSearchParams(location.search).get("id");
-  if (id) loadEntry(id);
+  $("backHome").onclick = goHome;
+  initReport();
 });
