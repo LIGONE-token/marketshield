@@ -47,7 +47,7 @@ function normalizeText(text) {
 }
 
 function shortText(t, max = 160) {
-  t = normalizeText(t);
+  t = normalizeText(t).replace(/\s+/g, " ").trim();
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
@@ -101,17 +101,19 @@ function renderScoreBlock(score, processing, size = 13) {
     </div>`;
 }
 
-/* ================= LISTE ================= */
+/* ================= LISTE (Kurzansicht = 1 Zeile) ================= */
 function renderList(data) {
   const box = $("results");
   if (!box) return;
 
   box.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
+      <div style="font-size:20px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        ${escapeHtml(e.title || "")}
+      </div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary))}
+      <div style="font-size:15px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        ${escapeHtml(shortText(e.summary || "", 220))}
       </div>
     </div>
   `).join("");
@@ -163,14 +165,15 @@ function renderEntryActions(title) {
     </div>`;
 }
 
-/* ================= SEARCH ================= */
+/* ================= SEARCH (korrekt: Titel ODER Summary) ================= */
 async function smartSearch(q) {
   const term = q.trim();
   if (term.length < 2) return [];
 
   const enc = encodeURIComponent(term);
+
   return await supa(
-    `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
+    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)&limit=60`
   );
 }
 
