@@ -1,6 +1,6 @@
 /* =====================================================
    MarketShield – app.js
-   FINAL / FUNKTIONSKOMPLETT / STABIL
+   FINAL / KORREKT / FUNKTIONSVOLLSTÄNDIG
 ===================================================== */
 
 let currentEntryId = null;
@@ -26,6 +26,7 @@ async function supa(query, opts = {}) {
 
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
+const exists = (id) => document.getElementById(id) !== null;
 
 function escapeHtml(s = "") {
   return String(s)
@@ -48,8 +49,9 @@ function normalizeText(text) {
     .trim();
 }
 
-/* ================= TABELLEN (ZWINGEND) ================= */
+/* ================= TABELLEN (ZWINGEND ROBUST) ================= */
 function renderSummaryWithTables(text) {
+  if (!text) return "";
   const lines = normalizeText(text).split("\n");
   let html = "";
   let i = 0;
@@ -106,7 +108,7 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-  const w = Math.round((n / 10) * 80);
+  const w = Math.max(0, Math.min(80, Math.round((n / 10) * 80)));
   let color = "#2e7d32";
   if (n >= 7) color = "#f9a825";
   if (n >= 9) color = "#c62828";
@@ -123,18 +125,25 @@ function renderScoreBlock(score, processing) {
   return `
     <div style="margin:12px 0;display:flex;flex-direction:column;gap:6px;font-size:14px;">
       ${h ? `<div style="display:flex;gap:10px;align-items:center;">
-        <div style="min-width:80px;">${h}</div>
-        <div>Gesundheitsscore</div>
+        <div style="min-width:80px;">${h}</div><div>Gesundheitsscore</div>
       </div>` : ""}
       ${i ? `<div style="display:flex;gap:10px;align-items:center;">
-        <div style="min-width:80px;">${i}</div>
-        <div>Industrie-Verarbeitungsgrad</div>
+        <div style="min-width:80px;">${i}</div><div>Industrie-Verarbeitungsgrad</div>
       </div>` : ""}
+    </div>`;
+}
+
+/* ================= HINWEIS (UNTER TITEL) ================= */
+function renderTruthHint() {
+  return `
+    <div style="font-size:12px;opacity:.7;margin:4px 0 10px 0;">
+      Die WAHRHEIT ist bekannt, darf aber aus rechtlichen Gründen nicht vollständig gezeigt werden.
     </div>`;
 }
 
 /* ================= LISTE ================= */
 function renderList(data) {
+  if (!exists("results")) return;
   $("results").innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}" style="cursor:pointer;margin-bottom:18px;">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
@@ -149,13 +158,15 @@ function renderList(data) {
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
   const d = await supa(`entries?select=*&id=eq.${id}`);
-  const e = d[0];
-  if (!e) return;
+  const e = d && d[0];
+  if (!e || !exists("results")) return;
+
   currentEntryId = id;
 
   $("results").innerHTML = `
     <button onclick="goHome()">⬅️ Zurück zur Startseite</button>
     <h2>${escapeHtml(e.title)}</h2>
+    ${renderTruthHint()}
     ${renderScoreBlock(e.score, e.processing_score)}
     <div style="font-size:16px;line-height:1.7;">
       ${renderSummaryWithTables(e.summary)}
@@ -168,6 +179,7 @@ async function loadEntry(id) {
 
 /* ================= ACTIONS ================= */
 function renderEntryActions(title) {
+  if (!exists("entryActions")) return;
   const url = encodeURIComponent(location.href);
   const t = encodeURIComponent(title);
 
@@ -193,31 +205,32 @@ function share(type, title, url) {
 
 async function sendReport() {
   if (!currentEntryId) return;
-  await supa("reports", {
-    method: "POST",
-    body: { entry_id: currentEntryId }
-  });
-  alert("Report gespeichert. Danke.");
+  try {
+    await supa("reports", { method: "POST", body: { entry_id: currentEntryId } });
+    alert("Report gespeichert.");
+  } catch (e) {
+    alert("Report konnte nicht gespeichert werden.");
+  }
 }
 
 /* ================= SUCHE ================= */
-const searchInput = $("searchInput");
-if (searchInput) {
-  searchInput.addEventListener("input", async () => {
-    const q = searchInput.value.trim();
+document.addEventListener("DOMContentLoaded", () => {
+  if (!exists("searchInput")) return;
+  $("searchInput").addEventListener("input", async () => {
+    const q = $("searchInput").value.trim();
     if (q.length < 2) return;
-
-    await supa("search_queue", {
-      method: "POST",
-      body: { query: q }
-    });
 
     const data = await supa(
       `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${q}%25,summary.ilike.%25${q}%25)`
     );
     renderList(data);
+
+    // Logging darf fehlschlagen
+    try {
+      await supa("search_queue", { method: "POST", body: { query: q } });
+    } catch (e) {}
   });
-}
+});
 
 /* ================= NAV ================= */
 function goHome() {
