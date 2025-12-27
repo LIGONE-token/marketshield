@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / REPARIERT)
+   MarketShield – app.js (FINAL / STABIL / LOCKED)
 ===================================================== */
 
 let currentEntryId = null;
@@ -30,7 +30,6 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-/* Textbereinigung */
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
@@ -40,8 +39,7 @@ function normalizeText(text) {
     .replace(/~~+/g, "")
     .replace(/`+/g, "")
     .replace(/\\n/g, "\n")
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
+    .replace(/\r/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -51,7 +49,24 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= SCORES (LOCKED) ================= */
+/* ================= LEGAL MINI LINK (LOCKED) ================= */
+function renderLegalMiniLink() {
+  return `
+    <div
+      style="
+        font-size:11px;
+        opacity:0.6;
+        margin:4px 0 8px;
+        cursor:pointer;
+        text-decoration:underline;
+      "
+      onclick="event.stopPropagation(); openLegalPopup();">
+      Rechtlicher Hinweis
+    </div>
+  `;
+}
+
+/* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -72,24 +87,17 @@ function renderIndustry(score) {
     </div>`;
 }
 
-function renderScoreBlock(score, processing, size = 13) {
+function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
 
   return `
     <div style="margin:12px 0;">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
-          <div>${h}</div>
-          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
-        </div>` : ""}
-
-      ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
-          <div>${i}</div>
-          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
+      ${h ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
+        <div>${h}</div><div>Gesundheitsscore</div></div>` : ""}
+      ${i ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
+        <div>${i}</div><div>Industrie-Verarbeitungsgrad</div></div>` : ""}
     </div>`;
 }
 
@@ -102,9 +110,7 @@ function renderList(data) {
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary))}
-      </div>
+      <div>${escapeHtml(shortText(e.summary))}</div>
     </div>
   `).join("");
 }
@@ -123,21 +129,8 @@ async function loadEntry(id) {
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
+    ${renderLegalMiniLink()}
 
-    <!-- LEGAL MINI LINK (wie gewünscht: kleiner Link zum Popup) -->
-    <div
-      style="
-        font-size:11px;
-        opacity:0.6;
-        margin:4px 0 8px;
-        cursor:pointer;
-        text-decoration:underline;
-      "
-      onclick="event.stopPropagation(); openLegalPopup()">
-      Rechtlicher Hinweis
-    </div>
-
-    <h3>Zusammenfassung</h3>
     <div style="white-space:pre-wrap;line-height:1.6;">
       ${escapeHtml(normalizeText(e.summary))}
     </div>
@@ -146,12 +139,10 @@ async function loadEntry(id) {
   `;
 
   renderEntryActions(e.title);
-
-  // ✅ wichtig: nach Render der Detailansicht nochmal Report-Binding versuchen
-  bindReportButton();
+  bindReportButton(); // bestehender Button wird hier nur angebunden
 }
 
-/* ================= SOCIAL (UNVERÄNDERT!) ================= */
+/* ================= SOCIAL (UNVERÄNDERT) ================= */
 function renderEntryActions(title) {
   const box = $("entryActions");
   if (!box) return;
@@ -161,7 +152,7 @@ function renderEntryActions(title) {
   const encTitle = encodeURIComponent(title + " – MarketShield");
 
   box.innerHTML = `
-    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+    <div style="margin-top:16px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
       <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
       <button onclick="window.print()">🖨️ Drucken</button>
       <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
@@ -173,22 +164,13 @@ function renderEntryActions(title) {
 
 /* ================= SEARCH ================= */
 async function smartSearch(q) {
-  const term = q.trim();
-  if (term.length < 2) return [];
-
-  const enc = encodeURIComponent(term);
-
-  // ✅ NUR Titel durchsuchen
+  const enc = encodeURIComponent(q);
   return await supa(
     `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
   );
 }
 
-/* ✅ Suchanfragen in search_queue speichern (wie früher) */
 async function saveSearchQuery(q) {
-  const term = (q || "").trim();
-  if (term.length < 2) return;
-
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
       method: "POST",
@@ -198,136 +180,58 @@ async function saveSearchQuery(q) {
         "Content-Type": "application/json",
         Prefer: "return=minimal"
       },
-      body: JSON.stringify({
-        query: term,
-        url: location.href
-      })
+      body: JSON.stringify({ query: q, url: location.href })
     });
-  } catch (e) {
-    // niemals UI kaputt machen, nur still loggen
-    console.warn("search_queue insert failed", e);
-  }
+  } catch {}
 }
 
 function initSearch() {
   const input = $("searchInput");
-  const box = $("results");
-  if (!input || !box) return;
+  if (!input) return;
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) return box.innerHTML = "";
-
-    // ✅ ZWINGEND: Suchanfrage speichern
+    if (q.length < 2) return;
     saveSearchQuery(q);
-
     renderList(await smartSearch(q));
   });
 }
 
-/* ================= KATEGORIEN ================= */
-async function loadCategories() {
-  const grid = document.querySelector(".category-grid");
-  if (!grid) return;
-
-  const data = await fetch("categories.json").then(r => r.json());
-  grid.innerHTML = "";
-
-  (data.categories || []).forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c.title;
-    b.onclick = () => loadCategory(c.title);
-    grid.appendChild(b);
-  });
-}
-
-async function loadCategory(cat) {
-  renderList(await supa(
-    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
-  ));
-}
-
-/* ================= LEGAL POPUP (LOCKED) ================= */
+/* ================= LEGAL POPUP ================= */
 function ensureLegalPopup() {
   if (document.getElementById("legalPopup")) return;
 
-  const div = document.createElement("div");
-  div.id = "legalPopup";
-  div.style.cssText = `
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.45);
-    z-index:99999;
-    align-items:center;
-    justify-content:center;
-  `;
-
-  div.innerHTML = `
-    <div style="
-      background:#fff;
-      max-width:420px;
-      padding:16px 18px;
-      border-radius:12px;
-      font-size:14px;
-      line-height:1.45;
-    ">
-      <div style="font-weight:900;margin-bottom:6px;">
-        Rechtlicher Hinweis
-      </div>
-
-      <div style="margin-bottom:12px;">
-        MarketShield kann rechtlich nicht alle Informationen vollständig darstellen.
-        Inhalte unterliegen gesetzlichen, regulatorischen und haftungsrechtlichen Grenzen
-        sowie unvollständiger öffentlicher Informationslage.
-        Die Informationen dienen der sachlichen Einordnung und ersetzen keine medizinische
-        oder rechtliche Beratung.
-      </div>
-
+  const d = document.createElement("div");
+  d.id = "legalPopup";
+  d.style.cssText = "display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;";
+  d.innerHTML = `
+    <div style="background:#fff;margin:10% auto;padding:16px;max-width:420px;">
+      <b>Rechtlicher Hinweis</b><br><br>
+      MarketShield kann rechtlich nicht alle Informationen vollständig darstellen.
+      Inhalte dienen der sachlichen Einordnung und ersetzen keine Beratung.
+      <br><br>
       <button onclick="closeLegalPopup()">Schließen</button>
-    </div>
-  `;
-
-  document.body.appendChild(div);
+    </div>`;
+  document.body.appendChild(d);
 }
+function openLegalPopup(){ensureLegalPopup();$("legalPopup").style.display="block";}
+function closeLegalPopup(){$("legalPopup").style.display="none";}
 
-function openLegalPopup() {
-  ensureLegalPopup();
-  document.getElementById("legalPopup").style.display = "flex";
-}
-
-function closeLegalPopup() {
-  const p = document.getElementById("legalPopup");
-  if (p) p.style.display = "none";
-}
-
-/* ================= REPORT (LOCKED) =================
-   WICHTIG: Der Report-Button EXISTIERT bereits im HTML.
-   Wir ersetzen ihn nicht. Wir machen ihn nur klickbar und senden an Supabase.
-===================================================== */
-
+/* ================= REPORT (BESTEHENDER BUTTON) ================= */
 function findReportButton() {
-  // Unterstützt mehrere typische Varianten, ohne HTML ändern zu müssen:
   return (
     document.getElementById("reportBtn") ||
-    document.getElementById("reportButton") ||
     document.querySelector("[data-action='report']") ||
-    document.querySelector(".report-btn") ||
-    document.querySelector("#report") ||
-    null
+    document.querySelector(".report-btn")
   );
 }
 
 function bindReportButton() {
   const btn = findReportButton();
-  if (!btn) return;
-
-  // Mehrfach-Bind verhindern
-  if (btn.dataset.bound === "1") return;
+  if (!btn || btn.dataset.bound) return;
   btn.dataset.bound = "1";
 
   btn.addEventListener("click", (e) => {
-    // ✅ sonst frisst dein globaler entry-card click-handler den Klick
     e.preventDefault();
     e.stopPropagation();
     openReportPopup();
@@ -337,106 +241,44 @@ function bindReportButton() {
 function ensureReportPopup() {
   if (document.getElementById("reportPopup")) return;
 
-  const div = document.createElement("div");
-  div.id = "reportPopup";
-  div.style.cssText = `
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.45);
-    z-index:99999;
-    align-items:center;
-    justify-content:center;
-  `;
-
-  div.innerHTML = `
-    <div style="
-      background:#fff;
-      max-width:420px;
-      padding:16px 18px;
-      border-radius:12px;
-      font-size:14px;
-      line-height:1.45;
-    ">
-      <div style="font-weight:900;margin-bottom:8px;">
-        Fehler melden
-      </div>
-
-      <textarea id="reportText"
-        style="width:100%;height:90px;margin-bottom:10px;"
-        placeholder="Was ist falsch oder problematisch?"></textarea>
-
-      <div style="display:flex;gap:8px;">
-        <button onclick="submitReport()">Absenden</button>
-        <button onclick="closeReportPopup()">Abbrechen</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(div);
+  const d = document.createElement("div");
+  d.id = "reportPopup";
+  d.style.cssText = "display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;";
+  d.innerHTML = `
+    <div style="background:#fff;margin:10% auto;padding:16px;max-width:420px;">
+      <b>Fehler melden</b><br><br>
+      <textarea id="reportText" style="width:100%;height:80px;"></textarea><br><br>
+      <button onclick="submitReport()">Senden</button>
+      <button onclick="closeReportPopup()">Abbrechen</button>
+    </div>`;
+  document.body.appendChild(d);
 }
-
-function openReportPopup() {
-  ensureReportPopup();
-  document.getElementById("reportPopup").style.display = "flex";
-}
-
-function closeReportPopup() {
-  const p = document.getElementById("reportPopup");
-  if (p) p.style.display = "none";
-}
+function openReportPopup(){ensureReportPopup();$("reportPopup").style.display="block";}
+function closeReportPopup(){$("reportPopup").style.display="none";}
 
 async function submitReport() {
-  const text = (document.getElementById("reportText")?.value || "").trim();
-  if (!text) return alert("Bitte kurz beschreiben.");
-
-  try {
-    const payload = {
-      entry_id: currentEntryId || null,
-      text: text,
-      url: location.href
-    };
-
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!r.ok) {
-      const err = await r.text();
-      throw new Error(err);
-    }
-
-    closeReportPopup();
-    alert("Danke! Hinweis wurde übermittelt.");
-  } catch (e) {
-    console.error("REPORT ERROR:", e);
-    alert("Fehler beim Senden. Bitte später erneut versuchen.");
-  }
+  const text = $("reportText").value.trim();
+  if (!text) return alert("Bitte Text eingeben");
+  await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+    method:"POST",
+    headers:{
+      apikey:SUPABASE_KEY,
+      Authorization:`Bearer ${SUPABASE_KEY}`,
+      "Content-Type":"application/json",
+      Prefer:"return=minimal"
+    },
+    body:JSON.stringify({ entry_id: currentEntryId, text, url: location.href })
+  });
+  closeReportPopup();
+  alert("Danke für den Hinweis");
 }
 
 /* ================= NAV ================= */
 document.addEventListener("click", (e) => {
-  // ✅ Klicks auf Popups/Buttons dürfen NICHT zur Card-Navigation führen
   if (
     e.target.closest("#legalPopup") ||
     e.target.closest("#reportPopup") ||
-    e.target.closest("#entryActions") // Social Buttons sollen nicht Navigation triggern
-  ) return;
-
-  // ✅ Report-Button (egal welche Variante) niemals durch Navigation kaputt machen
-  if (
-    e.target.closest("#reportBtn") ||
-    e.target.closest("#reportButton") ||
-    e.target.closest("[data-action='report']") ||
-    e.target.closest(".report-btn") ||
-    e.target.closest("#report")
+    e.target.closest("#entryActions")
   ) return;
 
   const c = e.target.closest(".entry-card");
@@ -447,10 +289,7 @@ document.addEventListener("click", (e) => {
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
   initSearch();
-
-  // ✅ Report-Button binding (falls er auf Startseite schon existiert)
   bindReportButton();
 
   const id = new URLSearchParams(location.search).get("id");
