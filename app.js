@@ -67,73 +67,64 @@ function renderLegalMiniLink() {
 }
 function renderMarkdownTables(text) {
   const lines = text.split("\n");
+  let html = "";
+  let i = 0;
 
-  // Mindestens: Header | ---- | Zeile
-  if (
-    lines.length < 3 ||
-    !lines[0].includes("|") ||
-    !/^-{3,}/.test(lines[1].trim())
-  ) {
-    return escapeHtml(text).replace(/\n/g, "<br>");
-  }
-
-  // Tabellenzeilen sammeln (nur Zeilen mit |)
-  const rows = lines
-    .filter(l => l.includes("|"))
-    .map(l =>
-      l.split("|")
+  while (i < lines.length) {
+    // Tabellen-Header erkennen
+    if (
+      lines[i].includes("|") &&
+      i + 1 < lines.length &&
+      /^-{3,}$/.test(lines[i + 1].trim())
+    ) {
+      const header = lines[i]
+        .split("|")
         .map(c => c.trim())
-        .filter(c => c.length > 0)
-    );
+        .filter(Boolean);
 
-  if (rows.length < 2) {
-    return escapeHtml(text).replace(/\n/g, "<br>");
+      i += 2; // Header + Trennlinie
+
+      const rows = [];
+      while (i < lines.length && lines[i].includes("|")) {
+        rows.push(
+          lines[i]
+            .split("|")
+            .map(c => c.trim())
+            .filter(Boolean)
+        );
+        i++;
+      }
+
+      html += `
+        <table style="border-collapse:collapse;width:100%;margin:16px 0;">
+          <thead>
+            <tr>
+              ${header.map(h => `
+                <th style="text-align:left;padding:8px;border-bottom:2px solid #ccc;">
+                  ${escapeHtml(h)}
+                </th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr>
+                ${r.map(c => `
+                  <td style="padding:8px;border-bottom:1px solid #eee;vertical-align:top;">
+                    ${escapeHtml(c)}
+                  </td>`).join("")}
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    } else {
+      // normaler Text
+      html += escapeHtml(lines[i]) + "<br>";
+      i++;
+    }
   }
 
-  const header = rows.shift();
-  const body = rows;
-
-  return `
-    <table style="
-      border-collapse:collapse;
-      margin:14px 0;
-      width:100%;
-      font-size:14px;
-    ">
-      <thead>
-        <tr>
-          ${header.map(h => `
-            <th style="
-              text-align:left;
-              padding:6px 8px;
-              border-bottom:2px solid #ccc;
-            ">
-              ${escapeHtml(h)}
-            </th>
-          `).join("")}
-        </tr>
-      </thead>
-      <tbody>
-        ${body.map(row => `
-          <tr>
-            ${row.map(cell => `
-              <td style="
-                padding:6px 8px;
-                border-bottom:1px solid #eee;
-                vertical-align:top;
-              ">
-                ${escapeHtml(cell)}
-              </td>
-            `).join("")}
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
+  return html;
 }
-
-
-
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
