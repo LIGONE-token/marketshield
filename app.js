@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / FINAL / REPORT INPUT FIX)
+   MarketShield – app.js (FINAL / REPORTBUTTON OBEN)
 ===================================================== */
 
 let currentEntryId = null;
@@ -72,12 +72,6 @@ async function loadEntry(id){
   box.innerHTML=`
     <div class="entry-card" data-id="${e.id}">
       <h2>${escapeHtml(e.title)}</h2>
-
-      <button id="reportBtn" type="button">
-        Produkt / Problem melden<br>
-        <small>Anonym · in 1 Minute · hilft allen</small>
-      </button>
-
       <div style="white-space:pre-wrap;margin-top:12px">
         ${escapeHtml(normalizeText(e.summary))}
       </div>
@@ -103,7 +97,6 @@ function ensureReportModal(){
     </form>`;
   document.body.appendChild(m);
 
-  // ❗ GANZ WICHTIG: Klicks IM MODAL dürfen NICHT weitergegeben werden
   m.addEventListener("click",e=>e.stopPropagation());
   $("closeReport").onclick=()=>m.style.display="none";
 
@@ -121,19 +114,22 @@ function ensureReportModal(){
   };
 }
 
-/* Klick auf Reportbutton */
+/* ================= REPORTBUTTON (OBEN!) ================= */
 document.addEventListener("click",(e)=>{
-  const btn=e.target.closest("#reportBtn");
+  const btn=e.target.closest("#reportBtn"); // 👈 DER OBERE BUTTON
   if(!btn) return;
+
   e.preventDefault();
   e.stopPropagation();
+  e.stopImmediatePropagation();
+
   ensureReportModal();
   $("reportModal").style.display="flex";
 });
 
 /* ================= NAVIGATION ================= */
 document.addEventListener("click",(e)=>{
-  if(e.target.closest("#reportModal")) return; // 🔥 DAS WAR DER FEHLENDE SCHUTZ
+  if(e.target.closest("#reportModal")) return;
   if(e.target.closest("#reportBtn")) return;
 
   const card=e.target.closest(".entry-card");
@@ -141,8 +137,40 @@ document.addEventListener("click",(e)=>{
   loadEntry(card.dataset.id);
 });
 
+/* ================= SEARCH ================= */
+async function smartSearch(q){
+  const t=q.trim(); if(t.length<2) return [];
+  const enc=encodeURIComponent(t);
+  return await supa(`entries?select=id,title,summary&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`);
+}
+
+function initSearch(){
+  const i=$("searchInput"); if(!i) return;
+  i.addEventListener("input",async()=>{
+    const q=i.value.trim(); if(q.length<2) return;
+    renderList(await smartSearch(q));
+  });
+}
+
+/* ================= KATEGORIEN ================= */
+async function loadCategories(){
+  const g=document.querySelector(".category-grid"); if(!g) return;
+  const d=await fetch("categories.json").then(r=>r.json());
+  g.innerHTML="";
+  (d.categories||[]).forEach(c=>{
+    const b=document.createElement("button");
+    b.textContent=c.title;
+    b.onclick=()=>loadCategory(c.title);
+    g.appendChild(b);
+  });
+}
+
+async function loadCategory(cat){
+  renderList(await supa(`entries?select=id,title,summary&category=eq.${encodeURIComponent(cat)}`));
+}
+
 /* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded",async()=>{
-  const d=await supa("entries?select=id,title,summary&limit=20");
-  renderList(d);
+document.addEventListener("DOMContentLoaded",()=>{
+  loadCategories();
+  initSearch();
 });
