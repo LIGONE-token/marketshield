@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / FREEZE / TABELLEN-SAFE)
+   MarketShield – app.js (FINAL / STABIL / FUNKTIONSFÄHIG)
 ===================================================== */
 
 let currentEntryId = null;
@@ -38,16 +38,49 @@ function normalizeText(text) {
     .replace(/__+/g, "")
     .replace(/~~+/g, "")
     .replace(/`+/g, "")
-    .replace(/\\n/g, "\n")
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
-function shortText(t, max = 160) {
-  t = normalizeText(t);
-  return t.length > max ? t.slice(0, max) + " …" : t;
+/* ================= TABELLEN-RENDER (ZWINGEND) ================= */
+function renderSummaryWithTables(text) {
+  if (!text) return "";
+
+  const lines = text.split("\n");
+
+  const isTable =
+    lines.length >= 3 &&
+    lines[0].includes("|") &&
+    /^[-\s|]+$/.test(lines[1]);
+
+  if (!isTable) {
+    return `<div style="white-space:pre-wrap;">${text}</div>`;
+  }
+
+  const headers = lines[0].split("|").map(c => c.trim()).filter(Boolean);
+  const rows = lines.slice(2).map(l =>
+    l.split("|").map(c => c.trim()).filter(Boolean)
+  );
+
+  let html = `<table style="border-collapse:collapse;width:100%;margin:12px 0;">`;
+  html += `<thead><tr>` +
+    headers.map(h =>
+      `<th style="border:1px solid #ccc;padding:6px;text-align:left;">${h}</th>`
+    ).join("") +
+    `</tr></thead><tbody>`;
+
+  rows.forEach(r => {
+    html += `<tr>` +
+      r.map(c =>
+        `<td style="border:1px solid #ccc;padding:6px;">${c}</td>`
+      ).join("") +
+      `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  return html;
 }
 
 /* ================= SCORES ================= */
@@ -71,24 +104,19 @@ function renderIndustry(score) {
     </div>`;
 }
 
-function renderScoreBlock(score, processing, size = 13) {
+function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
 
   return `
     <div style="margin:12px 0;">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
-          <div>${h}</div>
-          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
-        </div>` : ""}
-
-      ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
-          <div>${i}</div>
-          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
+      ${h ? `<div style="display:flex;gap:8px;align-items:center;">
+        <div>${h}</div><div style="opacity:.85;">Gesundheitsscore</div>
+      </div>` : ""}
+      ${i ? `<div style="display:flex;gap:8px;align-items:center;">
+        <div>${i}</div><div style="opacity:.85;">Industrie-Verarbeitungsgrad</div>
+      </div>` : ""}
     </div>`;
 }
 
@@ -101,8 +129,8 @@ function renderList(data) {
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;white-space:pre-wrap;">
-        ${escapeHtml(shortText(e.summary))}
+      <div style="white-space:pre-wrap;font-size:15px;">
+        ${escapeHtml(normalizeText(e.summary).slice(0,160))} …
       </div>
     </div>
   `).join("");
@@ -121,16 +149,11 @@ async function loadEntry(id) {
 
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-
     ${renderScoreBlock(e.score, e.processing_score)}
-
     ${renderLegalMiniLink()}
-
-    <div style="line-height:1.7;font-size:16px;">
-  ${renderSummaryWithTables(normalizeText(e.summary))}
-</div>
-
-
+    <div style="font-size:16px;line-height:1.7;">
+      ${renderSummaryWithTables(normalizeText(e.summary))}
+    </div>
     <div id="entryActions"></div>
   `;
 
@@ -143,62 +166,12 @@ function renderEntryActions(title) {
   if (!box) return;
 
   const url = location.href;
-  const encUrl = encodeURIComponent(url);
-  const encTitle = encodeURIComponent(title + " – MarketShield");
-
   box.innerHTML = `
-    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+    <div style="margin-top:24px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="history.back()">⬅️ Zurück</button>
       <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
       <button onclick="window.print()">🖨️ Drucken</button>
-      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
-      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
-      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
     </div>`;
-}
-
-/* ================= SEARCH ================= */
-async function smartSearch(q) {
-  const term = q.trim();
-  if (term.length < 2) return [];
-  const enc = encodeURIComponent(term);
-  return await supa(
-    `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
-  );
-}
-
-function initSearch() {
-  const input = $("searchInput");
-  const box = $("results");
-  if (!input || !box) return;
-
-  input.addEventListener("input", async () => {
-    const q = input.value.trim();
-    if (q.length < 2) return box.innerHTML = "";
-    renderList(await smartSearch(q));
-  });
-}
-
-/* ================= KATEGORIEN ================= */
-async function loadCategories() {
-  const grid = document.querySelector(".category-grid");
-  if (!grid) return;
-
-  const data = await fetch("categories.json").then(r => r.json());
-  grid.innerHTML = "";
-
-  (data.categories || []).forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c.title;
-    b.onclick = () => loadCategory(c.title);
-    grid.appendChild(b);
-  });
-}
-
-async function loadCategory(cat) {
-  renderList(await supa(
-    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
-  ));
 }
 
 /* ================= NAV ================= */
@@ -211,17 +184,12 @@ document.addEventListener("click", (e) => {
 
 /* ================= LEGAL POPUP ================= */
 function renderLegalMiniLink() {
-  return `
-    <div
-      style="font-size:11px;opacity:.6;margin:4px 0 8px;cursor:pointer;text-decoration:underline;"
-      onclick="event.stopPropagation(); openLegalPopup();">
-      Rechtlicher Hinweis
-    </div>`;
+  return `<div style="font-size:11px;opacity:.6;cursor:pointer;text-decoration:underline;"
+    onclick="event.stopPropagation();openLegalPopup()">Rechtlicher Hinweis</div>`;
 }
 
 function ensureLegalPopup() {
   if (document.getElementById("legalPopup")) return;
-
   const d = document.createElement("div");
   d.id = "legalPopup";
   d.style.cssText = "display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;";
@@ -235,21 +203,11 @@ function ensureLegalPopup() {
     </div>`;
   document.body.appendChild(d);
 }
-
-function openLegalPopup() {
-  ensureLegalPopup();
-  $("legalPopup").style.display = "block";
-}
-
-function closeLegalPopup() {
-  $("legalPopup").style.display = "none";
-}
+function openLegalPopup(){ensureLegalPopup();$("legalPopup").style.display="block";}
+function closeLegalPopup(){$("legalPopup").style.display="none";}
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
-  initSearch();
-
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
