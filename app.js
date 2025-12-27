@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / LOCKED)
+   MarketShield – app.js (FINAL / STABIL / FUNKTIONSFÄHIG)
 ===================================================== */
 
 let currentEntryId = null;
@@ -37,16 +37,19 @@ async function supaPost(table, payload) {
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
 
-function escapeHtml(s="") {
-  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function escapeHtml(s = "") {
+  return String(s)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
 }
 
 /* ================= RECHTLICHER HINWEIS ================= */
 const LEGAL_HTML = `
 <p>
-MarketShield dient ausschließlich der Information.<br>
-Es handelt sich nicht um Beratung.<br>
-Alle Angaben ohne Gewähr.
+MarketShield darf bestimmte Hintergründe und Bewertungen nicht vollständig
+und nicht in der klarsten Form darstellen, da dies rechtliche Konsequenzen
+nach sich ziehen kann.
 </p>
 `;
 
@@ -72,7 +75,6 @@ function ensureLegalModal() {
   });
 
   document.body.appendChild(modal);
-
   modal.querySelector("#closeLegal").onclick = () => modal.style.display = "none";
 }
 
@@ -98,7 +100,6 @@ function renderSummary(text="") {
   const lines = text.split("\n");
   let html = "";
   let i = 0;
-
   const isSep = s => /^[-| :]+$/.test(s||"");
 
   while (i < lines.length) {
@@ -132,6 +133,43 @@ function renderList(data) {
   `).join("");
 }
 
+/* ================= KATEGORIEN ================= */
+async function loadCategories() {
+  const grid = document.querySelector(".category-grid");
+  if (!grid) return;
+
+  const r = await fetch("categories.json",{cache:"no-store"});
+  const data = await r.json();
+
+  grid.innerHTML = "";
+  data.categories.forEach(c=>{
+    const b = document.createElement("button");
+    b.type="button";
+    b.textContent = c.title;
+    b.onclick = ()=>loadCategory(c.title);
+    grid.appendChild(b);
+  });
+}
+
+async function loadCategory(cat) {
+  const d = await supa(`entries?category=eq.${encodeURIComponent(cat)}&order=idx.asc`);
+  renderList(d);
+}
+
+/* ================= SUCHE ================= */
+function initSearch() {
+  const input = $("searchInput");
+  if (!input) return;
+
+  input.addEventListener("input", async ()=>{
+    const q = input.value.trim();
+    if (q.length<2) return;
+    const like = encodeURIComponent(`%${q}%`);
+    const d = await supa(`entries?or=(title.ilike.${like},summary.ilike.${like})&limit=50`);
+    renderList(d);
+  });
+}
+
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
   const d = await supa(`entries?id=eq.${id}`);
@@ -149,15 +187,13 @@ async function loadEntry(id) {
       Produkt / Problem melden<br>
       <small>Anonym · in 1 Minute · hilft allen</small>
     </button>
-
-    <div id="entryActions"></div>
   `;
 
   $("legalLink").onclick = (ev)=>{ev.preventDefault();openLegal();};
 }
 
-/* ================= REPORT (STABIL) ================= */
-document.addEventListener("click", e => {
+/* ================= REPORT (POSITION + TEXT BLEIBEN) ================= */
+document.addEventListener("click", async (e)=>{
   const btn = e.target.closest("#reportBtn");
   if (!btn) return;
 
@@ -165,44 +201,54 @@ document.addEventListener("click", e => {
   e.stopPropagation();
 
   let modal = $("reportModal");
-  if (!modal) {
-    modal = document.createElement("div");
-    modal.id = "reportModal";
-    modal.style.cssText = "position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;";
-    modal.innerHTML = `
-      <form id="reportForm" style="background:#fff;padding:16px;border-radius:10px;width:90%;max-width:420px">
-        <b>Produkt / Problem melden</b>
-        <textarea name="description" required style="width:100%;margin-top:8px"></textarea>
-        <div id="reportStatus" style="font-size:12px;margin-top:6px"></div>
-        <div style="margin-top:10px;text-align:right">
-          <button type="submit">Senden</button>
-          <button type="button" id="closeReport">Abbrechen</button>
-        </div>
-      </form>
-    `;
-    document.body.appendChild(modal);
+  if (modal) return modal.style.display="flex";
 
-    modal.addEventListener("click", ev=>{
-      if (ev.target===modal) modal.remove();
-    });
+  modal = document.createElement("div");
+  modal.id="reportModal";
+  modal.style.cssText="position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;";
 
-    modal.querySelector("#closeReport").onclick = ()=>modal.remove();
+  modal.innerHTML=`
+    <form id="reportForm" style="background:#fff;padding:16px;border-radius:10px;width:90%;max-width:420px">
+      <b>Produkt / Problem melden</b>
+      <textarea name="description" required style="width:100%;margin-top:8px"></textarea>
+      <div id="reportStatus" style="font-size:12px;margin-top:6px"></div>
+      <div style="margin-top:10px;text-align:right">
+        <button type="submit">Senden</button>
+        <button type="button" id="closeReport">Abbrechen</button>
+      </div>
+    </form>
+  `;
+  document.body.appendChild(modal);
 
-    modal.querySelector("#reportForm").onsubmit = async ev=>{
-      ev.preventDefault();
-      const desc = ev.target.description.value.trim();
-      if (desc.length<5) return;
+  modal.addEventListener("click", ev=>{
+    if (ev.target===modal) modal.style.display="none";
+  });
 
-      $("reportStatus").textContent="Sende …";
-      await supaPost("reports",{description:desc,entry_id:currentEntryId,url:location.href});
-      $("reportStatus").textContent="Gesendet. Danke!";
-      setTimeout(()=>modal.remove(),600);
-    };
-  }
+  $("closeReport").onclick=()=>modal.style.display="none";
+
+  $("reportForm").onsubmit=async ev=>{
+    ev.preventDefault();
+    const desc = ev.target.description.value.trim();
+    if (desc.length<5) return;
+
+    $("reportStatus").textContent="Sende …";
+    await supaPost("reports",{description:desc,entry_id:currentEntryId,url:location.href});
+    $("reportStatus").textContent="Gesendet. Danke!";
+    setTimeout(()=>modal.style.display="none",600);
+  };
 });
 
 /* ================= NAVIGATION ================= */
 document.addEventListener("click", e=>{
+  if (
+    e.target.closest("input") ||
+    e.target.closest("textarea") ||
+    e.target.closest("button") ||
+    e.target.closest(".category-grid") ||
+    e.target.closest("#reportModal") ||
+    e.target.closest("#msLegalModal")
+  ) return;
+
   const card = e.target.closest(".entry-card");
   if (!card) return;
   loadEntry(card.dataset.id);
@@ -212,6 +258,8 @@ document.addEventListener("click", e=>{
 document.addEventListener("DOMContentLoaded", ()=>{
   ensureLegalModal();
   ensureHeaderHomeLink();
+  loadCategories();
+  initSearch();
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
