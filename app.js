@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / FUNKTIONSFÄHIG)
+   MarketShield – app.js (STABIL / REPARIERT)
 ===================================================== */
 
 let currentEntryId = null;
@@ -20,117 +20,170 @@ async function supa(query) {
   return JSON.parse(t || "[]");
 }
 
-async function supaPost(table, payload) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify(payload)
-  });
-  if (!r.ok) throw new Error(await r.text());
-}
-
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
 
 function escapeHtml(s = "") {
   return String(s)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
-/* ================= RECHTLICHER HINWEIS ================= */
-const LEGAL_HTML = `
-<p>
-MarketShield darf bestimmte Hintergründe und Bewertungen nicht vollständig
-und nicht in der klarsten Form darstellen, da dies rechtliche Konsequenzen
-nach sich ziehen kann.
-</p>
-`;
-
-function ensureLegalModal() {
-  if ($("msLegalModal")) return;
-
-  const modal = document.createElement("div");
-  modal.id = "msLegalModal";
-  modal.style.cssText = "display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);align-items:center;justify-content:center;";
-
-  modal.innerHTML = `
-    <div style="background:#fff;border-radius:12px;max-width:800px;width:95%;padding:16px">
-      <b>Rechtlicher Hinweis</b>
-      <div style="margin-top:10px;font-size:13px">${LEGAL_HTML}</div>
-      <div style="text-align:right;margin-top:12px">
-        <button id="closeLegal">✕</button>
-      </div>
-    </div>
-  `;
-
-  modal.addEventListener("click", e => {
-    if (e.target === modal) modal.style.display = "none";
-  });
-
-  document.body.appendChild(modal);
-  modal.querySelector("#closeLegal").onclick = () => modal.style.display = "none";
+/* Textbereinigung */
+function normalizeText(text) {
+  if (!text) return "";
+  return String(text)
+    .replace(/\*\*/g, "")
+    .replace(/##+/g, "")
+    .replace(/__+/g, "")
+    .replace(/~~+/g, "")
+    .replace(/`+/g, "")
+    .replace(/\\n/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
-function openLegal() {
-  $("msLegalModal").style.display = "flex";
+function shortText(t, max = 160) {
+  t = normalizeText(t);
+  return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= HEADER LINK ================= */
-function ensureHeaderHomeLink() {
-  const header = document.querySelector("header");
-  if (!header || $("headerHomeLink")) return;
-
-  const a = document.createElement("a");
-  a.id = "headerHomeLink";
-  a.href = "/";
-  a.textContent = "MarketShield Startseite";
-  a.style.cssText = "font-size:12px;opacity:.7;display:block;text-align:center;margin-top:6px;text-decoration:underline;";
-  header.appendChild(a);
+/* ================= SCORES (LOCKED) ================= */
+function renderHealth(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n >= 80) return "💚💚💚";
+  if (n >= 60) return "💚💚";
+  if (n >= 40) return "💚";
+  if (n >= 20) return "💛";
+  return "⚠️❗⚠️";
 }
 
-/* ================= TABELLEN ================= */
-function renderSummary(text="") {
-  const lines = text.split("\n");
-  let html = "";
-  let i = 0;
-  const isSep = s => /^[-| :]+$/.test(s||"");
+/* 🔴🟡🟢 Industrie-Verarbeitungsgrad mit Farbübergang */
+function renderIndustry(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
 
-  while (i < lines.length) {
-    if (lines[i].includes("|") && isSep(lines[i+1])) {
-      const head = lines[i].split("|").map(s=>s.trim());
-      i+=2;
-      const rows=[];
-      while (lines[i] && lines[i].includes("|")) {
-        rows.push(lines[i].split("|").map(s=>s.trim()));
-        i++;
-      }
-      html += `<table border="1" style="border-collapse:collapse;width:100%;margin:10px 0">
-        <tr>${head.map(h=>`<th>${escapeHtml(h)}</th>`).join("")}</tr>
-        ${rows.map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}
-      </table>`;
-    } else {
-      if (lines[i].trim()) html += `<p>${escapeHtml(lines[i])}</p>`;
-      i++;
-    }
-  }
-  return html;
+  const value = Math.max(0, Math.min(10, n));
+  const w = Math.round((value / 10) * 80);
+
+  let color = "#2e7d32"; // grün
+  if (value >= 4) color = "#f9a825"; // gelb
+  if (value >= 7) color = "#c62828"; // rot
+
+  return `
+    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
+      <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
+    </div>`;
+}
+
+function renderScoreBlock(score, processing, size = 13) {
+  const h = renderHealth(score);
+  const i = renderIndustry(processing);
+  if (!h && !i) return "";
+
+  return `
+    <div style="margin:12px 0;">
+      ${h ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
+          <div>${h}</div>
+          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
+        </div>` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+          <div>${i}</div>
+          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
+        </div>` : ""}
+    </div>`;
 }
 
 /* ================= LISTE ================= */
 function renderList(data) {
-  $("results").innerHTML = data.map(e=>`
+  const box = $("results");
+  if (!box) return;
+
+  box.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <b>${escapeHtml(e.title)}</b>
-      <div style="opacity:.8">${escapeHtml(e.summary||"")}</div>
+      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
+      ${renderScoreBlock(e.score, e.processing_score)}
+      <div style="font-size:15px;line-height:1.4;">
+        ${escapeHtml(shortText(e.summary))}
+      </div>
     </div>
   `).join("");
+}
+
+/* ================= DETAIL ================= */
+async function loadEntry(id) {
+  const box = $("results");
+  if (!box) return;
+
+  const d = await supa(`entries?select=*&id=eq.${id}`);
+  const e = d[0];
+  if (!e) return;
+
+  currentEntryId = id;
+
+  box.innerHTML = `
+    <h2>${escapeHtml(e.title)}</h2>
+    ${renderScoreBlock(e.score, e.processing_score)}
+
+    <h3>Zusammenfassung</h3>
+    <div style="white-space:pre-wrap;line-height:1.6;">
+      ${escapeHtml(normalizeText(e.summary))}
+    </div>
+
+    <div id="entryActions"></div>
+  `;
+
+  renderEntryActions(e.title);
+}
+
+/* ================= SOCIAL ================= */
+function renderEntryActions(title) {
+  const box = $("entryActions");
+  if (!box) return;
+
+  const url = location.href;
+  const encUrl = encodeURIComponent(url);
+  const encTitle = encodeURIComponent(title + " – MarketShield");
+
+  box.innerHTML = `
+    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button onclick="window.print()">🖨️ Drucken</button>
+      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+    </div>`;
+}
+
+/* ================= SEARCH ================= */
+async function smartSearch(q) {
+  const term = q.trim();
+  if (term.length < 2) return [];
+
+  const enc = encodeURIComponent(term);
+  return await supa(
+    `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
+  );
+}
+
+function initSearch() {
+  const input = $("searchInput");
+  const box = $("results");
+  if (!input || !box) return;
+
+  input.addEventListener("input", async () => {
+    const q = input.value.trim();
+    if (q.length < 2) return box.innerHTML = "";
+    renderList(await smartSearch(q));
+  });
 }
 
 /* ================= KATEGORIEN ================= */
@@ -138,126 +191,43 @@ async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
 
-  const r = await fetch("categories.json",{cache:"no-store"});
-  const data = await r.json();
-
+  const data = await fetch("categories.json").then(r => r.json());
   grid.innerHTML = "";
-  data.categories.forEach(c=>{
+
+  (data.categories || []).forEach(c => {
     const b = document.createElement("button");
-    b.type="button";
     b.textContent = c.title;
-    b.onclick = ()=>loadCategory(c.title);
+    b.onclick = () => loadCategory(c.title);
     grid.appendChild(b);
   });
 }
 
 async function loadCategory(cat) {
-  const d = await supa(`entries?category=eq.${encodeURIComponent(cat)}&order=idx.asc`);
-  renderList(d);
+  renderList(await supa(
+    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
+  ));
 }
 
-/* ================= SUCHE ================= */
-function initSearch() {
-  const input = $("searchInput");
-  if (!input) return;
+/* ================= NAV (STABIL) ================= */
+document.addEventListener("click", (e) => {
 
-  input.addEventListener("input", async ()=>{
-    const q = input.value.trim();
-    if (q.length<2) return;
-    const like = encodeURIComponent(`%${q}%`);
-    const d = await supa(`entries?or=(title.ilike.${like},summary.ilike.${like})&limit=50`);
-    renderList(d);
-  });
-}
-
-/* ================= DETAIL ================= */
-async function loadEntry(id) {
-  const d = await supa(`entries?id=eq.${id}`);
-  const e = d[0];
-  if (!e) return;
-
-  currentEntryId = e.id;
-
-  $("results").innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
-    <a href="#" id="legalLink">Rechtlicher Hinweis</a>
-    <div>${renderSummary(e.summary||"")}</div>
-
-    <button id="reportBtn" type="button">
-      Produkt / Problem melden<br>
-      <small>Anonym · in 1 Minute · hilft allen</small>
-    </button>
-  `;
-
-  $("legalLink").onclick = (ev)=>{ev.preventDefault();openLegal();};
-}
-
-/* ================= REPORT (POSITION + TEXT BLEIBEN) ================= */
-document.addEventListener("click", async (e)=>{
-  const btn = e.target.closest("#reportBtn");
-  if (!btn) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  let modal = $("reportModal");
-  if (modal) return modal.style.display="flex";
-
-  modal = document.createElement("div");
-  modal.id="reportModal";
-  modal.style.cssText="position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;";
-
-  modal.innerHTML=`
-    <form id="reportForm" style="background:#fff;padding:16px;border-radius:10px;width:90%;max-width:420px">
-      <b>Produkt / Problem melden</b>
-      <textarea name="description" required style="width:100%;margin-top:8px"></textarea>
-      <div id="reportStatus" style="font-size:12px;margin-top:6px"></div>
-      <div style="margin-top:10px;text-align:right">
-        <button type="submit">Senden</button>
-        <button type="button" id="closeReport">Abbrechen</button>
-      </div>
-    </form>
-  `;
-  document.body.appendChild(modal);
-
-  modal.addEventListener("click", ev=>{
-    if (ev.target===modal) modal.style.display="none";
-  });
-
-  $("closeReport").onclick=()=>modal.style.display="none";
-
-  $("reportForm").onsubmit=async ev=>{
-    ev.preventDefault();
-    const desc = ev.target.description.value.trim();
-    if (desc.length<5) return;
-
-    $("reportStatus").textContent="Sende …";
-    await supaPost("reports",{description:desc,entry_id:currentEntryId,url:location.href});
-    $("reportStatus").textContent="Gesendet. Danke!";
-    setTimeout(()=>modal.style.display="none",600);
-  };
-});
-
-/* ================= NAVIGATION ================= */
-document.addEventListener("click", e=>{
   if (
     e.target.closest("input") ||
     e.target.closest("textarea") ||
     e.target.closest("button") ||
-    e.target.closest(".category-grid") ||
-    e.target.closest("#reportModal") ||
-    e.target.closest("#msLegalModal")
+    e.target.closest("form") ||
+    e.target.closest(".category-grid")
   ) return;
 
-  const card = e.target.closest(".entry-card");
-  if (!card) return;
-  loadEntry(card.dataset.id);
+  const c = e.target.closest(".entry-card");
+  if (!c) return;
+
+  history.pushState(null, "", "?id=" + c.dataset.id);
+  loadEntry(c.dataset.id);
 });
 
 /* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded", ()=>{
-  ensureLegalModal();
-  ensureHeaderHomeLink();
+document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
   initSearch();
 
