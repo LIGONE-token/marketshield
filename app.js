@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / REPARIERT)
+   MarketShield – app.js (STABIL / FINAL)
 ===================================================== */
 
 let currentEntryId = null;
@@ -51,7 +51,7 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= SCORES (LOCKED) ================= */
+/* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -62,7 +62,6 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
-/* 🔴🟡🟢 Industrie-Verarbeitungsgrad mit Farbübergang */
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -70,9 +69,9 @@ function renderIndustry(score) {
   const value = Math.max(0, Math.min(10, n));
   const w = Math.round((value / 10) * 80);
 
-  let color = "#2e7d32"; // grün
-  if (value >= 4) color = "#f9a825"; // gelb
-  if (value >= 7) color = "#c62828"; // rot
+  let color = "#2e7d32";
+  if (value >= 4) color = "#f9a825";
+  if (value >= 7) color = "#c62828";
 
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
@@ -88,32 +87,29 @@ function renderScoreBlock(score, processing, size = 13) {
   return `
     <div style="margin:12px 0;">
       ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
           <div>${h}</div>
           <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
         </div>` : ""}
-
       ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-top:6px;">
           <div>${i}</div>
           <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
         </div>` : ""}
     </div>`;
 }
 
-/* ================= LISTE (Kurzansicht = 1 Zeile) ================= */
+/* ================= LISTE ================= */
 function renderList(data) {
   const box = $("results");
   if (!box) return;
 
   box.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-        ${escapeHtml(e.title || "")}
-      </div>
+      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-        ${escapeHtml(shortText(e.summary || "", 220))}
+      <div style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        ${escapeHtml(shortText(e.summary))}
       </div>
     </div>
   `).join("");
@@ -139,11 +135,27 @@ async function loadEntry(id) {
       ${escapeHtml(normalizeText(e.summary))}
     </div>
 
+    <button id="reportBtn" type="button">
+      Produkt / Problem melden<br>
+      <small>Anonym · in 1 Minute · hilft allen</small>
+    </button>
+
     <div id="entryActions"></div>
   `;
 
   renderEntryActions(e.title);
 }
+
+/* ================= REPORT (STABIL & ORTSFEST) ================= */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#reportBtn");
+  if (!btn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  alert("Reportbutton klickbar – hier kommt dein Modal/Insert rein.");
+});
 
 /* ================= SOCIAL ================= */
 function renderEntryActions(title) {
@@ -155,7 +167,7 @@ function renderEntryActions(title) {
   const encTitle = encodeURIComponent(title + " – MarketShield");
 
   box.innerHTML = `
-    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+    <div style="margin-top:24px;border-top:1px solid #ddd;padding-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
       <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
       <button onclick="window.print()">🖨️ Drucken</button>
       <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
@@ -165,26 +177,24 @@ function renderEntryActions(title) {
     </div>`;
 }
 
-/* ================= SEARCH (korrekt: Titel ODER Summary) ================= */
+/* ================= SEARCH ================= */
 async function smartSearch(q) {
   const term = q.trim();
   if (term.length < 2) return [];
 
   const enc = encodeURIComponent(term);
-
   return await supa(
-    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)&limit=60`
+    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
   );
 }
 
 function initSearch() {
   const input = $("searchInput");
-  const box = $("results");
-  if (!input || !box) return;
+  if (!input) return;
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) return box.innerHTML = "";
+    if (q.length < 2) return;
     renderList(await smartSearch(q));
   });
 }
@@ -199,6 +209,7 @@ async function loadCategories() {
 
   (data.categories || []).forEach(c => {
     const b = document.createElement("button");
+    b.type = "button";
     b.textContent = c.title;
     b.onclick = () => loadCategory(c.title);
     grid.appendChild(b);
@@ -211,22 +222,13 @@ async function loadCategory(cat) {
   ));
 }
 
-/* ================= NAV (STABIL) ================= */
+/* ================= NAVIGATION (Richtig!) ================= */
 document.addEventListener("click", (e) => {
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
 
-  if (
-    e.target.closest("input") ||
-    e.target.closest("textarea") ||
-    e.target.closest("button") ||
-    e.target.closest("form") ||
-    e.target.closest(".category-grid")
-  ) return;
-
-  const c = e.target.closest(".entry-card");
-  if (!c) return;
-
-  history.pushState(null, "", "?id=" + c.dataset.id);
-  loadEntry(c.dataset.id);
+  history.pushState(null, "", "?id=" + card.dataset.id);
+  loadEntry(card.dataset.id);
 });
 
 /* ================= INIT ================= */
