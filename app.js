@@ -231,22 +231,34 @@ async function loadEntry(id) {
 
   currentEntryId = id;
 
+  const isHouseholdHelp =
+    e.category === "Gesundheit" &&
+    e.type === "thema" &&
+    (!e.score || e.score <= 0) &&
+    (!e.processing_score || e.processing_score <= 0);
+
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-    ${renderScoreBlock(e.score, e.processing_score)}
-    ${renderLegalMiniLink()}
 
-    <div style="line-height:1.6;">
-     ${renderMarkdownTables(normalizeText(e.summary))}
+    ${!isHouseholdHelp ? renderScoreBlock(e.score, e.processing_score) : ""}
+
+    <div style="white-space:pre-wrap;line-height:1.7;font-size:16px;">
+      ${escapeHtml(normalizeText(e.summary))}
     </div>
 
+    ${isHouseholdHelp ? `
+      <div style="margin-top:24px;padding:12px;border-left:4px solid #4caf50;background:#f6fff6;font-size:14px;">
+        Hinweis: Hausmittel beruhen auf traditioneller Erfahrung.
+        Sie ersetzen keine ärztliche Diagnose oder Behandlung.
+      </div>
+    ` : ""}
 
     <div id="entryActions"></div>
   `;
 
   renderEntryActions(e.title);
-  bindReportButton();
 }
+
 
 /* ================= SOCIAL (UNVERÄNDERT) ================= */
 function renderEntryActions(title) {
