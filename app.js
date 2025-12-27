@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (STABIL / REPARIERT)
+   MarketShield – app.js (STABIL / FINAL / INDUSTRIE 0–10)
 ===================================================== */
 
 let currentEntryId = null;
@@ -20,6 +20,20 @@ async function supa(query) {
   return JSON.parse(t || "[]");
 }
 
+async function supaPost(table, payload) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
 
@@ -30,7 +44,6 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-/* Textbereinigung */
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
@@ -51,7 +64,34 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= SCORES (LOCKED) ================= */
+/* ================= PIPE TABLE ================= */
+function renderPipeTable(text) {
+  const lines = text.trim().split("\n");
+  if (!lines[0]?.includes("|")) return null;
+
+  const rows = lines
+    .filter(l => !/^[-\s|]+$/.test(l))
+    .map(l => l.split("|").map(c => c.trim()).filter(Boolean));
+
+  if (rows.length < 2) return null;
+
+  const head = rows.shift();
+
+  return `
+    <table class="ms-table">
+      <thead>
+        <tr>${head.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+      </thead>
+      <tbody>
+        ${rows.map(r =>
+          `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
+        ).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+/* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -62,14 +102,29 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
+/* 🔥 Industrie-Score: 0–10 | grün → gelb → rot */
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-  const w = Math.round((n / 10) * 80);
+
+  const clamped = Math.max(0, Math.min(10, n));
+  const w = Math.round((clamped / 10) * 80);
+
+  let color = "#2e7d32";      // grün (0–3)
+  if (clamped >= 4) color = "#f9a825"; // gelb (4–6)
+  if (clamped >= 7) color = "#c62828"; // rot (7–10)
+
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
-      <div style="width:${w}px;height:8px;background:#2e7d32;border-radius:6px;"></div>
-    </div>`;
+      <div style="
+        width:${w}px;
+        height:8px;
+        background:${color};
+        border-radius:6px;
+        transition:width .2s ease, background .2s ease;
+      "></div>
+    </div>
+  `;
 }
 
 function renderScoreBlock(score, processing, size = 13) {
@@ -84,7 +139,6 @@ function renderScoreBlock(score, processing, size = 13) {
           <div>${h}</div>
           <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
         </div>` : ""}
-
       ${i ? `
         <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
           <div>${i}</div>
@@ -93,7 +147,7 @@ function renderScoreBlock(score, processing, size = 13) {
     </div>`;
 }
 
-/* ================= LISTE ================= */
+/* ================= LIST ================= */
 function renderList(data) {
   const box = $("results");
   if (!box) return;
@@ -120,15 +174,16 @@ async function loadEntry(id) {
 
   currentEntryId = id;
 
+  const text = normalizeText(e.summary);
+  const table = renderPipeTable(text);
+
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
-
     <h3>Zusammenfassung</h3>
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${escapeHtml(normalizeText(e.summary))}
+    <div class="entry-content">
+      ${table || `<div style="white-space:pre-wrap;line-height:1.6;">${escapeHtml(text)}</div>`}
     </div>
-
     <div id="entryActions"></div>
   `;
 
@@ -159,29 +214,30 @@ function renderEntryActions(title) {
 async function smartSearch(q) {
   const term = q.trim();
   if (term.length < 2) return [];
-
   const enc = encodeURIComponent(term);
 
-  // ✅ NUR Titel durchsuchen
+  await supaPost("search_queue", {
+    query: term,
+    created_at: new Date().toISOString()
+  });
+
   return await supa(
-    `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
+    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
   );
 }
 
-
 function initSearch() {
   const input = $("searchInput");
-  const box = $("results");
-  if (!input || !box) return;
+  if (!input) return;
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) return box.innerHTML = "";
+    if (q.length < 2) return $("results").innerHTML = "";
     renderList(await smartSearch(q));
   });
 }
 
-/* ================= KATEGORIEN ================= */
+/* ================= CATEGORIES ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
@@ -203,6 +259,34 @@ async function loadCategory(cat) {
   ));
 }
 
+/* ================= REPORT ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const reportBtn = $("reportBtn");
+  const modal = $("reportModal");
+  const closeBtn = $("closeReportModal");
+  const form = $("reportForm");
+
+  if (reportBtn && modal) reportBtn.onclick = () => modal.style.display = "flex";
+  if (closeBtn && modal) closeBtn.onclick = () => modal.style.display = "none";
+
+  if (form) {
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const text = form.description.value.trim();
+      if (text.length < 5) return;
+
+      await supaPost("reports", {
+        entry_id: currentEntryId,
+        description: text,
+        created_at: new Date().toISOString()
+      });
+
+      form.reset();
+      modal.style.display = "none";
+    };
+  }
+});
+
 /* ================= NAV ================= */
 document.addEventListener("click", (e) => {
   const c = e.target.closest(".entry-card");
@@ -215,7 +299,6 @@ document.addEventListener("click", (e) => {
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
   initSearch();
-
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
