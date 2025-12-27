@@ -124,6 +124,19 @@ async function loadEntry(id) {
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
 
+    <!-- LEGAL MINI LINK -->
+    <div
+      style="
+        font-size:11px;
+        opacity:0.6;
+        margin:4px 0 8px;
+        cursor:pointer;
+        text-decoration:underline;
+      "
+      onclick="openLegalPopup()">
+      Rechtlicher Hinweis
+    </div>
+
     <h3>Zusammenfassung</h3>
     <div style="white-space:pre-wrap;line-height:1.6;">
       ${escapeHtml(normalizeText(e.summary))}
@@ -162,12 +175,10 @@ async function smartSearch(q) {
 
   const enc = encodeURIComponent(term);
 
-  // ✅ NUR Titel durchsuchen
   return await supa(
     `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
   );
 }
-
 
 function initSearch() {
   const input = $("searchInput");
@@ -201,6 +212,60 @@ async function loadCategory(cat) {
   renderList(await supa(
     `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
   ));
+}
+
+/* ================= LEGAL POPUP (LOCKED) ================= */
+function ensureLegalPopup() {
+  if (document.getElementById("legalPopup")) return;
+
+  const div = document.createElement("div");
+  div.id = "legalPopup";
+  div.style.cssText = `
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    z-index:99999;
+    align-items:center;
+    justify-content:center;
+  `;
+
+  div.innerHTML = `
+    <div style="
+      background:#fff;
+      max-width:420px;
+      padding:16px 18px;
+      border-radius:12px;
+      font-size:14px;
+      line-height:1.45;
+    ">
+      <div style="font-weight:900;margin-bottom:6px;">
+        Rechtlicher Hinweis
+      </div>
+
+      <div style="margin-bottom:12px;">
+        MarketShield kann rechtlich nicht alle Informationen vollständig darstellen.
+        Inhalte unterliegen gesetzlichen, regulatorischen und haftungsrechtlichen Grenzen
+        sowie unvollständiger öffentlicher Informationslage.
+        Die Informationen dienen der sachlichen Einordnung und ersetzen keine medizinische
+        oder rechtliche Beratung.
+      </div>
+
+      <button onclick="closeLegalPopup()">Schließen</button>
+    </div>
+  `;
+
+  document.body.appendChild(div);
+}
+
+function openLegalPopup() {
+  ensureLegalPopup();
+  document.getElementById("legalPopup").style.display = "flex";
+}
+
+function closeLegalPopup() {
+  const p = document.getElementById("legalPopup");
+  if (p) p.style.display = "none";
 }
 
 /* ================= NAV ================= */
