@@ -35,16 +35,29 @@ function escapeHtml(s = "") {
 }
 
 function normalizeText(text) {
-  return String(text || "")
+  if (!text) return "";
+
+  return String(text)
+    // Zeilenweise arbeiten
+    .split(/\r?\n/)
+    .map(l => l.trim())
+
+    // ❌ GANZE ZEILEN MIT KI-/CONTENT-ARTEFAKTEN RAUS
+    .filter(l =>
+      !/contentReference\s*\[|oaicite\s*:|:contentReference/i.test(l)
+    )
+
+    // Wieder zusammenfügen
+    .join("\n")
+
+    // Normale Formatbereinigung
     .replace(/\*\*|##+|__+|~~+|`+/g, "")
-    .replace(/:contentReference\[[^\]]*\]\{[^}]*\}/gi, "")
-    .replace(/\[oaicite:[^\]]*\]/gi, "")
     .replace(/\\n/g, "\n")
-    .replace(/\r\n|\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .replace(/[ \t]{2,}/g, " ")
     .trim();
 }
+
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
