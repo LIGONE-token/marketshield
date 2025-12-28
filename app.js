@@ -247,26 +247,15 @@ async function loadCategories() {
 }
 
 /* ================= NAVIGATION (PASSIV) ================= */
-document.addEventListener("click", (e) => {
+function bindEntryCards() {
+  document.querySelectorAll(".entry-card").forEach(card => {
+    card.onclick = () => {
+      history.pushState({}, "", "?id=" + card.dataset.id);
+      loadEntry(card.dataset.id);
+    };
+  });
+}
 
-  // 🔒 HARTE UI-SPERRE – diese Klicks dürfen app.js NIE sehen
-  if (
-    e.target.closest("#reportBtn") ||
-    e.target.closest("#reportModal") ||
-    e.target.closest("#entryActions") ||
-    e.target.closest("button") ||
-    e.target.closest("a")
-  ) {
-    e.stopImmediatePropagation(); // 🔥 DAS FEHLT BISHER
-    return;
-  }
-
-  const card = e.target.closest(".entry-card");
-  if (!card) return;
-
-  history.pushState({}, "", "?id=" + card.dataset.id);
-  loadEntry(card.dataset.id);
-}, true); // 🔥 CAPTURE – WICHTIG
 
 /* ================= HISTORY ================= */
 window.addEventListener("popstate", () => {
