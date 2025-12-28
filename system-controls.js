@@ -17,22 +17,53 @@
   }
 
   /* =====================================================
-     REPORT BUTTON (GLOBAL, IMMER)
+     SHARE-CONTEXT (IMMER DER AKTUELLE EINTRAG)
+  ===================================================== */
+  function getShareContext() {
+    const url = location.href;
+
+    const title =
+      document.querySelector("h2")?.textContent?.trim() ||
+      document.title ||
+      "MarketShield";
+
+    let text =
+      document.querySelector("#entryContent p")?.textContent?.trim() ||
+      "";
+
+    if (text.length > 180) {
+      text = text.slice(0, 177).trim() + "…";
+    }
+
+    if (!text) {
+      text = "Transparente Informationen auf MarketShield.";
+    }
+
+    return {
+      url,
+      title,
+      text,
+      fullText: `${title} – ${text}`
+    };
+  }
+
+  /* =====================================================
+     REPORT BUTTON (GLOBAL)
   ===================================================== */
   function bindReportButton() {
     const btn = $("reportBtn");
     const modal = $("reportModal");
     const close = $("closeReportModal");
 
-    if (!btn || !modal) return;
+    if (btn && modal) {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        modal.style.display = "block";
+        log("Report geöffnet");
+      };
+    }
 
-    btn.onclick = (e) => {
-      e.preventDefault();
-      modal.style.display = "block";
-      log("Report geöffnet");
-    };
-
-    if (close) {
+    if (close && modal) {
       close.onclick = () => {
         modal.style.display = "none";
       };
@@ -40,7 +71,7 @@
   }
 
   /* =====================================================
-     REPORT SUBMIT → SUPABASE (GLOBAL)
+     REPORT SUBMIT → SUPABASE
   ===================================================== */
   function bindReportSubmit() {
     const form = $("reportForm");
@@ -136,26 +167,22 @@
 
   /* =====================================================
      SOCIAL / KOPIEREN / DRUCKEN
-     (data-action="copy|print|telegram|whatsapp|x|facebook")
+     data-action="copy|print|telegram|whatsapp|x|facebook"
   ===================================================== */
   function bindActions() {
-    document.body.onclick = (e) => {
+    document.body.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
 
       const action = btn.dataset.action;
-      const url = location.href;
-      const title =
-        document.querySelector("h2")?.textContent ||
-        document.title ||
-        "MarketShield";
+      const ctx = getShareContext();
 
-      const encUrl = encodeURIComponent(url);
-      const encTitle = encodeURIComponent(title);
+      const encUrl = encodeURIComponent(ctx.url);
+      const encText = encodeURIComponent(ctx.fullText);
 
       if (action === "copy") {
-        navigator.clipboard.writeText(url);
-        alert("Link kopiert");
+        navigator.clipboard.writeText(`${ctx.fullText}\n${ctx.url}`);
+        alert("Link & Beschreibung kopiert");
         return;
       }
 
@@ -165,29 +192,41 @@
       }
 
       if (action === "telegram") {
-        window.open(`https://t.me/share/url?url=${encUrl}&text=${encTitle}`, "_blank");
+        window.open(
+          `https://t.me/share/url?url=${encUrl}&text=${encText}`,
+          "_blank"
+        );
         return;
       }
 
       if (action === "whatsapp") {
-        window.open(`https://wa.me/?text=${encTitle}%20${encUrl}`, "_blank");
+        window.open(
+          `https://wa.me/?text=${encText}%20${encUrl}`,
+          "_blank"
+        );
         return;
       }
 
       if (action === "x") {
-        window.open(`https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}`, "_blank");
+        window.open(
+          `https://twitter.com/intent/tweet?text=${encText}&url=${encUrl}`,
+          "_blank"
+        );
         return;
       }
 
       if (action === "facebook") {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encUrl}`, "_blank");
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encUrl}`,
+          "_blank"
+        );
         return;
       }
-    };
+    });
   }
 
   /* =====================================================
-     BINDINGS ZENTRAL
+     ZENTRALES BINDING
   ===================================================== */
   function bindAll() {
     bindReportButton();
