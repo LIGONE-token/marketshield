@@ -257,6 +257,26 @@ document.addEventListener("click", (e) => {
   history.pushState({}, "", "?id=" + card.dataset.id);
   loadEntry(card.dataset.id);
 });
+document.addEventListener("click", (e) => {
+
+  // ⛔️ UI-Elemente dürfen NICHT navigieren
+  if (
+    e.target.closest("#reportBtn") ||
+    e.target.closest("#reportModal") ||
+    e.target.closest("#entryActions") ||
+    e.target.closest("button") ||
+    e.target.closest("a")
+  ) {
+    return;
+  }
+
+  // ✅ Kurzansicht (Card) darf komplett klickbar sein
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
+
+  history.pushState({}, "", "?id=" + card.dataset.id);
+  loadEntry(card.dataset.id);
+});
 
 /* ================= HISTORY ================= */
 window.addEventListener("popstate", () => {
