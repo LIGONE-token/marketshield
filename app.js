@@ -36,10 +36,13 @@ function escapeHtml(s = "") {
 function normalizeText(text) {
   return String(text || "")
     .replace(/\*\*|##+|__+|~~+|`+/g, "")
+    .replace(/\\n/g, "\n")          // ✅ WICHTIG: \n als Text → echte Zeile
     .replace(/\r\n|\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]{2,}/g, " ")     // ✅ doppelte Spaces weg
     .trim();
 }
+
 
 function shortText(t, max = 160) {
   t = normalizeText(t);
