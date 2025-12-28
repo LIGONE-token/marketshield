@@ -145,15 +145,40 @@ function renderEntryActions(title) {
   const encTitle = encodeURIComponent(title + " – MarketShield");
 
   box.innerHTML = `
-    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
-      <button onclick="window.print()">🖨️ Drucken</button>
-      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
-      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
-      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
-    </div>`;
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button id="btnCopy">🔗 Kopieren</button>
+      <button id="btnPrint">🖨️ Drucken</button>
+      <button id="btnTelegram">Telegram</button>
+      <button id="btnWhatsapp">WhatsApp</button>
+      <button id="btnX">X</button>
+      <button id="btnFacebook">Facebook</button>
+    </div>
+  `;
+
+  $("btnCopy").addEventListener("click", () => {
+    navigator.clipboard.writeText(url);
+    alert("Link kopiert");
+  });
+
+  $("btnPrint").addEventListener("click", () => window.print());
+
+  $("btnTelegram").addEventListener("click", () =>
+    window.open(`https://t.me/share/url?url=${encUrl}&text=${encTitle}`, "_blank")
+  );
+
+  $("btnWhatsapp").addEventListener("click", () =>
+    window.open(`https://wa.me/?text=${encTitle}%20${encUrl}`, "_blank")
+  );
+
+  $("btnX").addEventListener("click", () =>
+    window.open(`https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}`, "_blank")
+  );
+
+  $("btnFacebook").addEventListener("click", () =>
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encUrl}`, "_blank")
+  );
 }
+
 
 /* ================= SEARCH ================= */
 async function smartSearch(q) {
