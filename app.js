@@ -57,7 +57,10 @@ function shortText(t, max = 160) {
 /* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
+
+  // ❌ nur 1–100 zulässig
+  if (!Number.isFinite(n) || n < 1 || n > 100) return "";
+
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
@@ -65,16 +68,18 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
+
 function renderIndustry(score) {
   const n = Number(score);
-  if (!Number.isFinite(n) || n < 0) return ""; // 0 ist erlaubt!
 
-  // 0..10 → 0..80px
-  const clamped = Math.max(0, Math.min(10, n));
+  // ❌ nur 1–10 zulässig
+  if (!Number.isFinite(n) || n < 1) return "";
+
+  const clamped = Math.min(10, n);
   const w = Math.round((clamped / 10) * 80);
 
-  // Farbe: 0 = grün (120°), 5 = gelb (60°), 10 = rot (0°)
-  const hue = Math.round(120 * (1 - clamped / 10)); // 120→0
+  // 1 = grün → 10 = rot
+  const hue = Math.round(120 * (1 - clamped / 10));
   const barColor = `hsl(${hue}, 90%, 45%)`;
 
   return `
@@ -82,6 +87,7 @@ function renderIndustry(score) {
       <div style="width:${w}px;height:8px;background:${barColor};border-radius:6px;"></div>
     </div>`;
 }
+
 
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
