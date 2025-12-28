@@ -1,12 +1,11 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / WIE VORHER)
-   STATUS:
-   ✅ „Zur Startseite“ funktioniert IMMER (global gebunden)
-   ✅ Report-Button funktioniert NUR im Eintrag (kontextabhängig)
-   ✅ KEINE neuen Buttons
-   ✅ Tabellen korrekt gerendert
-   ✅ Social / Kopieren / Drucken vorhanden
-   ✅ Suchanfragen werden gespeichert
+   MarketShield – app.js (FINAL / STABIL / FEHLERFREI)
+   ✔ KEINE neuen Buttons
+   ✔ Bestehende Buttons/Links oben funktionieren
+   ✔ Report + Zur Startseite + Rechtlicher Hinweis OK
+   ✔ Tabellen korrekt
+   ✔ Social / Kopieren / Drucken vorhanden
+   ✔ Suchanfragen werden gespeichert
 ===================================================== */
 
 let currentEntryId = null;
@@ -42,17 +41,11 @@ function escapeHtml(s = "") {
     .replace(/"/g, "&quot;");
 }
 
-function normalizeText(text) {
-  if (!text) return "";
-  return String(text)
-    .replace(/\*\*/g, "")
-    .replace(/##+/g, "")
-    .replace(/__+/g, "")
-    .replace(/~~+/g, "")
-    .replace(/`+/g, "")
+function normalizeText(t = "") {
+  return String(t)
+    .replace(/\*\*|##+|__+|~~+|`+/g, "")
     .replace(/\\n/g, "\n")
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
+    .replace(/\r\n|\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -97,7 +90,7 @@ function renderScoreBlock(score, processing) {
 }
 
 /* ================= STYLES ================= */
-function ensureStyles() {
+(function injectStyles(){
   if (document.getElementById("msStyles")) return;
   const s = document.createElement("style");
   s.id = "msStyles";
@@ -113,50 +106,45 @@ function ensureStyles() {
     .ms-modal .row{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
   `;
   document.head.appendChild(s);
-}
+})();
 
 /* ================= TABLE RENDER ================= */
-function isSeparator(line) {
+function isSeparator(line){
   return /^[\s|\-:]+$/.test(line) && line.includes("-");
 }
-
-function splitRow(line) {
-  return line.replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
+function splitRow(line){
+  return line.replace(/^\|/,"").replace(/\|$/,"").split("|").map(c=>c.trim());
 }
-
-function parseMarkdown(text) {
+function parseMarkdown(text){
   const lines = normalizeText(text).split("\n");
-  const blocks = [];
+  const out = [];
   let i = 0;
-
-  while (i < lines.length) {
-    if (lines[i].includes("|") && lines[i+1] && isSeparator(lines[i+1])) {
+  while(i < lines.length){
+    if(lines[i].includes("|") && lines[i+1] && isSeparator(lines[i+1])){
       const header = splitRow(lines[i]);
       const rows = [];
       i += 2;
-      while (i < lines.length && lines[i].includes("|")) {
+      while(i < lines.length && lines[i].includes("|")){
         rows.push(splitRow(lines[i]));
         i++;
       }
-      blocks.push({type:"table", header, rows});
+      out.push({type:"table",header,rows});
     } else {
       let buf = lines[i];
       i++;
-      while (i < lines.length && lines[i].trim() !== "") {
+      while(i < lines.length && lines[i].trim() !== ""){
         buf += "\n" + lines[i];
         i++;
       }
-      blocks.push({type:"text", value:buf});
-      while (i < lines.length && lines[i].trim()==="") i++;
+      out.push({type:"text",value:buf});
+      while(i < lines.length && lines[i].trim()==="") i++;
     }
   }
-  return blocks;
+  return out;
 }
-
-function renderRichText(text) {
-  ensureStyles();
-  return parseMarkdown(text).map(b => {
-    if (b.type === "table") {
+function renderRichText(text){
+  return parseMarkdown(text).map(b=>{
+    if(b.type==="table"){
       return `<div class="ms-table-wrap"><table class="ms-table">
         <thead><tr>${b.header.map(h=>`<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
         <tbody>${b.rows.map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody>
@@ -167,81 +155,103 @@ function renderRichText(text) {
 }
 
 /* ================= LIST ================= */
-function renderList(data) {
+function renderList(data){
   $("results").innerHTML = (data||[]).map(e=>`
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score,e.processing_score)}
       <div>${escapeHtml(shortText(e.summary))}</div>
-    </div>
-  `).join("");
+    </div>`).join("");
 }
 
-/* ================= HOME (GLOBAL) ================= */
-function goHome() {
+/* ================= HOME ================= */
+function goHome(){
   currentEntryId = null;
   history.pushState(null,"",location.pathname);
   $("results").innerHTML = "";
 }
 
-function bindHomeOnce() {
+/* ================= TOP NAV ================= */
+function bindTopNav(){
   [
     $("backHomeBtn"),
     $("backHome"),
     $("homeLink"),
     document.querySelector('[data-action="home"]')
   ].filter(Boolean).forEach(el=>{
-    el.onclick = (e)=>{
+    el.addEventListener("click",e=>{
       e.preventDefault();
       goHome();
-    };
+    });
   });
-}
 
-/* ================= REPORT ================= */
-function openReport(entry) {
-  ensureStyles();
-  const bd = document.createElement("div");
-  bd.className="ms-modal-backdrop";
-  bd.innerHTML=`
-    <div class="ms-modal">
-      <h3>Meldung senden</h3>
-      <textarea id="repTxt" placeholder="Bitte beschreibe kurz, was korrigiert werden soll."></textarea>
-      <div class="row">
-        <button id="repCancel">Abbrechen</button>
-        <button id="repSend">Senden</button>
-      </div>
-    </div>`;
-  document.body.appendChild(bd);
-
-  $("repCancel").onclick=()=>bd.remove();
-  $("repSend").onclick=async()=>{
-    const t=$("repTxt").value.trim();
-    if(t.length<3)return;
-    await supa("reports",{method:"POST",headers:{Prefer:"return=minimal"},body:{description:t,entry_id:entry.id}});
-    bd.remove();
-    alert("Danke! Meldung gespeichert.");
-  };
-}
-
-function bindReport(entry){
   [
     $("reportBtn"),
     $("reportButton"),
     document.querySelector('[data-action="report"]')
   ].filter(Boolean).forEach(el=>{
-    el.onclick=(e)=>{
+    el.addEventListener("click",e=>{
       e.preventDefault();
-      openReport(entry);
-    };
+      if(!currentEntryId){ alert("Bitte zuerst einen Eintrag öffnen."); return; }
+      openReport();
+    });
   });
+
+  [
+    $("legalLink"),
+    document.querySelector('[data-action="legal"]')
+  ].filter(Boolean).forEach(el=>{
+    el.addEventListener("click",e=>{
+      e.preventDefault();
+      openLegal();
+    });
+  });
+}
+
+/* ================= REPORT ================= */
+function openReport(){
+  const bg=document.createElement("div");
+  bg.className="ms-modal-backdrop";
+  bg.innerHTML=`
+    <div class="ms-modal">
+      <h3>Meldung senden</h3>
+      <p>Bitte kurz und sachlich beschreiben, was korrigiert werden soll.</p>
+      <textarea id="repTxt" placeholder="Deine Meldung …"></textarea>
+      <div class="row">
+        <button id="repCancel">Abbrechen</button>
+        <button id="repSend">Senden</button>
+      </div>
+    </div>`;
+  document.body.appendChild(bg);
+
+  $("repCancel").onclick=()=>bg.remove();
+  $("repSend").onclick=async()=>{
+    const t=$("repTxt").value.trim();
+    if(t.length<3)return;
+    await supa("reports",{method:"POST",headers:{Prefer:"return=minimal"},body:{description:t,entry_id:currentEntryId}});
+    bg.remove();
+    alert("Danke! Meldung gespeichert.");
+  };
+}
+
+/* ================= LEGAL ================= */
+function openLegal(){
+  const bg=document.createElement("div");
+  bg.className="ms-modal-backdrop";
+  bg.innerHTML=`
+    <div class="ms-modal">
+      <h3>Rechtlicher Hinweis</h3>
+      <p>MarketShield dient ausschließlich der Information. Keine Beratung. Angaben ohne Gewähr.</p>
+      <div class="row"><button id="legalClose">Schließen</button></div>
+    </div>`;
+  document.body.appendChild(bg);
+  $("legalClose").onclick=()=>bg.remove();
 }
 
 /* ================= SOCIAL ================= */
 function renderEntryActions(entry){
   const box=$("entryActions");
   if(!box)return;
-  ensureStyles();
   const url=location.href;
   const enc=encodeURIComponent(url);
   const title=encodeURIComponent(entry.title+" – MarketShield");
@@ -262,7 +272,7 @@ function renderEntryActions(entry){
 async function loadEntry(id){
   const d=await supa(`entries?select=*&id=eq.${id}`);
   const e=d[0]; if(!e)return;
-  currentEntryId=id;
+  currentEntryId=e.id;
   $("results").innerHTML=`
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score,e.processing_score)}
@@ -270,7 +280,6 @@ async function loadEntry(id){
     ${renderRichText(e.summary)}
     <div id="entryActions"></div>`;
   renderEntryActions(e);
-  bindReport(e);
 }
 
 /* ================= SEARCH ================= */
@@ -280,16 +289,13 @@ async function saveSearch(q){
   lastQ=q;
   await supa("search_queue",{method:"POST",headers:{Prefer:"return=minimal"},body:{query:q}});
 }
-
 async function smartSearch(q){
   if(q.length<2)return[];
   const enc=encodeURIComponent(q);
   return await supa(`entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`);
 }
-
 function initSearch(){
-  const i=$("searchInput");
-  if(!i)return;
+  const i=$("searchInput"); if(!i)return;
   i.oninput=async()=>{
     const q=i.value.trim();
     if(q.length<2){$("results").innerHTML="";return;}
@@ -300,8 +306,7 @@ function initSearch(){
 
 /* ================= CATEGORIES ================= */
 async function loadCategories(){
-  const g=document.querySelector(".category-grid");
-  if(!g)return;
+  const g=document.querySelector(".category-grid"); if(!g)return;
   const d=await fetch("categories.json").then(r=>r.json());
   g.innerHTML="";
   d.categories.forEach(c=>{
@@ -311,7 +316,6 @@ async function loadCategories(){
     g.appendChild(b);
   });
 }
-
 async function loadCategory(cat){
   renderList(await supa(`entries?select=id,title,summary,score,processing_score&category=eq.${cat}`));
 }
@@ -324,7 +328,6 @@ document.addEventListener("click",e=>{
   history.pushState(null,"","?id="+c.dataset.id);
   loadEntry(c.dataset.id);
 });
-
 window.addEventListener("popstate",()=>{
   const id=new URLSearchParams(location.search).get("id");
   if(id)loadEntry(id); else goHome();
@@ -332,8 +335,7 @@ window.addEventListener("popstate",()=>{
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded",()=>{
-  ensureStyles();
-  bindHomeOnce();
+  bindTopNav();
   loadCategories();
   initSearch();
   const id=new URLSearchParams(location.search).get("id");
