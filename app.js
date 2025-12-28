@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / KOMPLETT / STABIL)
+   MarketShield – app.js (FINAL / HTML-KOMPATIBEL)
 ===================================================== */
 
 let currentEntryId = null;
@@ -15,9 +15,8 @@ async function supa(query) {
       Authorization: `Bearer ${SUPABASE_KEY}`
     }
   });
-  const t = await r.text();
-  if (!r.ok) throw new Error(t);
-  return JSON.parse(t || "[]");
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
 }
 
 async function supaPost(table, payload) {
@@ -26,8 +25,7 @@ async function supaPost(table, payload) {
     headers: {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(payload)
   });
@@ -38,195 +36,141 @@ async function supaPost(table, payload) {
 const $ = (id) => document.getElementById(id);
 
 function escapeHtml(s = "") {
-  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-}
-
-function normalizeText(t="") {
-  return t
-    .replace(/\*\*/g,"")
-    .replace(/##+/g,"")
-    .replace(/__+/g,"")
-    .replace(/~~+/g,"")
-    .replace(/`+/g,"")
-    .replace(/\r\n/g,"\n")
-    .replace(/\r/g,"\n")
-    .replace(/\n{3,}/g,"\n\n")
-    .trim();
-}
-
-function shortText(t,max=160){
-  t = normalizeText(t).replace(/\s+/g," ");
-  return t.length>max ? t.slice(0,max)+" …" : t;
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 /* ================= TABELLEN ================= */
-function renderSummary(text="") {
-  text = normalizeText(text);
+function renderSummary(text = "") {
   const lines = text.split("\n");
   let html = "";
   let i = 0;
-  const isSep = l => /^[-| :]+$/.test(l||"");
+  const isSep = l => /^[-| :]+$/.test(l || "");
 
   while (i < lines.length) {
-    if (lines[i].includes("|") && isSep(lines[i+1])) {
-      const head = lines[i].split("|").map(c=>c.trim()).filter(Boolean);
-      i+=2;
-      const rows=[];
-      while(lines[i] && lines[i].includes("|")){
-        rows.push(lines[i].split("|").map(c=>c.trim()).filter(Boolean));
+    if (lines[i].includes("|") && isSep(lines[i + 1])) {
+      const head = lines[i].split("|").map(c => c.trim()).filter(Boolean);
+      i += 2;
+      const rows = [];
+      while (lines[i] && lines[i].includes("|")) {
+        rows.push(lines[i].split("|").map(c => c.trim()).filter(Boolean));
         i++;
       }
       html += `
-        <table style="border-collapse:collapse;width:100%;margin:16px 0">
-          <thead>
-            <tr>${head.map(h=>`<th style="border:1px solid #ccc;padding:6px">${escapeHtml(h)}</th>`).join("")}</tr>
-          </thead>
+        <table>
+          <thead><tr>${head.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
           <tbody>
-            ${rows.map(r=>`<tr>${r.map(c=>`<td style="border:1px solid #ccc;padding:6px">${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}
+            ${rows.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}
           </tbody>
-        </table>
-      `;
+        </table>`;
     } else {
-      if(lines[i].trim()) html += `<p>${escapeHtml(lines[i])}</p>`;
+      if (lines[i].trim()) html += `<p>${escapeHtml(lines[i])}</p>`;
       i++;
     }
   }
   return html;
 }
 
-/* ================= SCORES ================= */
-function renderHealth(score){
-  const n=Number(score);
-  if(!Number.isFinite(n)||n<=0) return "";
-  if(n>=80) return "💚💚💚";
-  if(n>=60) return "💚💚";
-  if(n>=40) return "💚";
-  if(n>=20) return "💛";
-  return "⚠️❗⚠️";
-}
-
-function renderIndustry(score){
-  const n=Number(score);
-  if(!Number.isFinite(n)||n<=0) return "";
-  const v=Math.max(0,Math.min(10,n));
-  const w=Math.round((v/10)*80);
-  let c="#2e7d32";
-  if(v>=4) c="#f9a825";
-  if(v>=7) c="#c62828";
-  return `
-    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px">
-      <div style="width:${w}px;height:8px;background:${c};border-radius:6px"></div>
-    </div>`;
-}
-
-function renderScoreBlock(score,processing){
-  const h=renderHealth(score);
-  const i=renderIndustry(processing);
-  if(!h&&!i) return "";
-  return `
-    <div style="margin:12px 0">
-      ${h?`<div style="display:grid;grid-template-columns:90px 1fr;gap:8px">
-        <div>${h}</div><div>Gesundheitsscore</div></div>`:""}
-      ${i?`<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;margin-top:6px">
-        <div>${i}</div><div>Industrie-Verarbeitungsgrad</div></div>`:""}
-    </div>`;
-}
-
 /* ================= LISTE ================= */
-function renderList(data){
-  $("results").innerHTML=(data||[]).map(e=>`
+function renderList(data) {
+  $("results").innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <b>${escapeHtml(e.title)}</b>
-      ${renderScoreBlock(e.score,e.processing_score)}
-      <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-        ${escapeHtml(shortText(e.summary))}
-      </div>
-    </div>`).join("");
+      <strong>${escapeHtml(e.title)}</strong>
+      <div class="preview">${escapeHtml(e.summary || "").slice(0, 140)}…</div>
+    </div>
+  `).join("");
 }
 
 /* ================= DETAIL ================= */
-async function loadEntry(id){
-  const d=await supa(`entries?select=*&id=eq.${id}`);
-  const e=d[0]; if(!e) return;
-  currentEntryId=id;
-  $("results").innerHTML=`
+async function loadEntry(id) {
+  const d = await supa(`entries?select=*&id=eq.${id}`);
+  const e = d[0];
+  if (!e) return;
+
+  currentEntryId = id;
+  $("results").innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-    ${renderScoreBlock(e.score,e.processing_score)}
-    <a href="#" id="legalLink">Rechtlicher Hinweis</a>
-    <div>${renderSummary(e.summary)}</div>
-    <div id="entryActions"></div>`;
-  renderEntryActions(e.title);
-  $("legalLink").onclick=(ev)=>{ev.preventDefault();openLegal();};
+    ${renderSummary(e.summary || "")}
+  `;
+  $("backHome").style.display = "block";
 }
 
-/* ================= SOCIAL ================= */
-function renderEntryActions(title){
-  const u=location.href;
-  const eu=encodeURIComponent(u);
-  const et=encodeURIComponent(title+" – MarketShield");
-  $("entryActions").innerHTML=`
-    <div style="margin-top:24px;display:flex;gap:8px;flex-wrap:wrap">
-      <button onclick="navigator.clipboard.writeText('${u}')">Kopieren</button>
-      <button onclick="window.print()">Drucken</button>
-      <button onclick="window.open('https://wa.me/?text=${et}%20${eu}')">WhatsApp</button>
-      <button onclick="window.open('https://t.me/share/url?url=${eu}&text=${et}')">Telegram</button>
-      <button onclick="window.open('https://twitter.com/intent/tweet?url=${eu}&text=${et}')">X</button>
-      <button onclick="window.open('https://facebook.com/sharer/sharer.php?u=${eu}')">Facebook</button>
-    </div>`;
-}
+/* ================= REPORT MODAL (HTML EXISTIERT SCHON) ================= */
+const reportModal = $("reportModal");
+const reportForm = $("reportForm");
 
-/* ================= LEGAL ================= */
-function openLegal(){
-  alert("MarketShield informiert neutral. Bestimmte Bewertungen dürfen rechtlich nicht vollständig dargestellt werden.");
-}
+$("reportBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  reportModal.style.display = "flex";
+});
 
-/* ================= REPORT ================= */
-document.addEventListener("click",(e)=>{
-  const btn=e.target.closest("#reportBtn");
-  if(!btn) return;
-  e.preventDefault(); e.stopPropagation();
-  const txt=prompt("Produkt / Problem melden:");
-  if(txt && txt.length>=5){
-    supaPost("reports",{description:txt,entry_id:currentEntryId,url:location.href});
-    alert("Danke! Meldung gespeichert.");
-  }
+$("closeReportModal").addEventListener("click", () => {
+  reportModal.style.display = "none";
+});
+
+reportForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const txt = reportForm.description.value.trim();
+  if (txt.length < 5) return;
+
+  await supaPost("reports", {
+    description: txt,
+    entry_id: currentEntryId,
+    url: location.href
+  });
+
+  reportForm.reset();
+  reportModal.style.display = "none";
+  alert("Danke! Meldung wurde gespeichert.");
+});
+
+/* ================= BACK HOME ================= */
+$("backHome").addEventListener("click", () => {
+  history.pushState(null, "", location.pathname);
+  $("backHome").style.display = "none";
+  loadInitial();
 });
 
 /* ================= SEARCH ================= */
-async function smartSearch(q){
-  const enc=encodeURIComponent(q);
-  return await supa(`entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`);
-}
-
-$("searchInput")?.addEventListener("input",async e=>{
-  const q=e.target.value.trim();
-  if(q.length<2) return;
-  renderList(await smartSearch(q));
+$("searchInput").addEventListener("input", async (e) => {
+  const q = e.target.value.trim();
+  if (q.length < 2) return;
+  renderList(await supa(
+    `entries?select=id,title,summary&or=(title.ilike.%25${q}%25,summary.ilike.%25${q}%25)`
+  ));
 });
 
-/* ================= KATEGORIEN ================= */
-async function loadCategories(){
-  const g=document.querySelector(".category-grid"); if(!g) return;
-  const d=await fetch("categories.json").then(r=>r.json());
-  g.innerHTML="";
-  d.categories.forEach(c=>{
-    const b=document.createElement("button");
-    b.textContent=c.title;
-    b.onclick=()=>loadCategory(c.title);
+/* ================= CATEGORIES ================= */
+async function loadCategories() {
+  const g = document.querySelector(".category-grid");
+  const d = await fetch("categories.json").then(r => r.json());
+  g.innerHTML = "";
+  d.categories.forEach(c => {
+    const b = document.createElement("button");
+    b.textContent = c.title;
+    b.onclick = () => loadCategory(c.title);
     g.appendChild(b);
   });
 }
 
-async function loadCategory(cat){
-  renderList(await supa(`entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`));
+async function loadCategory(cat) {
+  renderList(await supa(
+    `entries?select=id,title,summary&category=eq.${encodeURIComponent(cat)}`
+  ));
 }
 
 /* ================= NAV ================= */
-document.addEventListener("click",(e)=>{
-  const c=e.target.closest(".entry-card");
-  if(!c||e.target.closest("#reportBtn")) return;
-  loadEntry(c.dataset.id);
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
+  loadEntry(card.dataset.id);
 });
 
 /* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded",()=>loadCategories());
+async function loadInitial() {
+  renderList(await supa("entries?select=id,title,summary&limit=30"));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadCategories();
+  loadInitial();
+});
