@@ -1,5 +1,5 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / LOCKED)
+   MarketShield – app.js (FINAL / LOCKED / REPORT FIXED)
 ===================================================== */
 
 let currentEntryId = null;
@@ -49,7 +49,7 @@ function shortText(t, max = 160) {
 }
 
 /* ================= SCORES (LOCKED) ================= */
-/* 0 = nichts anzeigen | Warnung = ❗⚠️❗ (wie vorher) */
+/* 0 = nicht anzeigen | Warnung = ❗⚠️❗ (wie vorher) */
 
 function renderHealth(score) {
   const n = Number(score);
@@ -59,7 +59,6 @@ function renderHealth(score) {
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
   if (n >= 20) return "💛";
-
   return "❗⚠️❗";
 }
 
@@ -68,7 +67,7 @@ function renderIndustry(score) {
   if (!Number.isFinite(n) || n <= 0) return "";
 
   const clamped = Math.min(10, Math.max(1, n));
-  const MAX_WIDTH = 90;
+  const MAX_WIDTH = 90; // niemals Seitenbreite
   const width = Math.round((clamped / 10) * MAX_WIDTH);
   const hue = Math.round(120 - (clamped - 1) * (120 / 9)); // grün → rot
 
@@ -118,9 +117,7 @@ function renderSummaryHtml(raw) {
     const table = mdTableToHtml(block);
     if (table) return table;
 
-    return `<p style="margin:0 0 12px 0; white-space:pre-wrap; line-height:1.6;">
-      ${escapeHtml(block)}
-    </p>`;
+    return `<p style="margin:0 0 12px 0; white-space:pre-wrap; line-height:1.6;">${escapeHtml(block)}</p>`;
   }).join("");
 }
 
@@ -185,9 +182,7 @@ async function loadEntry(id) {
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
-    <div id="entryContent">
-      ${renderSummaryHtml(e.summary)}
-    </div>
+    <div id="entryContent">${renderSummaryHtml(e.summary)}</div>
     <div id="entryActions" style="margin-top:28px;"></div>
   `;
 
@@ -258,20 +253,70 @@ async function loadCategories() {
   });
 }
 
-/* ================= REPORT → SUPABASE ================= */
-document.addEventListener("click", (e) => {
-  if (e.target.id === "reportBtn") $("reportModal").style.display = "block";
-  if (e.target.id === "closeReportModal") $("reportModal").style.display = "none";
+/* ================= GLOBAL CLICK / NAV + MODALS ================= */
+document.addEventListener("click", async (e) => {
+  // Report: öffnen
+  if (e.target.closest("#reportBtn")) {
+    const modal = $("reportModal");
+    if (modal) modal.style.display = "block";
+    return;
+  }
+
+  // Report: schließen
+  if (e.target.closest("#closeReportModal")) {
+    const modal = $("reportModal");
+    if (modal) modal.style.display = "none";
+    return;
+  }
+
+  // Rechtlicher Hinweis öffnen
+  if (e.target.closest("#legalLink")) {
+    e.preventDefault();
+    const modal = $("legalModal");
+    if (modal) modal.style.display = "block";
+    return;
+  }
+
+  // Rechtlicher Hinweis schließen
+  if (e.target.closest("#closeLegalModal")) {
+    const modal = $("legalModal");
+    if (modal) modal.style.display = "none";
+    return;
+  }
+
+  // Entry Card Navigation
+  const card = e.target.closest(".entry-card");
+  if (card) {
+    const id = card.dataset.id;
+    if (!id) return;
+    history.pushState({}, "", "?id=" + id);
+    loadEntry(id);
+    return;
+  }
+
+  // Back Home
+  if (e.target.closest("#backHome")) {
+    e.preventDefault();
+    history.pushState({}, "", location.pathname);
+    showStart();
+    return;
+  }
 });
 
-const elReportForm = $("reportForm");
-if (elReportForm) {
-  elReportForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+/* ================= REPORT SUBMIT → SUPABASE.reports ================= */
+document.addEventListener("submit", async (e) => {
+  const form = e.target.closest("#reportForm");
+  if (!form) return;
 
-    const txt = elReportForm.description?.value.trim();
-    if (!txt || txt.length < 3) return alert("Bitte Beschreibung eingeben.");
+  e.preventDefault();
 
+  const txt = form.description?.value.trim();
+  if (!txt || txt.length < 3) {
+    alert("Bitte Beschreibung eingeben.");
+    return;
+  }
+
+  try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
       method: "POST",
       headers: {
@@ -287,42 +332,29 @@ if (elReportForm) {
       })
     });
 
-    if (!res.ok) return alert("Report fehlgeschlagen");
+    if (!res.ok) {
+      const t = await res.text();
+      console.error("REPORT INSERT FAILED:", t);
+      alert("Report fehlgeschlagen.");
+      return;
+    }
 
-    elReportForm.reset();
-    $("reportModal").style.display = "none";
+    form.reset();
+    const modal = $("reportModal");
+    if (modal) modal.style.display = "none";
     alert("Danke! Meldung wurde gespeichert.");
-  });
-}
-
-/* ================= RECHTLICHER HINWEIS ================= */
-$("legalLink")?.addEventListener("click", (e) => {
-  e.preventDefault();
-  $("legalModal").style.display = "block";
-});
-$("closeLegalModal")?.addEventListener("click", () => {
-  $("legalModal").style.display = "none";
+  } catch (err) {
+    console.error("REPORT ERROR:", err);
+    alert("Fehler beim Speichern des Reports.");
+  }
 });
 
-/* ================= NAVIGATION ================= */
-document.addEventListener("click", e => {
-  const card = e.target.closest(".entry-card");
-  if (!card) return;
-  history.pushState({}, "", "?id=" + card.dataset.id);
-  loadEntry(card.dataset.id);
-});
-
-$("backHome")?.addEventListener("click", (e) => {
-  e.preventDefault();
-  history.pushState({}, "", location.pathname);
-  showStart();
-});
-
-window.onpopstate = () => {
+/* ================= HISTORY ================= */
+window.addEventListener("popstate", () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
   else showStart();
-};
+});
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
