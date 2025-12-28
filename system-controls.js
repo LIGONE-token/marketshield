@@ -1,6 +1,6 @@
 /* =====================================================
    MarketShield – system-controls.js
-   SYSTEMFUNKTIONEN (STABIL > PERFORMANCE)
+   SYSTEMFUNKTIONEN (FINAL / SHARE-SICHER / STABIL)
 ===================================================== */
 
 (function () {
@@ -16,14 +16,116 @@
   }
 
   /* =====================================================
-     REPORT BUTTON – GLOBAL (UNBLOCKIERBAR)
+     UI ROOT – STABILER ANKER
+  ===================================================== */
+  function ensureUIRoot() {
+    let root = $("uiRoot");
+    if (root) return root;
+
+    root = document.createElement("div");
+    root.id = "uiRoot";
+    root.style.marginTop = "20px";
+    root.style.padding = "10px";
+    root.style.borderTop = "1px solid #ddd";
+
+    document.body.appendChild(root);
+    log("uiRoot erstellt");
+
+    return root;
+  }
+
+  /* =====================================================
+     HELFER – KORREKTE BEITRAGS-URL
+  ===================================================== */
+  function getEntryUrl(entryId) {
+    const base = location.origin + location.pathname;
+    return entryId ? `${base}?id=${entryId}` : base;
+  }
+
+  /* =====================================================
+     UI ACTIONS – SOCIAL / COPY / PRINT / LEGAL
+  ===================================================== */
+  window.renderUIActions = function (entry) {
+    const root = ensureUIRoot();
+
+    const entryId = window.currentEntryId || null;
+    const shareUrl = encodeURIComponent(getEntryUrl(entryId));
+    const title = entry?.title || "MarketShield – Information";
+    const shortText =
+      `MarketShield: ${title}`.slice(0, 200); // kurz & teilbar
+
+    const shareText = encodeURIComponent(`${shortText}\n${getEntryUrl(entryId)}`);
+
+    root.innerHTML = `
+      <div class="ui-actions">
+
+        <div class="ui-buttons">
+          <button id="shareWa">WhatsApp</button>
+          <button id="shareFb">Facebook</button>
+          <button id="shareX">X</button>
+          <button id="shareTg">Telegram</button>
+          <button id="copyLink">Kopieren</button>
+          <button id="printPage">Drucken</button>
+        </div>
+
+        <div class="ui-legal">
+          <a href="#" id="legalHint">Rechtlicher Hinweis</a>
+        </div>
+
+      </div>
+    `;
+
+    /* ===== SOCIAL SHARING (BEITRAGSGENAU) ===== */
+
+    $("shareFb").onclick = () =>
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`,
+        "_blank"
+      );
+
+    $("shareX").onclick = () =>
+      window.open(
+        `https://twitter.com/intent/tweet?text=${shareText}`,
+        "_blank"
+      );
+
+    $("shareTg").onclick = () =>
+      window.open(
+        `https://t.me/share/url?url=${shareUrl}&text=${encodeURIComponent(shortText)}`,
+        "_blank"
+      );
+
+    /* ===== COPY / PRINT ===== */
+
+    $("copyLink").onclick = () => {
+      navigator.clipboard.writeText(getEntryUrl(entryId));
+      alert("Beitrags-Link kopiert");
+    };
+
+    $("printPage").onclick = () => window.print();
+
+    /* ===== RECHTLICHER HINWEIS ===== */
+
+    $("legalHint").onclick = (e) => {
+      e.preventDefault();
+      alert(
+        "MarketShield dient ausschließlich der Information.\n" +
+        "Keine Beratung, keine Gewähr.\n" +
+        "Inhalte können unvollständig oder fehlerhaft sein."
+      );
+    };
+
+    log("UI Actions (beitragsgenau) gerendert");
+  };
+
+  /* =====================================================
+     REPORT BUTTON – IMMER KLICKBAR
   ===================================================== */
   document.addEventListener("click", function (e) {
     const trigger = e.target.closest("#reportBtn");
     if (!trigger) return;
 
     e.preventDefault();
-    e.stopImmediatePropagation();
 
     const modal = $("reportModal");
     if (!modal) {
@@ -36,10 +138,10 @@
     modal.style.opacity = "1";
 
     log("Report geöffnet");
-  }, true); // CAPTURE MODE
+  });
 
   /* =====================================================
-     REPORT MODAL – ABBRECHEN / SCHLIESSEN
+     REPORT MODAL – SCHLIESSEN
   ===================================================== */
   function bindReportClose() {
     const modal = $("reportModal");
@@ -52,7 +154,7 @@
       ) {
         e.preventDefault();
         modal.style.display = "none";
-        log("Report abgebrochen");
+        log("Report geschlossen");
       }
     });
   }
@@ -88,6 +190,8 @@
           },
           body: JSON.stringify({
             description: text,
+            entry_id: window.currentEntryId || null,
+            page_url: getEntryUrl(window.currentEntryId),
             created_at: new Date().toISOString()
           })
         });
@@ -111,9 +215,10 @@
   }
 
   /* =====================================================
-     INITIAL + SELBSTHEILUNG
+     INIT + SELBSTHEILUNG
   ===================================================== */
   function bindAll() {
+    ensureUIRoot();
     bindReportClose();
     bindReportSubmit();
   }
