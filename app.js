@@ -248,18 +248,8 @@ async function loadCategories() {
 
 /* ================= NAVIGATION (PASSIV) ================= */
 document.addEventListener("click", (e) => {
-  const card = e.target.closest(".entry-card");
-  if (!card) return;
 
-  // ⛔ Klicks auf Inhalt dürfen KEINE Navigation auslösen
-  if (e.target !== card) return;
-
-  history.pushState({}, "", "?id=" + card.dataset.id);
-  loadEntry(card.dataset.id);
-});
-document.addEventListener("click", (e) => {
-
-  // ⛔️ UI-Elemente dürfen NICHT navigieren
+  // 🔒 HARTE UI-SPERRE – diese Klicks dürfen app.js NIE sehen
   if (
     e.target.closest("#reportBtn") ||
     e.target.closest("#reportModal") ||
@@ -267,16 +257,16 @@ document.addEventListener("click", (e) => {
     e.target.closest("button") ||
     e.target.closest("a")
   ) {
+    e.stopImmediatePropagation(); // 🔥 DAS FEHLT BISHER
     return;
   }
 
-  // ✅ Kurzansicht (Card) darf komplett klickbar sein
   const card = e.target.closest(".entry-card");
   if (!card) return;
 
   history.pushState({}, "", "?id=" + card.dataset.id);
   loadEntry(card.dataset.id);
-});
+}, true); // 🔥 CAPTURE – WICHTIG
 
 /* ================= HISTORY ================= */
 window.addEventListener("popstate", () => {
