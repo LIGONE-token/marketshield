@@ -1,6 +1,6 @@
 /* =====================================================
    MarketShield – app.js
-   FINAL – 100 % ZUR HTML PASSEND
+   FINAL / STABIL / REPARIERT
 ===================================================== */
 
 let currentEntryId = null;
@@ -19,25 +19,25 @@ async function supa(query, opts = {}) {
     },
     body: opts.body ? JSON.stringify(opts.body) : undefined
   });
+
   const t = await r.text();
   if (!r.ok) throw new Error(t || r.statusText);
   return t ? JSON.parse(t) : [];
 }
 
-/* ================= ELEMENTE (EXAKT AUS HTML) ================= */
-const elResults      = document.getElementById("results");
-const elSearch       = document.getElementById("searchInput");
-const elBackHome     = document.getElementById("backHome");
-const elReportBtn    = document.getElementById("reportBtn");
-const elReportModal  = document.getElementById("reportModal");
-const elReportForm   = document.getElementById("reportForm");
-const elReportClose  = document.getElementById("closeReportModal");
+/* ================= DOM ELEMENTE ================= */
+const elResults     = document.getElementById("results");
+const elSearch      = document.getElementById("searchInput");
+const elBackHome    = document.getElementById("backHome");
+const elReportBtn   = document.getElementById("reportBtn");
+const elReportModal = document.getElementById("reportModal");
+const elReportForm  = document.getElementById("reportForm");
+const elReportClose = document.getElementById("closeReportModal");
 
 /* ================= SCORES ================= */
 function renderHealthScore(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n < 1 || n > 100) return "";
-
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
@@ -48,34 +48,29 @@ function renderHealthScore(score) {
 function renderIndustryScore(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n < 1) return "";
-
   const clamped = Math.min(10, n);
   const width = Math.round((clamped / 10) * 100);
-  const hue = Math.round(120 - clamped * 12); // grün → rot
+  const hue = Math.round(120 - clamped * 12);
 
   return `
     <div style="margin-top:6px;">
       <div style="height:6px;background:#ddd;border-radius:4px;overflow:hidden;">
         <div style="width:${width}%;height:6px;background:hsl(${hue},85%,45%);"></div>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
 /* ================= LISTE ================= */
-function renderList(data) {
+function renderList(data = []) {
+  if (!elResults) return;
+
   elResults.innerHTML = `
     <div id="shareBox"></div>
-    ${(data || []).map(e => `
+    ${data.map(e => `
       <div class="entry-card" data-id="${e.id}">
         <div style="font-size:18px;font-weight:700;">${e.title}</div>
-
-        ${renderHealthScore(e.score)
-          ? `<div>${renderHealthScore(e.score)}</div>` : ""}
-
-        ${(e.type !== "thema" && e.processing_score > 0)
-          ? renderIndustryScore(e.processing_score) : ""}
-
+        ${renderHealthScore(e.score) ? `<div>${renderHealthScore(e.score)}</div>` : ""}
+        ${(e.type !== "thema" && e.processing_score > 0) ? renderIndustryScore(e.processing_score) : ""}
         <div style="font-size:14px;opacity:.85;">
           ${(e.summary || "").slice(0,160)}…
         </div>
@@ -84,11 +79,13 @@ function renderList(data) {
   `;
 
   bindEntryCards();
-  elBackHome.style.display = "none";
+  if (elBackHome) elBackHome.style.display = "none";
 }
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
+  if (!elResults) return;
+
   const d = await supa(`entries?select=*&id=eq.${id}`);
   const e = d[0];
   if (!e) return;
@@ -100,11 +97,8 @@ async function loadEntry(id) {
     <h2>${e.title}</h2>
 
     <div style="margin:10px 0;">
-      ${renderHealthScore(e.score)
-        ? `<div>${renderHealthScore(e.score)}</div>` : ""}
-
-      ${(e.type !== "thema" && e.processing_score > 0)
-        ? renderIndustryScore(e.processing_score) : ""}
+      ${renderHealthScore(e.score) ? `<div>${renderHealthScore(e.score)}</div>` : ""}
+      ${(e.type !== "thema" && e.processing_score > 0) ? renderIndustryScore(e.processing_score) : ""}
     </div>
 
     <div style="white-space:pre-wrap;line-height:1.6;">
@@ -112,7 +106,7 @@ async function loadEntry(id) {
     </div>
   `;
 
-  elBackHome.style.display = "block";
+  if (elBackHome) elBackHome.style.display = "block";
 }
 
 /* ================= ENTRY CLICK ================= */
@@ -132,54 +126,54 @@ async function smartSearch(q) {
   if (q.length < 2) return [];
   const enc = encodeURIComponent(q);
   return await supa(
-    `entries?select=id,title,summary,score,processing_score,type&title=ilike.%25${enc}%25`
+    `entries?select=id,title,summary,score,processing_score,type&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
   );
 }
 
-elSearch.addEventListener("input", async () => {
-  const q = elSearch.value.trim();
-  if (q.length < 2) {
-    elResults.innerHTML = `<div id="shareBox"></div>`;
-    return;
-  }
-  renderList(await smartSearch(q));
-});
+if (elSearch) {
+  elSearch.addEventListener("input", async () => {
+    const q = elSearch.value.trim();
+    if (q.length < 2) {
+      elResults.innerHTML = `<div id="shareBox"></div>`;
+      return;
+    }
+    renderList(await smartSearch(q));
+  });
+}
 
 /* ================= BACK HOME ================= */
-elBackHome.onclick = () => {
-  currentEntryId = null;
-  history.pushState({}, "", location.pathname);
-  elResults.innerHTML = `<div id="shareBox"></div>`;
-  elBackHome.style.display = "none";
-};
+if (elBackHome) {
+  elBackHome.onclick = () => {
+    currentEntryId = null;
+    history.pushState({}, "", location.pathname);
+    elResults.innerHTML = `<div id="shareBox"></div>`;
+    elBackHome.style.display = "none";
+  };
+}
 
 /* ================= REPORT ================= */
-elReportBtn.onclick = () => {
-  elReportModal.style.display = "block";
-};
+if (elReportBtn && elReportModal) {
+  elReportBtn.onclick = () => elReportModal.style.display = "block";
+}
+if (elReportClose && elReportModal) {
+  elReportClose.onclick = () => elReportModal.style.display = "none";
+}
+if (elReportForm) {
+  elReportForm.onsubmit = async (e) => {
+    e.preventDefault();
+    const txt = elReportForm.description.value.trim();
+    if (txt.length < 3) return;
 
-elReportClose.onclick = () => {
-  elReportModal.style.display = "none";
-};
+    await supa("reports", {
+      method: "POST",
+      body: { description: txt, entry_id: currentEntryId }
+    });
 
-elReportForm.onsubmit = async (e) => {
-  e.preventDefault();
-
-  const txt = elReportForm.description.value.trim();
-  if (txt.length < 3) return;
-
-  await supa("reports", {
-    method: "POST",
-    body: {
-      description: txt,
-      entry_id: currentEntryId || null
-    }
-  });
-
-  elReportForm.reset();
-  elReportModal.style.display = "none";
-  alert("Danke! Meldung wurde gespeichert.");
-};
+    elReportForm.reset();
+    if (elReportModal) elReportModal.style.display = "none";
+    alert("Danke! Meldung wurde gespeichert.");
+  };
+}
 
 /* ================= HISTORY ================= */
 window.addEventListener("popstate", () => {
@@ -187,7 +181,7 @@ window.addEventListener("popstate", () => {
   if (id) loadEntry(id);
   else {
     elResults.innerHTML = `<div id="shareBox"></div>`;
-    elBackHome.style.display = "none";
+    if (elBackHome) elBackHome.style.display = "none";
   }
 });
 
