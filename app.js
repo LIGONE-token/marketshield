@@ -42,11 +42,11 @@ function escapeHtml(s = "") {
 
 function normalizeText(t = "") {
   return String(t)
-    .replace(/:contentReference\[.*?\]\{.*?\}/g, "") // ❌ entfernt genau diesen Müll
-    .replace(/\*\*|##+|__+|~~+|`+/g, "")
+    .replace(/:contentReference\[.*?\]\{.*?\}/g, "") // Müll weg
+    .replace(/\*\*/g, "")
+    .replace(/^##\s*/gm, "") // Überschrift-Markdown entfernen, ZEILE bleibt!
     .replace(/\\n/g, "\n")
     .replace(/\r\n|\r/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
