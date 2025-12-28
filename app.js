@@ -85,17 +85,30 @@ function renderIndustry(score) {
 }
 
 function renderScoreBlock(score, processing) {
-  const h = renderHealth(score);
-  const i = renderIndustry(processing);
-  if (!h && !i) return "";
+  const health = renderHealth(score);
+  const industry = renderIndustry(processing);
+
+  if (!health && !industry) return "";
+
   return `
-    <div style="margin:10px 0;">
-      ${h ? `
-        <div style="display:flex;align-items:center;gap:8px;font-size:15px;margin-bottom:4px;">
-          <div>${h}</div>
-          <div style="opacity:.8;">Gesundheit</div>
-        </div>` : ""}
-      ${i || ""}
+    <div class="score-block">
+
+      ${health ? `
+        <div class="score-row">
+          <div class="score-title">Gesundheit</div>
+          <div class="score-value score-health">${health}</div>
+        </div>
+      ` : ""}
+
+      ${industry ? `
+        <div class="score-row">
+          <div class="score-title">Industrie</div>
+          <div class="score-value">
+            ${industry}
+          </div>
+        </div>
+      ` : ""}
+
     </div>
   `;
 }
