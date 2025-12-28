@@ -36,13 +36,12 @@ function escapeHtml(s = "") {
 function normalizeText(text) {
   return String(text || "")
     .replace(/\*\*|##+|__+|~~+|`+/g, "")
-    .replace(/\\n/g, "\n")          // ✅ WICHTIG: \n als Text → echte Zeile
+    .replace(/\\n/g, "\n")              // literal \n → echte Zeile
     .replace(/\r\n|\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
-    .replace(/[ \t]{2,}/g, " ")     // ✅ doppelte Spaces weg
+    .replace(/[ \t]{2,}/g, " ")
     .trim();
 }
-
 
 function shortText(t, max = 160) {
   t = normalizeText(t);
@@ -110,6 +109,54 @@ function showStart() {
   if (box) box.innerHTML = "";
 }
 
+/* ================= MARKDOWN-TABELLEN ================= */
+function renderSummaryHtml(raw) {
+  const text = normalizeText(raw);
+  const blocks = text.split(/\n\s*\n/);
+
+  return blocks.map(block => {
+    const table = mdTableToHtml(block);
+    if (table) return table;
+
+    return `<p style="margin:0 0 12px 0; white-space:pre-wrap; line-height:1.6;">
+      ${escapeHtml(block)}
+    </p>`;
+  }).join("");
+}
+
+function mdTableToHtml(block) {
+  const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2) return null;
+  if (!lines[0].includes("|")) return null;
+
+  const sep = lines[1].replace(/\s+/g, "");
+  if (!sep.includes("|") || !/^[-:|]+$/.test(sep)) return null;
+
+  const parseRow = (line) => {
+    let s = line;
+    if (s.startsWith("|")) s = s.slice(1);
+    if (s.endsWith("|")) s = s.slice(0, -1);
+    return s.split("|").map(c => escapeHtml(c.trim()));
+  };
+
+  const header = parseRow(lines[0]);
+  const rows = lines.slice(2).filter(l => l.includes("|")).map(parseRow);
+  if (header.length < 2) return null;
+
+  return `
+    <div style="margin:14px 0; overflow:auto;">
+      <table style="border-collapse:collapse;width:auto;max-width:100%;font-size:14px;">
+        <thead>
+          <tr>${header.map(h => `<th style="border:1px solid #ddd;padding:8px 10px;background:#f6f6f6;text-align:left;">${h}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `<tr>${r.map(c => `<td style="border:1px solid #ddd;padding:8px 10px;vertical-align:top;">${c}</td>`).join("")}</tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 /* ================= LISTE ================= */
 function renderList(data = []) {
   const box = $("results");
@@ -138,8 +185,8 @@ async function loadEntry(id) {
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${escapeHtml(normalizeText(e.summary))}
+    <div id="entryContent">
+      ${renderSummaryHtml(e.summary)}
     </div>
     <div id="entryActions" style="margin-top:28px;"></div>
   `;
@@ -212,19 +259,11 @@ async function loadCategories() {
 }
 
 /* ================= REPORT → SUPABASE ================= */
-// Event-Delegation: stabil auch nach Re-Render
 document.addEventListener("click", (e) => {
-  if (e.target && e.target.id === "reportBtn") {
-    const modal = $("reportModal");
-    if (modal) modal.style.display = "block";
-  }
-  if (e.target && e.target.id === "closeReportModal") {
-    const modal = $("reportModal");
-    if (modal) modal.style.display = "none";
-  }
+  if (e.target.id === "reportBtn") $("reportModal").style.display = "block";
+  if (e.target.id === "closeReportModal") $("reportModal").style.display = "none";
 });
 
-// Formular absenden → INSERT in Supabase.reports
 const elReportForm = $("reportForm");
 if (elReportForm) {
   elReportForm.addEventListener("submit", async (e) => {
@@ -248,50 +287,36 @@ if (elReportForm) {
       })
     });
 
-    if (!res.ok) {
-      const t = await res.text();
-      alert("Report fehlgeschlagen");
-      console.error(t);
-      return;
-    }
+    if (!res.ok) return alert("Report fehlgeschlagen");
 
     elReportForm.reset();
-    const modal = $("reportModal");
-    if (modal) modal.style.display = "none";
+    $("reportModal").style.display = "none";
     alert("Danke! Meldung wurde gespeichert.");
   });
 }
 
 /* ================= RECHTLICHER HINWEIS ================= */
-const elLegalLink  = $("legalLink");
-const elLegalModal = $("legalModal");
-const elLegalClose = $("closeLegalModal");
-
-if (elLegalLink && elLegalModal) {
-  elLegalLink.onclick = (e) => {
-    e.preventDefault();
-    elLegalModal.style.display = "block";
-  };
-}
-if (elLegalClose && elLegalModal) elLegalClose.onclick = () => elLegalModal.style.display = "none";
+$("legalLink")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  $("legalModal").style.display = "block";
+});
+$("closeLegalModal")?.addEventListener("click", () => {
+  $("legalModal").style.display = "none";
+});
 
 /* ================= NAVIGATION ================= */
 document.addEventListener("click", e => {
   const card = e.target.closest(".entry-card");
   if (!card) return;
-
   history.pushState({}, "", "?id=" + card.dataset.id);
   loadEntry(card.dataset.id);
 });
 
-const elBackHome = $("backHome");
-if (elBackHome) {
-  elBackHome.onclick = (e) => {
-    e.preventDefault();
-    history.pushState({}, "", location.pathname);
-    showStart();
-  };
-}
+$("backHome")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  history.pushState({}, "", location.pathname);
+  showStart();
+});
 
 window.onpopstate = () => {
   const id = new URLSearchParams(location.search).get("id");
