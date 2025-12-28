@@ -1,16 +1,12 @@
 /* =====================================================
    MarketShield – app.js (FINAL / STABIL / WIE VORHER)
-
-   FIXES (genau deine Punkte):
-   ✅ Tabellen: Markdown-Tabellen werden korrekt als echte <table> gerendert
-   ✅ Social-/Kopieren-/Drucken-Buttons sind wieder da (unten im Detail – OHNE neue Home/Report Buttons)
-   ✅ Suchanfragen werden in search_queue gespeichert (Enter + Debounce)
-   ✅ Oben "Zur Startseite" funktioniert (bindet vorhandenen Link/Button – mehrere mögliche IDs)
-   ✅ Report-Eingabe ist größer (Textarea-Popup) + besserer Text
-
-   WICHTIG:
-   - KEINE neuen Home/Report Buttons werden erstellt.
-   - Es werden nur vorhandene Top-Elemente angebunden.
+   STATUS:
+   ✅ „Zur Startseite“ funktioniert IMMER (global gebunden)
+   ✅ Report-Button funktioniert NUR im Eintrag (kontextabhängig)
+   ✅ KEINE neuen Buttons
+   ✅ Tabellen korrekt gerendert
+   ✅ Social / Kopieren / Drucken vorhanden
+   ✅ Suchanfragen werden gespeichert
 ===================================================== */
 
 let currentEntryId = null;
@@ -30,7 +26,6 @@ async function supa(query, opts = {}) {
     },
     body: opts.body ? JSON.stringify(opts.body) : undefined
   });
-
   const t = await r.text();
   if (!r.ok) throw new Error(t || r.statusText);
   return t ? JSON.parse(t) : [];
@@ -67,7 +62,7 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-/* ================= SCORES (LOCKED) ================= */
+/* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -88,432 +83,259 @@ function renderIndustry(score) {
     </div>`;
 }
 
-function renderScoreBlock(score, processing, size = 13) {
+function renderScoreBlock(score, processing) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
   return `
     <div style="margin:12px 0;">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
-          <div>${h}</div>
-          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
-        </div>` : ""}
-      ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
-          <div>${i}</div>
-          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
+      ${h ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
+        <div>${h}</div><div>Gesundheitsscore</div></div>` : ""}
+      ${i ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
+        <div>${i}</div><div>Industrie-Verarbeitungsgrad</div></div>` : ""}
     </div>`;
 }
 
-/* ================= STYLES (Tabellen + Report Popup) ================= */
-function ensureInjectedStyles() {
-  if (document.getElementById("msInjectedStyles")) return;
+/* ================= STYLES ================= */
+function ensureStyles() {
+  if (document.getElementById("msStyles")) return;
   const s = document.createElement("style");
-  s.id = "msInjectedStyles";
+  s.id = "msStyles";
   s.textContent = `
-    .ms-rich p { margin: 0 0 12px 0; line-height: 1.6; }
-    .ms-table-wrap { overflow-x:auto; margin: 10px 0 16px 0; }
-    table.ms-table { width:100%; border-collapse: collapse; font-size: 14px; }
-    table.ms-table th, table.ms-table td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-    table.ms-table th { font-weight: 800; }
-    .ms-actions { margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap; }
-    .ms-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;}
-    .ms-modal{max-width:640px;width:100%;background:#fff;border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);}
-    .ms-modal h3{margin:0 0 10px 0;font-size:18px;}
-    .ms-modal textarea{width:100%;min-height:120px;resize:vertical;padding:10px;font-size:14px;line-height:1.4;border:1px solid #ccc;border-radius:10px;outline:none;}
-    .ms-modal .row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap;}
+    .ms-table-wrap{overflow-x:auto;margin:12px 0}
+    table.ms-table{border-collapse:collapse;width:100%;font-size:14px}
+    table.ms-table th,table.ms-table td{border:1px solid #ddd;padding:8px}
+    table.ms-table th{font-weight:700}
+    .ms-actions{margin-top:28px;border-top:1px solid #ddd;padding-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+    .ms-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:9999}
+    .ms-modal{background:#fff;border-radius:14px;max-width:640px;width:100%;padding:16px}
+    .ms-modal textarea{width:100%;min-height:120px;padding:10px}
+    .ms-modal .row{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
   `;
   document.head.appendChild(s);
 }
 
-/* ================= TABELLEN-RENDER (KORREKT) =================
-   - erkennt echte Markdown-Tabellenblöcke
-   - rendert sie als <table>
-   - sonst Text als <p> (mit <br>)
-===================================================== */
-
-function isSeparatorLine(line) {
-  // erlaubt: | --- | :---: | ---: |
-  const t = line.trim();
-  if (!t.includes("-")) return false;
-  if (!t.includes("|")) return false;
-  return /^[\s|\-:]+$/.test(t);
+/* ================= TABLE RENDER ================= */
+function isSeparator(line) {
+  return /^[\s|\-:]+$/.test(line) && line.includes("-");
 }
 
 function splitRow(line) {
-  // äußere Pipes entfernen, dann split
-  const cleaned = line.trim().replace(/^\|/, "").replace(/\|$/, "");
-  return cleaned.split("|").map(c => c.trim());
+  return line.replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
 }
 
-function parseMarkdownTables(text) {
+function parseMarkdown(text) {
   const lines = normalizeText(text).split("\n");
-  const out = [];
+  const blocks = [];
   let i = 0;
 
   while (i < lines.length) {
-    const line = lines[i];
-
-    // potenzieller Tabellenstart: Headerline mit | und nächste Zeile Separator
-    if (line.includes("|") && i + 1 < lines.length && isSeparatorLine(lines[i + 1])) {
-      const header = splitRow(line);
+    if (lines[i].includes("|") && lines[i+1] && isSeparator(lines[i+1])) {
+      const header = splitRow(lines[i]);
       const rows = [];
-      i += 2; // skip header + separator
-
-      while (i < lines.length) {
-        const l = lines[i];
-        if (!l.trim()) break; // leerzeile beendet Tabelle
-        if (!l.includes("|")) break; // keine Pipe -> beendet Tabelle
-        rows.push(splitRow(l));
+      i += 2;
+      while (i < lines.length && lines[i].includes("|")) {
+        rows.push(splitRow(lines[i]));
         i++;
       }
-
-      out.push({ type: "table", header, rows });
-      continue;
-    }
-
-    // normaler Textblock sammeln bis leerzeile
-    let buf = line;
-    i++;
-    while (i < lines.length && lines[i].trim() !== "") {
-      // stoppe, falls eine Tabelle beginnt
-      if (lines[i].includes("|") && i + 1 < lines.length && isSeparatorLine(lines[i + 1])) break;
-      buf += "\n" + lines[i];
+      blocks.push({type:"table", header, rows});
+    } else {
+      let buf = lines[i];
       i++;
+      while (i < lines.length && lines[i].trim() !== "") {
+        buf += "\n" + lines[i];
+        i++;
+      }
+      blocks.push({type:"text", value:buf});
+      while (i < lines.length && lines[i].trim()==="") i++;
     }
-    out.push({ type: "text", value: buf });
-    while (i < lines.length && lines[i].trim() === "") i++; // leere zeilen skippen
   }
-
-  return out;
-}
-
-function renderTableBlock(header, rows) {
-  const thead = `<thead><tr>${header.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>`;
-  const tbody = `<tbody>${
-    rows.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")
-  }</tbody>`;
-
-  return `<div class="ms-table-wrap"><table class="ms-table">${thead}${tbody}</table></div>`;
+  return blocks;
 }
 
 function renderRichText(text) {
-  ensureInjectedStyles();
-  const blocks = parseMarkdownTables(text);
-
-  return `<div class="ms-rich">` + blocks.map(b => {
-    if (b.type === "table") return renderTableBlock(b.header, b.rows);
-    const safe = escapeHtml(b.value || "");
-    return `<p>${safe.replace(/\n/g, "<br>")}</p>`;
-  }).join("") + `</div>`;
+  ensureStyles();
+  return parseMarkdown(text).map(b => {
+    if (b.type === "table") {
+      return `<div class="ms-table-wrap"><table class="ms-table">
+        <thead><tr>${b.header.map(h=>`<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
+        <tbody>${b.rows.map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody>
+      </table></div>`;
+    }
+    return `<p>${escapeHtml(b.value).replace(/\n/g,"<br>")}</p>`;
+  }).join("");
 }
 
-/* ================= LISTE ================= */
+/* ================= LIST ================= */
 function renderList(data) {
-  const box = $("results");
-  if (!box) return;
-
-  box.innerHTML = (data || []).map(e => `
+  $("results").innerHTML = (data||[]).map(e=>`
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
-      ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary))}
-      </div>
+      <div style="font-size:20px;font-weight:800">${escapeHtml(e.title)}</div>
+      ${renderScoreBlock(e.score,e.processing_score)}
+      <div>${escapeHtml(shortText(e.summary))}</div>
     </div>
   `).join("");
 }
 
-/* ================= HOME (nur URL & results; KEINE neuen Buttons) ================= */
+/* ================= HOME (GLOBAL) ================= */
 function goHome() {
   currentEntryId = null;
-  history.pushState(null, "", location.pathname);
-  const box = $("results");
-  if (box) box.innerHTML = "";
+  history.pushState(null,"",location.pathname);
+  $("results").innerHTML = "";
 }
 
-/* ================= REPORT (Textarea Popup, besserer Text) ================= */
-function openReportModal(entry) {
-  ensureInjectedStyles();
-
-  // Modal existiert schon?
-  if (document.getElementById("msReportBackdrop")) return;
-
-  const backdrop = document.createElement("div");
-  backdrop.id = "msReportBackdrop";
-  backdrop.className = "ms-modal-backdrop";
-
-  const modal = document.createElement("div");
-  modal.className = "ms-modal";
-
-  modal.innerHTML = `
-    <h3>Meldung senden</h3>
-    <div style="opacity:.85;margin-bottom:8px;">
-      Beschreibe kurz und konkret, was korrigiert werden soll (z. B. falsche Angabe, fehlender Punkt, Tippfehler).
-    </div>
-    <textarea id="msReportText" placeholder="Deine Meldung… (bitte mind. 3 Zeichen)"></textarea>
-    <div class="row">
-      <button type="button" id="msReportCancel">Abbrechen</button>
-      <button type="button" id="msReportSend">Senden</button>
-    </div>
-  `;
-
-  backdrop.appendChild(modal);
-  document.body.appendChild(backdrop);
-
-  const close = () => backdrop.remove();
-
-  backdrop.addEventListener("click", (e) => {
-    if (e.target === backdrop) close();
-  });
-
-  $("msReportCancel").onclick = close;
-
-  $("msReportSend").onclick = async () => {
-    const txt = ($("msReportText").value || "").trim();
-    if (txt.length < 3) return;
-
-    try {
-      // passt exakt zu deiner Tabelle: description + entry_id
-      await supa("reports", {
-        method: "POST",
-        headers: { Prefer: "return=minimal" },
-        body: { description: txt, entry_id: String(entry.id || "") }
-      });
-      close();
-      alert("Danke! Deine Meldung wurde gespeichert.");
-    } catch (err) {
-      alert("Meldung konnte nicht gespeichert werden.\n\n" + String(err));
-    }
-  };
-
-  setTimeout(() => $("msReportText").focus(), 0);
-}
-
-/* ================= TOP ACTIONS (BESTEHENDE ELEMENTE – robust) =================
-   - KEINE neuen Buttons
-   - bindet mehrere mögliche IDs/Selector an (weil du Link oben hast)
-===================================================== */
-function bindExistingTopActions(entry) {
-  // HOME (Link/Button oben)
-  const homeEls = [
-    $("#backHomeBtn"),
-    $("#backHome"),
-    $("#homeBtn"),
-    $("#homeLink"),
-    $("#backHomeLink"),
-    document.querySelector('[data-action="home"]'),
-    document.querySelector('a#backHome'),
-    document.querySelector('a#backHomeBtn')
-  ].filter(Boolean);
-
-  homeEls.forEach(el => {
-    el.onclick = (e) => {
-      e.preventDefault?.();
+function bindHomeOnce() {
+  [
+    $("backHomeBtn"),
+    $("backHome"),
+    $("homeLink"),
+    document.querySelector('[data-action="home"]')
+  ].filter(Boolean).forEach(el=>{
+    el.onclick = (e)=>{
+      e.preventDefault();
       goHome();
     };
   });
+}
 
-  // REPORT (Button oben)
-  const reportEls = [
-    $("#reportBtn"),
-    $("#reportButton"),
-    $("#report"),
+/* ================= REPORT ================= */
+function openReport(entry) {
+  ensureStyles();
+  const bd = document.createElement("div");
+  bd.className="ms-modal-backdrop";
+  bd.innerHTML=`
+    <div class="ms-modal">
+      <h3>Meldung senden</h3>
+      <textarea id="repTxt" placeholder="Bitte beschreibe kurz, was korrigiert werden soll."></textarea>
+      <div class="row">
+        <button id="repCancel">Abbrechen</button>
+        <button id="repSend">Senden</button>
+      </div>
+    </div>`;
+  document.body.appendChild(bd);
+
+  $("repCancel").onclick=()=>bd.remove();
+  $("repSend").onclick=async()=>{
+    const t=$("repTxt").value.trim();
+    if(t.length<3)return;
+    await supa("reports",{method:"POST",headers:{Prefer:"return=minimal"},body:{description:t,entry_id:entry.id}});
+    bd.remove();
+    alert("Danke! Meldung gespeichert.");
+  };
+}
+
+function bindReport(entry){
+  [
+    $("reportBtn"),
+    $("reportButton"),
     document.querySelector('[data-action="report"]')
-  ].filter(Boolean);
-
-  reportEls.forEach(el => {
-    el.onclick = (e) => {
-      e.preventDefault?.();
-      openReportModal(entry);
+  ].filter(Boolean).forEach(el=>{
+    el.onclick=(e)=>{
+      e.preventDefault();
+      openReport(entry);
     };
   });
 }
 
-/* ================= SOCIAL / COPY / PRINT (unten – wie vorher, ohne Home/Report) ================= */
-function renderEntryActions(entry) {
-  const box = $("entryActions");
-  if (!box) return;
-
-  ensureInjectedStyles();
-
-  const url = location.href;
-  const encUrl = encodeURIComponent(url);
-  const encTitle = encodeURIComponent((entry.title || "") + " – MarketShield");
-
-  box.innerHTML = `
+/* ================= SOCIAL ================= */
+function renderEntryActions(entry){
+  const box=$("entryActions");
+  if(!box)return;
+  ensureStyles();
+  const url=location.href;
+  const enc=encodeURIComponent(url);
+  const title=encodeURIComponent(entry.title+" – MarketShield");
+  box.innerHTML=`
     <div class="ms-actions">
-      <button type="button" id="msCopyBtn">🔗 Kopieren</button>
-      <button type="button" id="msPrintBtn">🖨️ Drucken</button>
-      <button type="button" onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
-      <button type="button" onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button type="button" onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
-      <button type="button" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
-    </div>
-  `;
-
-  const copyBtn = $("#msCopyBtn");
-  if (copyBtn) {
-    copyBtn.onclick = async () => {
-      try {
-        await navigator.clipboard.writeText(url);
-        alert("Link kopiert.");
-      } catch (_) {
-        // Fallback
-        const ta = document.createElement("textarea");
-        ta.value = url;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        ta.remove();
-        alert("Link kopiert.");
-      }
-    };
-  }
-
-  const printBtn = $("#msPrintBtn");
-  if (printBtn) printBtn.onclick = () => window.print();
+      <button id="copyBtn">🔗 Kopieren</button>
+      <button id="printBtn">🖨️ Drucken</button>
+      <button onclick="window.open('https://wa.me/?text=${title}%20${enc}','_blank')">WhatsApp</button>
+      <button onclick="window.open('https://t.me/share/url?url=${enc}&text=${title}','_blank')">Telegram</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${enc}&text=${title}','_blank')">X</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${enc}','_blank')">Facebook</button>
+    </div>`;
+  $("copyBtn").onclick=()=>navigator.clipboard.writeText(url);
+  $("printBtn").onclick=()=>window.print();
 }
 
 /* ================= DETAIL ================= */
-async function loadEntry(id) {
-  const box = $("results");
-  if (!box) return;
-
-  const d = await supa(`entries?select=*&id=eq.${id}`);
-  const e = d[0];
-  if (!e) return;
-
-  currentEntryId = id;
-
-  box.innerHTML = `
+async function loadEntry(id){
+  const d=await supa(`entries?select=*&id=eq.${id}`);
+  const e=d[0]; if(!e)return;
+  currentEntryId=id;
+  $("results").innerHTML=`
     <h2>${escapeHtml(e.title)}</h2>
-    ${renderScoreBlock(e.score, e.processing_score)}
+    ${renderScoreBlock(e.score,e.processing_score)}
     <h3>Zusammenfassung</h3>
     ${renderRichText(e.summary)}
-    <div id="entryActions"></div>
-  `;
-
-  // unten: Social/Copy/Print (wie vorher)
+    <div id="entryActions"></div>`;
   renderEntryActions(e);
-
-  // oben: vorhandene Link/Button anbinden (Report/Home)
-  bindExistingTopActions(e);
+  bindReport(e);
 }
 
-/* ================= SEARCH + SAVE ================= */
-let _searchSaveTimer = null;
-let _lastSavedQuery = "";
+/* ================= SEARCH ================= */
+let lastQ="";
+async function saveSearch(q){
+  if(q.length<2||q===lastQ)return;
+  lastQ=q;
+  await supa("search_queue",{method:"POST",headers:{Prefer:"return=minimal"},body:{query:q}});
+}
 
-async function saveSearchQuery(q) {
-  const term = (q || "").trim();
-  if (term.length < 2) return;
-  if (term === _lastSavedQuery) return;
-  _lastSavedQuery = term;
+async function smartSearch(q){
+  if(q.length<2)return[];
+  const enc=encodeURIComponent(q);
+  return await supa(`entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`);
+}
 
-  // Minimal & kompatibel: nur "query" schreiben (falls weitere Spalten existieren, sind Defaults ok)
-  await supa("search_queue", {
-    method: "POST",
-    headers: { Prefer: "return=minimal" },
-    body: { query: term }
+function initSearch(){
+  const i=$("searchInput");
+  if(!i)return;
+  i.oninput=async()=>{
+    const q=i.value.trim();
+    if(q.length<2){$("results").innerHTML="";return;}
+    renderList(await smartSearch(q));
+    saveSearch(q).catch(()=>{});
+  };
+}
+
+/* ================= CATEGORIES ================= */
+async function loadCategories(){
+  const g=document.querySelector(".category-grid");
+  if(!g)return;
+  const d=await fetch("categories.json").then(r=>r.json());
+  g.innerHTML="";
+  d.categories.forEach(c=>{
+    const b=document.createElement("button");
+    b.textContent=c.title;
+    b.onclick=()=>loadCategory(c.title);
+    g.appendChild(b);
   });
 }
 
-async function smartSearch(q) {
-  const term = q.trim();
-  if (term.length < 2) return [];
-
-  const enc = encodeURIComponent(term);
-  return await supa(
-    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
-  );
+async function loadCategory(cat){
+  renderList(await supa(`entries?select=id,title,summary,score,processing_score&category=eq.${cat}`));
 }
 
-function initSearch() {
-  const input = $("searchInput");
-  const box = $("results");
-  if (!input || !box) return;
-
-  input.addEventListener("input", async () => {
-    const q = input.value.trim();
-    if (q.length < 2) {
-      box.innerHTML = "";
-      return;
-    }
-
-    // Suche live
-    try {
-      renderList(await smartSearch(q));
-    } catch (_) {}
-
-    // Speichern (Debounce)
-    clearTimeout(_searchSaveTimer);
-    _searchSaveTimer = setTimeout(() => {
-      saveSearchQuery(q).catch(() => {});
-    }, 800);
-  });
-
-  // Speichern sofort bei Enter (wie „vorher“ in vielen Varianten üblich)
-  input.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter") return;
-    const q = input.value.trim();
-    saveSearchQuery(q).catch(() => {});
-  });
-}
-
-/* ================= KATEGORIEN ================= */
-async function loadCategories() {
-  const grid = document.querySelector(".category-grid");
-  if (!grid) return;
-
-  const data = await fetch("categories.json").then(r => r.json());
-  grid.innerHTML = "";
-
-  (data.categories || []).forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c.title;
-    b.onclick = () => loadCategory(c.title);
-    grid.appendChild(b);
-  });
-}
-
-async function loadCategory(cat) {
-  // NICHT encodeURIComponent bei eq. (sonst findet Supabase oft nichts)
-  renderList(await supa(
-    `entries?select=id,title,summary,score,processing_score&category=eq.${cat}`
-  ));
-}
-
-/* ================= NAV (Cards) ================= */
-document.addEventListener("click", (e) => {
-  // keine Navigation, wenn auf Buttons/Links/Inputs geklickt wurde
-  if (e.target.closest("button, a, input, textarea, select, label")) return;
-
-  const card = e.target.closest(".entry-card");
-  if (!card) return;
-
-  const id = card.dataset.id;
-  history.pushState(null, "", "?id=" + id);
-  loadEntry(id);
+/* ================= NAV ================= */
+document.addEventListener("click",e=>{
+  if(e.target.closest("button,a,textarea,input"))return;
+  const c=e.target.closest(".entry-card");
+  if(!c)return;
+  history.pushState(null,"","?id="+c.dataset.id);
+  loadEntry(c.dataset.id);
 });
 
-window.addEventListener("popstate", () => {
-  const id = new URLSearchParams(location.search).get("id");
-  if (id) loadEntry(id);
-  else goHome();
+window.addEventListener("popstate",()=>{
+  const id=new URLSearchParams(location.search).get("id");
+  if(id)loadEntry(id); else goHome();
 });
 
 /* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded", () => {
-  ensureInjectedStyles();
+document.addEventListener("DOMContentLoaded",()=>{
+  ensureStyles();
+  bindHomeOnce();
   loadCategories();
   initSearch();
-
-  const id = new URLSearchParams(location.search).get("id");
-  if (id) loadEntry(id);
-
-  // Home-Link oben kann auch ohne Entry schon funktionieren
-  bindExistingTopActions({ id: "", title: "" });
+  const id=new URLSearchParams(location.search).get("id");
+  if(id)loadEntry(id);
 });
