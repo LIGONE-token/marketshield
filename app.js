@@ -1,9 +1,9 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / FEHLERFREI)
+   MarketShield – app.js (FINAL / STABIL / KORREKT)
    ✔ KEINE neuen Buttons
-   ✔ Bestehende Buttons/Links oben funktionieren
-   ✔ Report + Zur Startseite + Rechtlicher Hinweis OK
-   ✔ Tabellen korrekt
+   ✔ Oben: Zur Startseite + Report funktionieren
+   ✔ Rechtlicher Hinweis: Minilink unter dem Titel + Popup
+   ✔ Tabellen korrekt (Markdown → echte Tabellen)
    ✔ Social / Kopieren / Drucken vorhanden
    ✔ Suchanfragen werden gespeichert
 ===================================================== */
@@ -20,8 +20,7 @@ async function supa(query, opts = {}) {
     headers: {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      ...(opts.headers || {})
+      "Content-Type": "application/json"
     },
     body: opts.body ? JSON.stringify(opts.body) : undefined
   });
@@ -90,7 +89,7 @@ function renderScoreBlock(score, processing) {
 }
 
 /* ================= STYLES ================= */
-(function injectStyles(){
+(function injectStyles() {
   if (document.getElementById("msStyles")) return;
   const s = document.createElement("style");
   s.id = "msStyles";
@@ -108,78 +107,79 @@ function renderScoreBlock(score, processing) {
   document.head.appendChild(s);
 })();
 
-/* ================= TABLE RENDER ================= */
-function isSeparator(line){
+/* ================= MARKDOWN → TABLE ================= */
+function isSeparator(line) {
   return /^[\s|\-:]+$/.test(line) && line.includes("-");
 }
-function splitRow(line){
-  return line.replace(/^\|/,"").replace(/\|$/,"").split("|").map(c=>c.trim());
+function splitRow(line) {
+  return line.replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
 }
-function parseMarkdown(text){
+function parseMarkdown(text) {
   const lines = normalizeText(text).split("\n");
   const out = [];
   let i = 0;
-  while(i < lines.length){
-    if(lines[i].includes("|") && lines[i+1] && isSeparator(lines[i+1])){
+  while (i < lines.length) {
+    if (lines[i].includes("|") && lines[i + 1] && isSeparator(lines[i + 1])) {
       const header = splitRow(lines[i]);
       const rows = [];
       i += 2;
-      while(i < lines.length && lines[i].includes("|")){
+      while (i < lines.length && lines[i].includes("|")) {
         rows.push(splitRow(lines[i]));
         i++;
       }
-      out.push({type:"table",header,rows});
+      out.push({ type: "table", header, rows });
     } else {
       let buf = lines[i];
       i++;
-      while(i < lines.length && lines[i].trim() !== ""){
+      while (i < lines.length && lines[i].trim() !== "") {
         buf += "\n" + lines[i];
         i++;
       }
-      out.push({type:"text",value:buf});
-      while(i < lines.length && lines[i].trim()==="") i++;
+      out.push({ type: "text", value: buf });
+      while (i < lines.length && lines[i].trim() === "") i++;
     }
   }
   return out;
 }
-function renderRichText(text){
-  return parseMarkdown(text).map(b=>{
-    if(b.type==="table"){
+function renderRichText(text) {
+  return parseMarkdown(text).map(b => {
+    if (b.type === "table") {
       return `<div class="ms-table-wrap"><table class="ms-table">
-        <thead><tr>${b.header.map(h=>`<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
-        <tbody>${b.rows.map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody>
+        <thead><tr>${b.header.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
+        <tbody>${b.rows.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody>
       </table></div>`;
     }
-    return `<p>${escapeHtml(b.value).replace(/\n/g,"<br>")}</p>`;
+    return `<p>${escapeHtml(b.value).replace(/\n/g, "<br>")}</p>`;
   }).join("");
 }
 
 /* ================= LIST ================= */
-function renderList(data){
-  $("results").innerHTML = (data||[]).map(e=>`
+function renderList(data) {
+  $("results").innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800">${escapeHtml(e.title)}</div>
-      ${renderScoreBlock(e.score,e.processing_score)}
+      ${renderScoreBlock(e.score, e.processing_score)}
       <div>${escapeHtml(shortText(e.summary))}</div>
-    </div>`).join("");
+    </div>
+  `).join("");
 }
 
 /* ================= HOME ================= */
-function goHome(){
+function goHome() {
   currentEntryId = null;
-  history.pushState(null,"",location.pathname);
+  history.pushState(null, "", location.pathname);
   $("results").innerHTML = "";
 }
 
-/* ================= TOP NAV ================= */
-function bindTopNav(){
+/* ================= TOP NAV (bestehend) ================= */
+function bindTopNav() {
   [
     $("backHomeBtn"),
     $("backHome"),
     $("homeLink"),
     document.querySelector('[data-action="home"]')
-  ].filter(Boolean).forEach(el=>{
-    el.addEventListener("click",e=>{
+  ].filter(Boolean).forEach(el => {
+    el.addEventListener("click", e => {
       e.preventDefault();
       goHome();
     });
@@ -189,33 +189,26 @@ function bindTopNav(){
     $("reportBtn"),
     $("reportButton"),
     document.querySelector('[data-action="report"]')
-  ].filter(Boolean).forEach(el=>{
-    el.addEventListener("click",e=>{
+  ].filter(Boolean).forEach(el => {
+    el.addEventListener("click", e => {
       e.preventDefault();
-      if(!currentEntryId){ alert("Bitte zuerst einen Eintrag öffnen."); return; }
-      openReport();
-    });
-  });
-
-  [
-    $("legalLink"),
-    document.querySelector('[data-action="legal"]')
-  ].filter(Boolean).forEach(el=>{
-    el.addEventListener("click",e=>{
-      e.preventDefault();
-      openLegal();
+      if (!currentEntryId) {
+        alert("Bitte zuerst einen Eintrag öffnen.");
+        return;
+      }
+      openReportPopup();
     });
   });
 }
 
 /* ================= REPORT ================= */
-function openReport(){
-  const bg=document.createElement("div");
-  bg.className="ms-modal-backdrop";
-  bg.innerHTML=`
+function openReportPopup() {
+  const bg = document.createElement("div");
+  bg.className = "ms-modal-backdrop";
+  bg.innerHTML = `
     <div class="ms-modal">
       <h3>Meldung senden</h3>
-      <p>Bitte kurz und sachlich beschreiben, was korrigiert werden soll.</p>
+      <p>Bitte beschreibe kurz und sachlich, was korrigiert werden soll.</p>
       <textarea id="repTxt" placeholder="Deine Meldung …"></textarea>
       <div class="row">
         <button id="repCancel">Abbrechen</button>
@@ -224,38 +217,47 @@ function openReport(){
     </div>`;
   document.body.appendChild(bg);
 
-  $("repCancel").onclick=()=>bg.remove();
-  $("repSend").onclick=async()=>{
-    const t=$("repTxt").value.trim();
-    if(t.length<3)return;
-    await supa("reports",{method:"POST",headers:{Prefer:"return=minimal"},body:{description:t,entry_id:currentEntryId}});
+  $("repCancel").onclick = () => bg.remove();
+  $("repSend").onclick = async () => {
+    const t = $("repTxt").value.trim();
+    if (t.length < 3) return;
+    await supa("reports", {
+      method: "POST",
+      headers: { Prefer: "return=minimal" },
+      body: { description: t, entry_id: currentEntryId }
+    });
     bg.remove();
     alert("Danke! Meldung gespeichert.");
   };
 }
 
-/* ================= LEGAL ================= */
-function openLegal(){
-  const bg=document.createElement("div");
-  bg.className="ms-modal-backdrop";
-  bg.innerHTML=`
+/* ================= LEGAL POPUP ================= */
+function openLegalPopup() {
+  const bg = document.createElement("div");
+  bg.className = "ms-modal-backdrop";
+  bg.innerHTML = `
     <div class="ms-modal">
       <h3>Rechtlicher Hinweis</h3>
-      <p>MarketShield dient ausschließlich der Information. Keine Beratung. Angaben ohne Gewähr.</p>
-      <div class="row"><button id="legalClose">Schließen</button></div>
+      <p>
+        MarketShield dient ausschließlich der Information und Aufklärung.
+        Es stellt keine Beratung dar. Angaben ohne Gewähr.
+      </p>
+      <div class="row">
+        <button id="legalClose">Schließen</button>
+      </div>
     </div>`;
   document.body.appendChild(bg);
-  $("legalClose").onclick=()=>bg.remove();
+  $("legalClose").onclick = () => bg.remove();
 }
 
 /* ================= SOCIAL ================= */
-function renderEntryActions(entry){
-  const box=$("entryActions");
-  if(!box)return;
-  const url=location.href;
-  const enc=encodeURIComponent(url);
-  const title=encodeURIComponent(entry.title+" – MarketShield");
-  box.innerHTML=`
+function renderEntryActions(entry) {
+  const box = $("entryActions");
+  if (!box) return;
+  const url = location.href;
+  const enc = encodeURIComponent(url);
+  const title = encodeURIComponent(entry.title + " – MarketShield");
+  box.innerHTML = `
     <div class="ms-actions">
       <button id="copyBtn">🔗 Kopieren</button>
       <button id="printBtn">🖨️ Drucken</button>
@@ -264,80 +266,113 @@ function renderEntryActions(entry){
       <button onclick="window.open('https://twitter.com/intent/tweet?url=${enc}&text=${title}','_blank')">X</button>
       <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${enc}','_blank')">Facebook</button>
     </div>`;
-  $("copyBtn").onclick=()=>navigator.clipboard.writeText(url);
-  $("printBtn").onclick=()=>window.print();
+  $("copyBtn").onclick = () => navigator.clipboard.writeText(url);
+  $("printBtn").onclick = () => window.print();
 }
 
 /* ================= DETAIL ================= */
-async function loadEntry(id){
-  const d=await supa(`entries?select=*&id=eq.${id}`);
-  const e=d[0]; if(!e)return;
-  currentEntryId=e.id;
-  $("results").innerHTML=`
+async function loadEntry(id) {
+  const d = await supa(`entries?select=*&id=eq.${id}`);
+  const e = d[0];
+  if (!e) return;
+
+  currentEntryId = e.id;
+
+  $("results").innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-    ${renderScoreBlock(e.score,e.processing_score)}
+
+    <a href="#" id="legalMiniLink"
+       style="display:inline-block;font-size:12px;opacity:.7;margin:-6px 0 10px 0;">
+       Rechtlicher Hinweis
+    </a>
+
+    ${renderScoreBlock(e.score, e.processing_score)}
     <h3>Zusammenfassung</h3>
     ${renderRichText(e.summary)}
-    <div id="entryActions"></div>`;
+    <div id="entryActions"></div>
+  `;
+
+  const legalLink = $("legalMiniLink");
+  if (legalLink) {
+    legalLink.onclick = (ev) => {
+      ev.preventDefault();
+      openLegalPopup();
+    };
+  }
+
   renderEntryActions(e);
 }
 
 /* ================= SEARCH ================= */
-let lastQ="";
-async function saveSearch(q){
-  if(q.length<2||q===lastQ)return;
-  lastQ=q;
-  await supa("search_queue",{method:"POST",headers:{Prefer:"return=minimal"},body:{query:q}});
+let lastQ = "";
+async function saveSearch(q) {
+  if (q.length < 2 || q === lastQ) return;
+  lastQ = q;
+  await supa("search_queue", {
+    method: "POST",
+    headers: { Prefer: "return=minimal" },
+    body: { query: q }
+  });
 }
-async function smartSearch(q){
-  if(q.length<2)return[];
-  const enc=encodeURIComponent(q);
-  return await supa(`entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`);
+async function smartSearch(q) {
+  if (q.length < 2) return [];
+  const enc = encodeURIComponent(q);
+  return await supa(
+    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+  );
 }
-function initSearch(){
-  const i=$("searchInput"); if(!i)return;
-  i.oninput=async()=>{
-    const q=i.value.trim();
-    if(q.length<2){$("results").innerHTML="";return;}
+function initSearch() {
+  const i = $("searchInput");
+  if (!i) return;
+  i.oninput = async () => {
+    const q = i.value.trim();
+    if (q.length < 2) {
+      $("results").innerHTML = "";
+      return;
+    }
     renderList(await smartSearch(q));
-    saveSearch(q).catch(()=>{});
+    saveSearch(q).catch(() => {});
   };
 }
 
 /* ================= CATEGORIES ================= */
-async function loadCategories(){
-  const g=document.querySelector(".category-grid"); if(!g)return;
-  const d=await fetch("categories.json").then(r=>r.json());
-  g.innerHTML="";
-  d.categories.forEach(c=>{
-    const b=document.createElement("button");
-    b.textContent=c.title;
-    b.onclick=()=>loadCategory(c.title);
+async function loadCategories() {
+  const g = document.querySelector(".category-grid");
+  if (!g) return;
+  const d = await fetch("categories.json").then(r => r.json());
+  g.innerHTML = "";
+  d.categories.forEach(c => {
+    const b = document.createElement("button");
+    b.textContent = c.title;
+    b.onclick = () => loadCategory(c.title);
     g.appendChild(b);
   });
 }
-async function loadCategory(cat){
-  renderList(await supa(`entries?select=id,title,summary,score,processing_score&category=eq.${cat}`));
+async function loadCategory(cat) {
+  renderList(await supa(
+    `entries?select=id,title,summary,score,processing_score&category=eq.${cat}`
+  ));
 }
 
 /* ================= NAV ================= */
-document.addEventListener("click",e=>{
-  if(e.target.closest("button,a,textarea,input"))return;
-  const c=e.target.closest(".entry-card");
-  if(!c)return;
-  history.pushState(null,"","?id="+c.dataset.id);
+document.addEventListener("click", e => {
+  if (e.target.closest("button,a,textarea,input")) return;
+  const c = e.target.closest(".entry-card");
+  if (!c) return;
+  history.pushState(null, "", "?id=" + c.dataset.id);
   loadEntry(c.dataset.id);
 });
-window.addEventListener("popstate",()=>{
-  const id=new URLSearchParams(location.search).get("id");
-  if(id)loadEntry(id); else goHome();
+window.addEventListener("popstate", () => {
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) loadEntry(id);
+  else goHome();
 });
 
 /* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", () => {
   bindTopNav();
   loadCategories();
   initSearch();
-  const id=new URLSearchParams(location.search).get("id");
-  if(id)loadEntry(id);
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) loadEntry(id);
 });
