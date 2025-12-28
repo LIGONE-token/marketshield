@@ -181,6 +181,18 @@ function splitMdRow(line) {
   return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
 }
 
+function isMdTableSeparator(line) {
+  // z.B. "|---|---|" oder "---|---" oder ":---|---:"
+  const s = line.trim();
+  if (!s.includes("-") || !s.includes("|")) return false;
+  return /^[\s|:-]+$/.test(s) && s.replace(/[^-]/g, "").length >= 3;
+}
+
+function splitMdRow(line) {
+  // entfernt führendes/abschließendes |, splittet Zellen
+  return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
+}
+
 function renderRichText(text) {
   const clean = normalizeText(text);
   if (!clean) return "";
@@ -241,7 +253,6 @@ function renderRichText(text) {
     return `<p>${html}</p>`;
   }).join("");
 }
-
 
 
 
