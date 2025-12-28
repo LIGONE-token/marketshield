@@ -203,7 +203,7 @@ function renderRichText(text) {
   const clean = normalizeText(text);
   if (!clean) return "";
 
-  // Blöcke strikt über \n\n (Option A)
+  // strikt nach \n\n (Option A)
   const blocks = clean.split(/\n\s*\n/);
 
   return blocks.map(blockRaw => {
@@ -212,8 +212,18 @@ function renderRichText(text) {
 
     const lines = block.split("\n");
 
-    // ✅ Markdown-Tabelle erkennen: Kopfzeile + Separatorzeile
-    if (lines.length >= 2 && lines[0].includes("|") && isMdTableSeparator(lines[1])) {
+    // ✅ Überschrift: ## Titel
+    if (/^##\s+/.test(block)) {
+      const title = block.replace(/^##\s+/, "");
+      return `<h3>${renderInline(title)}</h3>`;
+    }
+
+    // ✅ Markdown-Tabelle
+    if (
+      lines.length >= 2 &&
+      lines[0].includes("|") &&
+      isMdTableSeparator(lines[1])
+    ) {
       const header = splitMdRow(lines[0]);
       const rows = [];
 
@@ -222,41 +232,30 @@ function renderRichText(text) {
         rows.push(splitMdRow(lines[i]));
       }
 
-      // Spaltenzahl stabil halten
       const colCount = header.length || (rows[0] ? rows[0].length : 0);
-
       const norm = (arr) => {
-        const a = Array.isArray(arr) ? arr.slice(0, colCount) : [];
+        const a = (arr || []).slice(0, colCount);
         while (a.length < colCount) a.push("");
         return a;
       };
-
-      const head = norm(header);
-      const bodyRows = rows.map(r => norm(r));
 
       return `
         <div class="ms-table-wrap">
           <table class="ms-table">
             <thead>
-              <tr>${head.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+              <tr>${norm(header).map(h => `<th>${renderInline(h)}</th>`).join("")}</tr>
             </thead>
             <tbody>
-              ${bodyRows.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}
+              ${rows.map(r =>
+                `<tr>${norm(r).map(c => `<td>${renderInline(c)}</td>`).join("")}</tr>`
+              ).join("")}
             </tbody>
           </table>
-        </div>
-      `;
+        </div>`;
     }
 
-    // ✅ Markdown-Überschrift als Block (optional, aber sauber)
-    if (/^##\s+/.test(block)) {
-      const title = block.replace(/^##\s+/, "").trim();
-      return `<h3>${escapeHtml(title)}</h3>`;
-    }
-
-    // ✅ normaler Absatz (Zeilenumbrüche beibehalten)
-    const html = lines.map(l => escapeHtml(l)).join("<br>");
-    return `<p>${html}</p>`;
+    // ✅ normaler Absatz
+    return `<p>${lines.map(l => renderInline(l)).join("<br>")}</p>`;
   }).join("");
 }
 
