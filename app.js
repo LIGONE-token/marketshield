@@ -178,7 +178,11 @@ function renderList(data = []) {
       </div>
     </div>
   `).join("");
+
+  // 🔥 DAS HAT GEFEHLT
+  bindEntryCards();
 }
+
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
