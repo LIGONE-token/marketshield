@@ -1,5 +1,6 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / STABIL / KORREKT)
+   MarketShield – app.js
+   FINAL – 100 % ZUR HTML PASSEND
 ===================================================== */
 
 let currentEntryId = null;
@@ -23,180 +24,67 @@ async function supa(query, opts = {}) {
   return t ? JSON.parse(t) : [];
 }
 
-/* ================= HELPERS ================= */
-const $ = (id) => document.getElementById(id);
-
-function escapeHtml(s = "") {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-/* ================= TEXT ================= */
-function normalizeText(t = "") {
-  return String(t)
-    .replace(/:contentReference\[.*?\]\{.*?\}/g, "")
-    .replace(/\\n/g, "\n")
-    .replace(/\r\n|\r/g, "\n")
-    .trim();
-}
-
-function renderInline(text = "") {
-  return escapeHtml(text)
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-}
+/* ================= ELEMENTE (EXAKT AUS HTML) ================= */
+const elResults      = document.getElementById("results");
+const elSearch       = document.getElementById("searchInput");
+const elBackHome     = document.getElementById("backHome");
+const elReportBtn    = document.getElementById("reportBtn");
+const elReportModal  = document.getElementById("reportModal");
+const elReportForm   = document.getElementById("reportForm");
+const elReportClose  = document.getElementById("closeReportModal");
 
 /* ================= SCORES ================= */
-function renderHealth(score) {
+function renderHealthScore(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n < 1 || n > 100) return "";
+
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
   if (n >= 20) return "💛";
-  return "⚠️❗⚠️";
+  return "⚠️";
 }
 
-function renderIndustry(score) {
+function renderIndustryScore(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n < 1) return "";
 
   const clamped = Math.min(10, n);
-  const w = Math.round((clamped / 10) * 80);
-  const hue = Math.round(120 * (1 - clamped / 10)); // grün → rot
-  const color = `hsl(${hue},90%,45%)`;
+  const width = Math.round((clamped / 10) * 100);
+  const hue = Math.round(120 - clamped * 12); // grün → rot
 
   return `
-    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
-      <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
-    </div>`;
-}
-
-function renderScoreBlock(score, processing, type = "", size = 13) {
-  const h = renderHealth(score);
-
-  const isTopic =
-    String(type).toLowerCase() === "thema" ||
-    String(type).toLowerCase() === "topic";
-
-  const i = (!isTopic && Number(processing) >= 1)
-    ? renderIndustry(processing)
-    : "";
-
-  if (!h && !i) return "";
-
-  return `
-    <div style="margin:12px 0;">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
-          <div>${h}</div>
-          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
-        </div>` : ""}
-
-      ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
-          <div>${i}</div>
-          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
-    </div>`;
-}
-
-/* ================= TABLE HELPERS ================= */
-function isMdTableSeparator(line) {
-  const s = line.trim();
-  return s.includes("|") && /^[\s|:-]+$/.test(s) && s.replace(/[^-]/g, "").length >= 3;
-}
-
-function splitMdRow(line) {
-  return line
-    .trim()
-    .replace(/^\|/, "")
-    .replace(/\|$/, "")
-    .split("|")
-    .map(c => c.trim());
-}
-
-/* ================= RICH TEXT ================= */
-function renderRichText(text) {
-  const clean = normalizeText(text);
-  if (!clean) return "";
-
-  const blocks = clean.split(/\n\s*\n/);
-
-  return blocks.map(blockRaw => {
-    const block = blockRaw.trim();
-    if (!block) return "";
-
-    const lines = block.split("\n");
-
-    if (/^##\s+/.test(block)) {
-      return `<h3>${renderInline(block.replace(/^##\s+/, ""))}</h3>`;
-    }
-
-    if (lines.length >= 2 && lines[0].includes("|") && isMdTableSeparator(lines[1])) {
-      const header = splitMdRow(lines[0]);
-      const rows = [];
-
-      for (let i = 2; i < lines.length; i++) {
-        if (!lines[i].includes("|")) break;
-        rows.push(splitMdRow(lines[i]));
-      }
-
-      const cols = header.length || (rows[0] ? rows[0].length : 0);
-      const norm = (a) => {
-        const r = (a || []).slice(0, cols);
-        while (r.length < cols) r.push("");
-        return r;
-      };
-
-      return `
-        <div class="ms-table-wrap">
-          <table class="ms-table">
-            <thead>
-              <tr>${norm(header).map(h => `<th>${renderInline(h)}</th>`).join("")}</tr>
-            </thead>
-            <tbody>
-              ${rows.map(r =>
-                `<tr>${norm(r).map(c => `<td>${renderInline(c)}</td>`).join("")}</tr>`
-              ).join("")}
-            </tbody>
-          </table>
-        </div>`;
-    }
-
-    return `<p>${lines.map(l => renderInline(l)).join("<br>")}</p>`;
-  }).join("");
-}
-
-/* ================= LIST (KURZANSICHT) ================= */
-function renderList(data) {
-  const box = $("results");
-  if (!box) return;
-
-  box.innerHTML = (data || []).map(e => `
-    <div class="entry-card" data-id="${e.id}" style="cursor:pointer;">
-      <div style="font-size:20px;font-weight:800;">
-        ${escapeHtml(e.title)}
-      </div>
-
-      ${renderScoreBlock(e.score, e.processing_score, e.type)}
-
-      <div>
-        ${renderInline((e.summary || "").slice(0,160))} …
+    <div style="margin-top:6px;">
+      <div style="height:6px;background:#ddd;border-radius:4px;overflow:hidden;">
+        <div style="width:${width}%;height:6px;background:hsl(${hue},85%,45%);"></div>
       </div>
     </div>
-  `).join("");
+  `;
+}
 
-  // ✅ Jede Card explizit anklickbar
-  document.querySelectorAll(".entry-card").forEach(card => {
-    card.onclick = () => {
-      const id = card.dataset.id;
-      history.pushState(null, "", "?id=" + id);
-      loadEntry(id);
-    };
-  });
+/* ================= LISTE ================= */
+function renderList(data) {
+  elResults.innerHTML = `
+    <div id="shareBox"></div>
+    ${(data || []).map(e => `
+      <div class="entry-card" data-id="${e.id}">
+        <div style="font-size:18px;font-weight:700;">${e.title}</div>
+
+        ${renderHealthScore(e.score)
+          ? `<div>${renderHealthScore(e.score)}</div>` : ""}
+
+        ${(e.type !== "thema" && e.processing_score > 0)
+          ? renderIndustryScore(e.processing_score) : ""}
+
+        <div style="font-size:14px;opacity:.85;">
+          ${(e.summary || "").slice(0,160)}…
+        </div>
+      </div>
+    `).join("")}
+  `;
+
+  bindEntryCards();
+  elBackHome.style.display = "none";
 }
 
 /* ================= DETAIL ================= */
@@ -207,20 +95,39 @@ async function loadEntry(id) {
 
   currentEntryId = e.id;
 
-  $("results").innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
-    <a href="#" id="legalMiniLink" style="font-size:12px;opacity:.7;">Rechtlicher Hinweis</a>
-    ${renderScoreBlock(e.score, e.processing_score, e.type)}
-    ${renderRichText(e.summary)}
+  elResults.innerHTML = `
+    <div id="shareBox"></div>
+    <h2>${e.title}</h2>
+
+    <div style="margin:10px 0;">
+      ${renderHealthScore(e.score)
+        ? `<div>${renderHealthScore(e.score)}</div>` : ""}
+
+      ${(e.type !== "thema" && e.processing_score > 0)
+        ? renderIndustryScore(e.processing_score) : ""}
+    </div>
+
+    <div style="white-space:pre-wrap;line-height:1.6;">
+      ${e.summary || ""}
+    </div>
   `;
 
-  $("legalMiniLink").onclick = (ev) => {
-    ev.preventDefault();
-    alert("MarketShield dient ausschließlich der Information. Keine Beratung.");
-  };
+  elBackHome.style.display = "block";
 }
 
-/* ================= SEARCH ================= */
+/* ================= ENTRY CLICK ================= */
+function bindEntryCards() {
+  document.querySelectorAll(".entry-card").forEach(card => {
+    card.onclick = () => {
+      const id = card.dataset.id;
+      if (!id) return;
+      history.pushState({ id }, "", "?id=" + id);
+      loadEntry(id);
+    };
+  });
+}
+
+/* ================= SUCHE ================= */
 async function smartSearch(q) {
   if (q.length < 2) return [];
   const enc = encodeURIComponent(q);
@@ -229,29 +136,63 @@ async function smartSearch(q) {
   );
 }
 
-function initSearch() {
-  const i = $("searchInput");
-  if (!i) return;
+elSearch.addEventListener("input", async () => {
+  const q = elSearch.value.trim();
+  if (q.length < 2) {
+    elResults.innerHTML = `<div id="shareBox"></div>`;
+    return;
+  }
+  renderList(await smartSearch(q));
+});
 
-  i.oninput = async () => {
-    const q = i.value.trim();
-    if (q.length < 2) {
-      $("results").innerHTML = "";
-      return;
+/* ================= BACK HOME ================= */
+elBackHome.onclick = () => {
+  currentEntryId = null;
+  history.pushState({}, "", location.pathname);
+  elResults.innerHTML = `<div id="shareBox"></div>`;
+  elBackHome.style.display = "none";
+};
+
+/* ================= REPORT ================= */
+elReportBtn.onclick = () => {
+  elReportModal.style.display = "block";
+};
+
+elReportClose.onclick = () => {
+  elReportModal.style.display = "none";
+};
+
+elReportForm.onsubmit = async (e) => {
+  e.preventDefault();
+
+  const txt = elReportForm.description.value.trim();
+  if (txt.length < 3) return;
+
+  await supa("reports", {
+    method: "POST",
+    body: {
+      description: txt,
+      entry_id: currentEntryId || null
     }
-    renderList(await smartSearch(q));
-  };
-}
+  });
 
-/* ================= NAV ================= */
+  elReportForm.reset();
+  elReportModal.style.display = "none";
+  alert("Danke! Meldung wurde gespeichert.");
+};
+
+/* ================= HISTORY ================= */
 window.addEventListener("popstate", () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
+  else {
+    elResults.innerHTML = `<div id="shareBox"></div>`;
+    elBackHome.style.display = "none";
+  }
 });
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  initSearch();
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
