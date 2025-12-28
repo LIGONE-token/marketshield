@@ -42,11 +42,17 @@ function escapeHtml(s = "") {
 
 function normalizeText(t = "") {
   return String(t)
+    // ❌ interner Müll
     .replace(/:contentReference\[.*?\]\{.*?\}/g, "")
+
+    // ✅ Zeilenumbrüche normalisieren
     .replace(/\\n/g, "\n")
     .replace(/\r\n|\r/g, "\n")
+
+    // ❌ KEIN Entfernen von ## oder **
     .trim();
 }
+
 
 
 
