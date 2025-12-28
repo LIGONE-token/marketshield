@@ -42,12 +42,14 @@ function escapeHtml(s = "") {
 
 function normalizeText(t = "") {
   return String(t)
+    .replace(/:contentReference\[.*?\]\{.*?\}/g, "") // ❌ entfernt genau diesen Müll
     .replace(/\*\*|##+|__+|~~+|`+/g, "")
     .replace(/\\n/g, "\n")
     .replace(/\r\n|\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
+
 
 function shortText(t, max = 160) {
   t = normalizeText(t);
