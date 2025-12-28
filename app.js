@@ -294,21 +294,21 @@ function renderEntryActions(entry) {
 /* ================= REPORT ================= */
 async function reportEntry(entry) {
   try {
-    const reason = prompt("Was stimmt nicht? (kurz beschreiben)");
-    if (!reason || reason.trim().length < 3) return;
+    const text = prompt("Was stimmt nicht? (kurz beschreiben)");
+    if (!text || text.trim().length < 3) return;
 
-    // ✅ anpassen falls deine Tabelle andere Spalten hat
-    await supaPost("reports", {
-      entry_id: entry.id,
-      entry_title: entry.title,
-      reason: reason.trim(),
-      page_url: location.href,
-      created_at: new Date().toISOString()
+    await supa("reports", {
+      method: "POST",
+      headers: { Prefer: "return=minimal" },
+      body: {
+        description: text.trim(),
+        entry_id: entry.id
+      }
     });
 
-    alert("Danke! Meldung wurde gespeichert.");
+    alert("Danke! Die Meldung wurde gespeichert.");
   } catch (err) {
-    alert("Meldung konnte nicht gespeichert werden. Bitte später erneut.\n\n" + String(err));
+    alert("Meldung konnte nicht gespeichert werden.\n\n" + String(err));
   }
 }
 
