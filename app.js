@@ -47,11 +47,8 @@ function shortText(t, max = 160) {
 }
 
 /* ================= SCORES (LOCKED) ================= */
+/* 0 = nichts anzeigen | Warnung = ❗⚠️❗ (wie vorher) */
 
-/* Gesundheit:
-   0 = nichts
-   <20 = ❗⚠️❗  (EXAKT wie früher)
-*/
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -64,9 +61,6 @@ function renderHealth(score) {
   return "❗⚠️❗";
 }
 
-/* Industrie-Verarbeitungsgrad:
-   1–10 | schmal | grün → rot
-*/
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -74,7 +68,7 @@ function renderIndustry(score) {
   const clamped = Math.min(10, Math.max(1, n));
   const MAX_WIDTH = 90;
   const width = Math.round((clamped / 10) * MAX_WIDTH);
-  const hue = Math.round(120 - (clamped - 1) * (120 / 9));
+  const hue = Math.round(120 - (clamped - 1) * (120 / 9)); // grün → rot
 
   return `
     <div style="margin-top:6px;">
@@ -104,6 +98,13 @@ function renderScoreBlock(score, processing) {
       ${i || ""}
     </div>
   `;
+}
+
+/* ================= STARTSEITE (LEER) ================= */
+function showStart() {
+  currentEntryId = null;
+  const box = $("results");
+  if (box) box.innerHTML = "";
 }
 
 /* ================= LISTE ================= */
@@ -171,14 +172,6 @@ function renderEntryActions(title) {
   $("btnFacebook").onclick = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encUrl}`, "_blank");
 }
 
-/* ================= HOME ================= */
-async function loadHome() {
-  currentEntryId = null;
-  renderList(await supa(
-    "entries?select=id,title,summary,score,processing_score&order=title.asc&limit=50"
-  ));
-}
-
 /* ================= SEARCH ================= */
 function initSearch() {
   const input = $("searchInput");
@@ -186,7 +179,7 @@ function initSearch() {
 
   input.addEventListener("input", async (e) => {
     const q = e.target.value.trim();
-    if (q.length < 2) return loadHome();
+    if (q.length < 2) return showStart();
 
     const enc = encodeURIComponent(q);
     renderList(await supa(
@@ -206,26 +199,22 @@ async function loadCategories() {
   (data.categories || []).forEach(c => {
     const b = document.createElement("button");
     b.textContent = c.title;
-    b.onclick = () => loadCategory(c.title);
+    b.onclick = async () => {
+      renderList(await supa(
+        `entries?select=id,title,summary,score,processing_score&category=eq.${c.title}`
+      ));
+    };
     grid.appendChild(b);
   });
 }
 
-async function loadCategory(cat) {
-  renderList(await supa(
-    `entries?select=id,title,summary,score,processing_score&category=eq.${cat}`
-  ));
-}
-
 /* ================= REPORT → SUPABASE ================= */
-
-// Öffnen / Schließen per Event-Delegation (stabil)
+// Event-Delegation: stabil auch nach Re-Render
 document.addEventListener("click", (e) => {
   if (e.target && e.target.id === "reportBtn") {
     const modal = $("reportModal");
     if (modal) modal.style.display = "block";
   }
-
   if (e.target && e.target.id === "closeReportModal") {
     const modal = $("reportModal");
     if (modal) modal.style.display = "none";
@@ -234,51 +223,39 @@ document.addEventListener("click", (e) => {
 
 // Formular absenden → INSERT in Supabase.reports
 const elReportForm = $("reportForm");
-
 if (elReportForm) {
   elReportForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const txt = elReportForm.description?.value.trim();
-    if (!txt || txt.length < 3) {
-      alert("Bitte eine kurze Beschreibung eingeben.");
+    if (!txt || txt.length < 3) return alert("Bitte Beschreibung eingeben.");
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        description: txt,
+        entry_id: currentEntryId || null,
+        created_at: new Date().toISOString()
+      })
+    });
+
+    if (!res.ok) {
+      const t = await res.text();
+      alert("Report fehlgeschlagen");
+      console.error(t);
       return;
     }
 
-    try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/reports`,
-        {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            "Content-Type": "application/json",
-            Prefer: "return=minimal"
-          },
-          body: JSON.stringify({
-            description: txt,
-            entry_id: currentEntryId || null,
-            created_at: new Date().toISOString()
-          })
-        }
-      );
-
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || "Report konnte nicht gespeichert werden");
-      }
-
-      elReportForm.reset();
-      const modal = $("reportModal");
-      if (modal) modal.style.display = "none";
-
-      alert("Danke! Meldung wurde gespeichert.");
-
-    } catch (err) {
-      console.error("REPORT ERROR:", err);
-      alert("Fehler beim Speichern des Reports.");
-    }
+    elReportForm.reset();
+    const modal = $("reportModal");
+    if (modal) modal.style.display = "none";
+    alert("Danke! Meldung wurde gespeichert.");
   });
 }
 
@@ -299,6 +276,7 @@ if (elLegalClose && elLegalModal) elLegalClose.onclick = () => elLegalModal.styl
 document.addEventListener("click", e => {
   const card = e.target.closest(".entry-card");
   if (!card) return;
+
   history.pushState({}, "", "?id=" + card.dataset.id);
   loadEntry(card.dataset.id);
 });
@@ -308,14 +286,14 @@ if (elBackHome) {
   elBackHome.onclick = (e) => {
     e.preventDefault();
     history.pushState({}, "", location.pathname);
-    loadHome();
+    showStart();
   };
 }
 
 window.onpopstate = () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
-  else loadHome();
+  else showStart();
 };
 
 /* ================= INIT ================= */
@@ -325,5 +303,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
-  else loadHome();
+  else showStart();
 });
