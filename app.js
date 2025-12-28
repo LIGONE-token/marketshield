@@ -171,16 +171,18 @@ function parseMarkdown(text) {
   return out;
 }
 function renderRichText(text) {
-  return parseMarkdown(text).map(b => {
-    if (b.type === "table") {
-      return `<div class="ms-table-wrap"><table class="ms-table">
-        <thead><tr>${b.header.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr></thead>
-        <tbody>${b.rows.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}</tbody>
-      </table></div>`;
-    }
-    return `<p>${escapeHtml(b.value).replace(/\n/g, "<br>")}</p>`;
+  const clean = normalizeText(text);
+  if (!clean) return "";
+
+  // Absätze = durch LEERZEILEN getrennt
+  const paragraphs = clean.split(/\n\s*\n/);
+
+  return paragraphs.map(p => {
+    const lines = p.split("\n").map(l => escapeHtml(l));
+    return `<p>${lines.join("<br>")}</p>`;
   }).join("");
 }
+
 
 /* ================= LIST ================= */
 function renderList(data) {
