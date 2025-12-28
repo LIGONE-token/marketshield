@@ -169,25 +169,79 @@ function parseMarkdown(text) {
   }
   return out;
 }
+function isMdTableSeparator(line) {
+  // z.B. "|---|---|" oder "---|---" oder ":---|---:"
+  const s = line.trim();
+  if (!s.includes("-") || !s.includes("|")) return false;
+  return /^[\s|:-]+$/.test(s) && s.replace(/[^-]/g, "").length >= 3;
+}
+
+function splitMdRow(line) {
+  // entfernt führendes/abschließendes |, splittet Zellen
+  return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
+}
+
 function renderRichText(text) {
   const clean = normalizeText(text);
   if (!clean) return "";
 
+  // Blöcke strikt über \n\n (Option A)
   const blocks = clean.split(/\n\s*\n/);
 
-  return blocks.map(b => {
-    const block = b.trim();
+  return blocks.map(blockRaw => {
+    const block = blockRaw.trim();
+    if (!block) return "";
 
-    // 🔹 Markdown-Überschrift → eigener Block
-    if (block.startsWith("## ")) {
-      return `<h3>${escapeHtml(block.replace(/^##\s*/, ""))}</h3>`;
+    const lines = block.split("\n");
+
+    // ✅ Markdown-Tabelle erkennen: Kopfzeile + Separatorzeile
+    if (lines.length >= 2 && lines[0].includes("|") && isMdTableSeparator(lines[1])) {
+      const header = splitMdRow(lines[0]);
+      const rows = [];
+
+      for (let i = 2; i < lines.length; i++) {
+        if (!lines[i].includes("|")) break;
+        rows.push(splitMdRow(lines[i]));
+      }
+
+      // Spaltenzahl stabil halten
+      const colCount = header.length || (rows[0] ? rows[0].length : 0);
+
+      const norm = (arr) => {
+        const a = Array.isArray(arr) ? arr.slice(0, colCount) : [];
+        while (a.length < colCount) a.push("");
+        return a;
+      };
+
+      const head = norm(header);
+      const bodyRows = rows.map(r => norm(r));
+
+      return `
+        <div class="ms-table-wrap">
+          <table class="ms-table">
+            <thead>
+              <tr>${head.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+              ${bodyRows.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
     }
 
-    // 🔹 Normaler Absatz
-    const lines = block.split("\n").map(l => escapeHtml(l));
-    return `<p>${lines.join("<br>")}</p>`;
+    // ✅ Markdown-Überschrift als Block (optional, aber sauber)
+    if (/^##\s+/.test(block)) {
+      const title = block.replace(/^##\s+/, "").trim();
+      return `<h3>${escapeHtml(title)}</h3>`;
+    }
+
+    // ✅ normaler Absatz (Zeilenumbrüche beibehalten)
+    const html = lines.map(l => escapeHtml(l)).join("<br>");
+    return `<p>${html}</p>`;
   }).join("");
 }
+
 
 
 
