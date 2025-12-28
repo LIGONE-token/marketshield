@@ -35,13 +35,24 @@ function escapeHtml(s = "") {
 
 function normalizeText(text) {
   return String(text || "")
+    // Markdown-/Format-Reste
     .replace(/\*\*|##+|__+|~~+|`+/g, "")
-    .replace(/\\n/g, "\n")              // literal \n → echte Zeile
+
+    // 🔥 KI-/Content-Reference-MÜLL KOMPLETT ENTFERNEN
+    .replace(/:contentReference\[[^\]]*\]\{[^}]*\}/gi, "")
+    .replace(/\[oaicite:[^\]]*\]/gi, "")
+
+    // Zeilenumbrüche korrekt behandeln
+    .replace(/\\n/g, "\n")
     .replace(/\r\n|\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
+
+    // Mehrfache Leerzeichen
     .replace(/[ \t]{2,}/g, " ")
+
     .trim();
 }
+
 
 function shortText(t, max = 160) {
   t = normalizeText(t);
