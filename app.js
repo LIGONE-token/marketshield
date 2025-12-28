@@ -42,13 +42,12 @@ function escapeHtml(s = "") {
 
 function normalizeText(t = "") {
   return String(t)
-    .replace(/:contentReference\[.*?\]\{.*?\}/g, "") // Müll weg
-    .replace(/\*\*/g, "")
-    .replace(/^##\s*/gm, "") // Überschrift-Markdown entfernen, ZEILE bleibt!
+    .replace(/:contentReference\[.*?\]\{.*?\}/g, "")
     .replace(/\\n/g, "\n")
     .replace(/\r\n|\r/g, "\n")
     .trim();
 }
+
 
 
 function shortText(t, max = 160) {
@@ -174,14 +173,22 @@ function renderRichText(text) {
   const clean = normalizeText(text);
   if (!clean) return "";
 
-  // Absätze exakt wie gespeichert
-  const paragraphs = clean.split(/\n\s*\n/);
+  const blocks = clean.split(/\n\s*\n/);
 
-  return paragraphs.map(p => {
-    const lines = p.split("\n").map(l => escapeHtml(l));
+  return blocks.map(b => {
+    const block = b.trim();
+
+    // 🔹 Markdown-Überschrift → eigener Block
+    if (block.startsWith("## ")) {
+      return `<h3>${escapeHtml(block.replace(/^##\s*/, ""))}</h3>`;
+    }
+
+    // 🔹 Normaler Absatz
+    const lines = block.split("\n").map(l => escapeHtml(l));
     return `<p>${lines.join("<br>")}</p>`;
   }).join("");
 }
+
 
 
 
