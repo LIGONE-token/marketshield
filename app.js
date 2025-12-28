@@ -174,10 +174,9 @@ function renderRichText(text) {
   const clean = normalizeText(text);
   if (!clean) return "";
 
-  // 1️⃣ Absätze exakt an \n\n trennen
+  // Absätze exakt wie gespeichert
   const paragraphs = clean.split(/\n\s*\n/);
 
-  // 2️⃣ Innerhalb eines Absatzes einfache \n → <br>
   return paragraphs.map(p => {
     const lines = p.split("\n").map(l => escapeHtml(l));
     return `<p>${lines.join("<br>")}</p>`;
