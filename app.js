@@ -1,5 +1,6 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / LOCKED)
+   MarketShield – app.js
+   CONTENT ONLY (STABIL / SYSTEMFREI)
 ===================================================== */
 
 let currentEntryId = null;
@@ -8,18 +9,15 @@ let currentEntryId = null;
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-async function supa(query, opts = {}) {
+async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    method: opts.method || "GET",
     headers: {
       apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: opts.body ? JSON.stringify(opts.body) : undefined
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
   });
   const t = await r.text();
-  if (!r.ok) throw new Error(t || r.statusText);
+  if (!r.ok) throw new Error(t);
   return JSON.parse(t || "[]");
 }
 
@@ -33,7 +31,7 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-/* Entfernt NUR Artefakte, zerstört keine Struktur */
+/* Nur Artefakte entfernen – Struktur behalten */
 function stripArtifacts(s) {
   return String(s || "")
     .replace(/:contentReference\[[^\]]*\]\{[^}]*\}/gi, "")
@@ -42,7 +40,6 @@ function stripArtifacts(s) {
     .trim();
 }
 
-/* Behält Absätze (\n\n) */
 function normalizeText(text) {
   return stripArtifacts(String(text || ""))
     .replace(/\\n/g, "\n")
@@ -56,7 +53,7 @@ function makePreview(text, max = 170) {
   return t.length <= max ? t : t.slice(0, max).trim() + " …";
 }
 
-/* ================= SCORES (LOCKED) ================= */
+/* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -74,6 +71,7 @@ function renderIndustry(score) {
   const MAX = 90;
   const w = Math.round((clamped / 10) * MAX);
   const hue = Math.round(120 - (clamped - 1) * (120 / 9));
+
   return `
     <div style="margin-top:6px;">
       <div style="display:flex;align-items:center;gap:8px;font-size:13px;opacity:.85;">
@@ -94,7 +92,8 @@ function renderScoreBlock(score, processing) {
     <div style="margin:10px 0;">
       ${h ? `
         <div style="display:flex;align-items:center;gap:8px;font-size:15px;margin-bottom:4px;">
-          <div>${h}</div><div style="opacity:.8;">Gesundheit</div>
+          <div>${h}</div>
+          <div style="opacity:.8;">Gesundheit</div>
         </div>` : ""}
       ${i || ""}
     </div>
@@ -123,6 +122,7 @@ function renderSummaryHtml(raw) {
 function mdTableToHtml(block) {
   const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
   if (lines.length < 2 || !lines[0].includes("|")) return null;
+
   const sep = lines[1].replace(/\s+/g, "");
   if (!sep.includes("|") || !/^[-:|]+$/.test(sep)) return null;
 
@@ -160,7 +160,9 @@ function renderList(data = []) {
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;opacity:.9;">${escapeHtml(makePreview(e.summary))}</div>
+      <div style="font-size:15px;opacity:.9;">
+        ${escapeHtml(makePreview(e.summary))}
+      </div>
     </div>
   `).join("");
 }
@@ -179,29 +181,26 @@ async function loadEntry(id) {
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
-    <div id="entryContent">${renderSummaryHtml(e.summary)}</div>
-
-    <div id="entryActions" style="margin-top:26px;border-top:1px solid #e5e5e5;padding-top:14px;">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button data-act="copy">🔗 Kopieren</button>
-        <button data-act="print">🖨️ Drucken</button>
-        <button data-act="telegram">Telegram</button>
-        <button data-act="whatsapp">WhatsApp</button>
-        <button data-act="x">X</button>
-        <button data-act="facebook">Facebook</button>
-      </div>
+    <div id="entryContent">
+      ${renderSummaryHtml(e.summary)}
     </div>
+
+    <!-- Action-Buttons bleiben im HTML, Logik kommt aus system-controls.js -->
+    <div id="entryActions"></div>
   `;
 }
 
-/* ================= SEARCH ================= */
+/* ================= SUCHE ================= */
 function initSearch() {
   const input = $("searchInput");
   if (!input) return;
 
   input.addEventListener("input", async (e) => {
     const q = e.target.value.trim();
-    if (q.length < 2) return showStart();
+    if (q.length < 2) {
+      showStart();
+      return;
+    }
 
     const enc = encodeURIComponent(q);
     renderList(await supa(
@@ -234,104 +233,13 @@ async function loadCategories() {
   });
 }
 
-/* ================= GLOBAL CLICK (STABIL) ================= */
-document.addEventListener("click", async (e) => {
-  // Entry öffnen
+/* ================= NAVIGATION (PASSIV) ================= */
+document.addEventListener("click", (e) => {
   const card = e.target.closest(".entry-card");
-  if (card) {
-    history.pushState({}, "", "?id=" + card.dataset.id);
-    loadEntry(card.dataset.id);
-    return;
-  }
+  if (!card) return;
 
-  // Zur Startseite
-  if (e.target.closest("#backHome")) {
-    e.preventDefault();
-    history.pushState({}, "", location.pathname);
-    showStart();
-    return;
-  }
-
-  // Rechtlicher Hinweis
-  if (e.target.closest("#legalLink")) {
-    e.preventDefault();
-    $("legalModal") && ($("legalModal").style.display = "block");
-    return;
-  }
-  if (e.target.closest("#closeLegalModal")) {
-    $("legalModal") && ($("legalModal").style.display = "none");
-    return;
-  }
-
-  // GLOBALER REPORT (immer aktiv)
-  if (e.target.closest("#reportBtn")) {
-    const m = $("reportModal");
-    if (!m) {
-      alert("Report-Fenster fehlt.");
-      return;
-    }
-    m.style.display = "block";
-    return;
-  }
-  if (e.target.closest("#closeReportModal")) {
-    $("reportModal") && ($("reportModal").style.display = "none");
-    return;
-  }
-
-  // Social / Aktionen
-  const btn = e.target.closest("#entryActions [data-act]");
-  if (!btn) return;
-
-  const act = btn.dataset.act;
-  const url = location.href;
-  const title = (document.querySelector("h2")?.textContent || "MarketShield").trim();
-  const encUrl = encodeURIComponent(url);
-  const encTitle = encodeURIComponent(title + " – MarketShield");
-
-  if (act === "copy") { navigator.clipboard.writeText(url); return; }
-  if (act === "print") { window.print(); return; }
-  if (act === "telegram") return void window.open(`https://t.me/share/url?url=${encUrl}&text=${encTitle}`, "_blank");
-  if (act === "whatsapp") return void window.open(`https://wa.me/?text=${encTitle}%20${encUrl}`, "_blank");
-  if (act === "x") return void window.open(`https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}`, "_blank");
-  if (act === "facebook") return void window.open(`https://www.facebook.com/sharer/sharer.php?u=${encUrl}`, "_blank");
-});
-
-/* ================= REPORT SUBMIT → SUPABASE ================= */
-document.addEventListener("submit", async (e) => {
-  const form = e.target.closest("#reportForm");
-  if (!form) return;
-
-  e.preventDefault();
-  const txt = form.description?.value.trim();
-  if (!txt || txt.length < 3) {
-    alert("Bitte Beschreibung eingeben.");
-    return;
-  }
-
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-    method: "POST",
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify({
-      description: txt,
-      entry_id: currentEntryId || null,
-      created_at: new Date().toISOString()
-    })
-  });
-
-  if (!res.ok) {
-    console.error(await res.text());
-    alert("Report fehlgeschlagen.");
-    return;
-  }
-
-  form.reset();
-  $("reportModal") && ($("reportModal").style.display = "none");
-  alert("Danke! Meldung wurde gespeichert.");
+  history.pushState({}, "", "?id=" + card.dataset.id);
+  loadEntry(card.dataset.id);
 });
 
 /* ================= HISTORY ================= */
