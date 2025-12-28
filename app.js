@@ -67,26 +67,47 @@ function renderHealth(score) {
 
 function renderIndustry(score) {
   const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
-  const w = Math.min(80, Math.max(0, Math.round((n / 10) * 80)));
+  if (!Number.isFinite(n) || n < 0) return ""; // 0 ist erlaubt!
+
+  // 0..10 → 0..80px
+  const clamped = Math.max(0, Math.min(10, n));
+  const w = Math.round((clamped / 10) * 80);
+
+  // Farbe: 0 = grün (120°), 5 = gelb (60°), 10 = rot (0°)
+  const hue = Math.round(120 * (1 - clamped / 10)); // 120→0
+  const barColor = `hsl(${hue}, 90%, 45%)`;
+
   return `
-    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
-      <div style="width:${w}px;height:8px;background:#2e7d32;border-radius:6px;"></div>
+    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
+      <div style="width:${w}px;height:8px;background:${barColor};border-radius:6px;"></div>
     </div>`;
 }
 
-function renderScoreBlock(score, processing) {
+function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
+
+  // Industriescore 0..10 soll sichtbar sein → renderIndustry() liefert auch bei 0 ein Element
   const i = renderIndustry(processing);
+
+  // Wenn beides komplett fehlt (z.B. score ungültig UND processing ungültig)
   if (!h && !i) return "";
+
   return `
     <div style="margin:12px 0;">
-      ${h ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
-        <div>${h}</div><div>Gesundheitsscore</div></div>` : ""}
-      ${i ? `<div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
-        <div>${i}</div><div>Industrie-Verarbeitungsgrad</div></div>` : ""}
+      ${h ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
+          <div>${h}</div>
+          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
+        </div>` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+          <div>${i}</div>
+          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
+        </div>` : ""}
     </div>`;
 }
+
 
 /* ================= STYLES ================= */
 (function injectStyles() {
