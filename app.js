@@ -170,15 +170,33 @@ function renderRichText(text) {
   }).join("");
 }
 
-/* ================= LIST ================= */
+/* ================= LIST (KURZANSICHT) ================= */
 function renderList(data) {
-  $("results").innerHTML = (data || []).map(e => `
-    <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
+  const box = $("results");
+  if (!box) return;
+
+  box.innerHTML = (data || []).map(e => `
+    <div class="entry-card" data-id="${e.id}" style="cursor:pointer;">
+      <div style="font-size:20px;font-weight:800;">
+        ${escapeHtml(e.title)}
+      </div>
+
       ${renderScoreBlock(e.score, e.processing_score, e.type)}
-      <div>${renderInline(e.summary?.slice(0,160) || "")} …</div>
+
+      <div>
+        ${renderInline((e.summary || "").slice(0,160))} …
+      </div>
     </div>
   `).join("");
+
+  // ✅ Jede Card explizit anklickbar
+  document.querySelectorAll(".entry-card").forEach(card => {
+    card.onclick = () => {
+      const id = card.dataset.id;
+      history.pushState(null, "", "?id=" + id);
+      loadEntry(id);
+    };
+  });
 }
 
 /* ================= DETAIL ================= */
@@ -214,21 +232,18 @@ async function smartSearch(q) {
 function initSearch() {
   const i = $("searchInput");
   if (!i) return;
+
   i.oninput = async () => {
     const q = i.value.trim();
-    if (q.length < 2) return $("results").innerHTML = "";
+    if (q.length < 2) {
+      $("results").innerHTML = "";
+      return;
+    }
     renderList(await smartSearch(q));
   };
 }
 
 /* ================= NAV ================= */
-document.addEventListener("click", e => {
-  const card = e.target.closest(".entry-card");
-  if (!card) return;
-  history.pushState(null, "", "?id=" + card.dataset.id);
-  loadEntry(card.dataset.id);
-});
-
 window.addEventListener("popstate", () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
