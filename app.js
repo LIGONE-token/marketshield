@@ -217,30 +217,69 @@ async function loadCategory(cat) {
   ));
 }
 
-/* ================= REPORT ================= */
-const elReportBtn   = $("reportBtn");
-const elReportModal = $("reportModal");
-const elReportForm  = $("reportForm");
-const elReportClose = $("closeReportModal");
+/* ================= REPORT → SUPABASE ================= */
 
-if (elReportBtn && elReportModal) elReportBtn.onclick = () => elReportModal.style.display = "block";
-if (elReportClose && elReportModal) elReportClose.onclick = () => elReportModal.style.display = "none";
+// Öffnen / Schließen per Event-Delegation (stabil)
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "reportBtn") {
+    const modal = $("reportModal");
+    if (modal) modal.style.display = "block";
+  }
+
+  if (e.target && e.target.id === "closeReportModal") {
+    const modal = $("reportModal");
+    if (modal) modal.style.display = "none";
+  }
+});
+
+// Formular absenden → INSERT in Supabase.reports
+const elReportForm = $("reportForm");
 
 if (elReportForm) {
-  elReportForm.onsubmit = async (e) => {
+  elReportForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const txt = elReportForm.description?.value.trim();
-    if (!txt || txt.length < 3) return;
+    if (!txt || txt.length < 3) {
+      alert("Bitte eine kurze Beschreibung eingeben.");
+      return;
+    }
 
-    await supa("reports", {
-      method: "POST",
-      body: { description: txt, entry_id: currentEntryId }
-    });
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/reports`,
+        {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal"
+          },
+          body: JSON.stringify({
+            description: txt,
+            entry_id: currentEntryId || null,
+            created_at: new Date().toISOString()
+          })
+        }
+      );
 
-    elReportForm.reset();
-    elReportModal.style.display = "none";
-    alert("Danke! Meldung wurde gespeichert.");
-  };
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(t || "Report konnte nicht gespeichert werden");
+      }
+
+      elReportForm.reset();
+      const modal = $("reportModal");
+      if (modal) modal.style.display = "none";
+
+      alert("Danke! Meldung wurde gespeichert.");
+
+    } catch (err) {
+      console.error("REPORT ERROR:", err);
+      alert("Fehler beim Speichern des Reports.");
+    }
+  });
 }
 
 /* ================= RECHTLICHER HINWEIS ================= */
