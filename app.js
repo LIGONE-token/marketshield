@@ -1,11 +1,11 @@
 /* =====================================================
    MarketShield – app.js (FINAL / STABIL / KORREKT)
-   ✔ KEINE neuen Buttons
-   ✔ Oben: Zur Startseite + Report funktionieren
-   ✔ Rechtlicher Hinweis: Minilink unter dem Titel + Popup
+   ✔ Suche: NUR Titel (kein Summary-Match mehr)
+   ✔ Report + Zur Startseite funktionieren
+   ✔ Rechtlicher Hinweis: Minilink unter Titel + Popup
    ✔ Tabellen korrekt (Markdown → echte Tabellen)
    ✔ Social / Kopieren / Drucken vorhanden
-   ✔ Suchanfragen werden gespeichert
+   ✔ Suchanfragen werden gespeichert (search_queue)
 ===================================================== */
 
 let currentEntryId = null;
@@ -314,13 +314,16 @@ async function saveSearch(q) {
     body: { query: q }
   });
 }
+
+/* 🔥 WICHTIG: NUR TITEL durchsuchen */
 async function smartSearch(q) {
   if (q.length < 2) return [];
   const enc = encodeURIComponent(q);
   return await supa(
-    `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+    `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
   );
 }
+
 function initSearch() {
   const i = $("searchInput");
   if (!i) return;
