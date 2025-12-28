@@ -48,30 +48,32 @@
   }
 
   /* =====================================================
-     REPORT BUTTON (GLOBAL)
+     REPORT BUTTON – GLOBAL & UNBLOCKIERBAR
+     (Capture-Phase, kein onclick)
   ===================================================== */
-  function bindReportButton() {
-    const btn = $("reportBtn");
-    const modal = $("reportModal");
-    const close = $("closeReportModal");
+  document.addEventListener("click", function (e) {
+    const trigger = e.target.closest("#reportBtn");
+    if (!trigger) return;
 
-    if (btn && modal) {
-      btn.onclick = (e) => {
-        e.preventDefault();
-        modal.style.display = "block";
-        log("Report geöffnet");
-      };
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    const modal = document.getElementById("reportModal");
+    if (!modal) {
+      alert("❌ Report-Fenster nicht gefunden");
+      console.error("reportModal fehlt im DOM");
+      return;
     }
 
-    if (close && modal) {
-      close.onclick = () => {
-        modal.style.display = "none";
-      };
-    }
-  }
+    modal.style.display = "block";
+    modal.style.visibility = "visible";
+    modal.style.opacity = "1";
+
+    log("REPORT BUTTON → MODAL GEÖFFNET");
+  }, true); // ← CAPTURE MODE (entscheidend!)
 
   /* =====================================================
-     REPORT SUBMIT → SUPABASE
+     REPORT SUBMIT → SUPABASE (GLOBAL)
   ===================================================== */
   function bindReportSubmit() {
     const form = $("reportForm");
@@ -113,7 +115,7 @@
         }
 
         form.reset();
-        $("reportModal").style.display = "none";
+        document.getElementById("reportModal").style.display = "none";
         alert("Danke! Meldung wurde gespeichert.");
         log("Report gespeichert");
 
@@ -121,6 +123,19 @@
         console.error(err);
         alert("Netzwerkfehler beim Report.");
       }
+    };
+  }
+
+  /* =====================================================
+     REPORT MODAL SCHLIESSEN
+  ===================================================== */
+  function bindReportClose() {
+    const close = $("closeReportModal");
+    const modal = $("reportModal");
+    if (!close || !modal) return;
+
+    close.onclick = () => {
+      modal.style.display = "none";
     };
   }
 
@@ -229,8 +244,8 @@
      ZENTRALES BINDING
   ===================================================== */
   function bindAll() {
-    bindReportButton();
     bindReportSubmit();
+    bindReportClose();
     bindBackHome();
     bindLegal();
     bindActions();
