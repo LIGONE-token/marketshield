@@ -102,16 +102,14 @@ function renderScoreBlock(score, processing) {
 
       ${industry ? `
         <div class="score-row">
-          <div class="score-title">Industrie</div>
-          <div class="score-value">
-            ${industry}
-          </div>
+          ${industry}
         </div>
       ` : ""}
 
     </div>
   `;
 }
+
 
 /* ================= STARTSEITE (LEER) ================= */
 function showStart() {
