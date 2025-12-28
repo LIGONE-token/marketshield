@@ -235,12 +235,24 @@ async function loadCategories() {
 
 /* ================= NAVIGATION (PASSIV) ================= */
 document.addEventListener("click", (e) => {
+
+  // ⛔ UI-KLICKS DÜRFEN NICHT NAVIGIEREN
+  if (
+    e.target.closest("#reportBtn") ||
+    e.target.closest("#reportModal") ||
+    e.target.closest("button") ||
+    e.target.closest("a")
+  ) {
+    return;
+  }
+
   const card = e.target.closest(".entry-card");
   if (!card) return;
 
   history.pushState({}, "", "?id=" + card.dataset.id);
   loadEntry(card.dataset.id);
 });
+
 
 /* ================= HISTORY ================= */
 window.addEventListener("popstate", () => {
