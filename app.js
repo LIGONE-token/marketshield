@@ -239,7 +239,7 @@ function openLegalPopup() {
     <div class="ms-modal">
       <h3>Rechtlicher Hinweis</h3>
       <p>
-        MarketShield dient ausschließlich der Information und Aufklärung.
+        MarketShield darf aus rechtlichen Gründen hier nicht die echte Wahrheit darstellen.
         Es stellt keine Beratung dar. Angaben ohne Gewähr.
       </p>
       <div class="row">
