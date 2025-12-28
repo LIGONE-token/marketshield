@@ -123,15 +123,15 @@ async function loadEntry(id) {
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
     ${renderScoreBlock(e.score, e.processing_score)}
-
-    <h3>Zusammenfassung</h3>
     <div style="white-space:pre-wrap;line-height:1.6;">
       ${escapeHtml(normalizeText(e.summary))}
     </div>
 
-    <div id="entryActions"></div>
+    <!-- ACTIONS -->
+    <div id="entryActions" style="margin-top:28px;"></div>
   `;
 
+  // WICHTIG: erst NACH DOM-Erstellung
   renderEntryActions(e.title);
 }
 
