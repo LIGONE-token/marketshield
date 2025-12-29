@@ -1743,3 +1743,30 @@ body:not(.has-detail) #backHome {
   z-index: 1000000;
   background: #fff;
 }
+/* =====================================================
+   MarketShield – FINAL REPORT MODAL FIX
+   Sichtbarkeit erzwingen
+===================================================== */
+
+#reportModal {
+  display: none;                  /* JS schaltet auf block */
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.6);
+  z-index: 999999 !important;
+
+  /* DAS ist entscheidend */
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+#reportModal .report-modal-box {
+  position: relative;
+  margin: 10vh auto;
+  max-width: 520px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 6px;
+  z-index: 1000000;
+}
