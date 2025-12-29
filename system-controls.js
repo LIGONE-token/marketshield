@@ -10,24 +10,26 @@
     /* ================= STATE ================= */
     const hasDetail = new URLSearchParams(location.search).has("id");
 
-    /* ================= ZUR STARTSEITE =================
-       - NUR sichtbar in Detailansicht
-       - Position/Styling NICHT ändern
-       - NUR Klick binden
-    ==================================================== */
+   (function () {
+  "use strict";
+
+  document.addEventListener("DOMContentLoaded", () => {
     const backHome =
       document.getElementById("backhome") ||
       document.getElementById("backHome");
 
-    if (backHome) {
-      backHome.style.display = hasDetail ? "" : "none";
-      backHome.style.cursor = "pointer";
-      backHome.addEventListener("click", (e) => {
-        e.preventDefault();
-        // hart zurück zur Startseite
-        window.location.href = window.location.pathname;
-      });
-    }
+    if (!backHome) return;
+
+    // NUR Sichtbarkeit steuern – nichts erzeugen, nichts verschieben
+    const hasDetail = new URLSearchParams(location.search).has("id");
+    backHome.style.display = hasDetail ? "" : "none";
+
+    backHome.onclick = (e) => {
+      e.preventDefault();
+      window.location.href = window.location.pathname;
+    };
+  });
+})();
 
     /* ================= REPORT =================
        - EXISTIERENDER Button
