@@ -61,6 +61,12 @@ function sanitizeBlock(block) {
   /\b(neue|moderne)?\s*Krypto-Modelle\s+wie\s+(verfolgen|setzen|zielen)\b/gi,
   "Neue Krypto-Modelle verfolgen"
 );
+   // Mehrfache Leerzeichen & leere Konstruktionen
+s = s.replace(/\s{2,}/g, " ");
+s = s.replace(/\s+([.,;:])/g, "$1");
+
+   // Zu kurze oder kaputte Sätze entfernen
+if (s.split(" ").length < 4) return "";
 
   return s;
 }
