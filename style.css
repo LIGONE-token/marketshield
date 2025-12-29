@@ -1679,3 +1679,41 @@ svg,
   font-weight: 600;
   cursor: pointer;
 }
+/* =====================================================
+   MarketShield – FINAL FIX: Zur Startseite
+   - NUR Text
+   - schmal
+   - ÜBER dem Report-Button
+===================================================== */
+
+/* Nur Text, keine Button-Optik */
+#backhome,
+#backHome,
+.back-home {
+  display: inline !important;        /* KEIN Block */
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* RICHTIGE POSITION: über dem Report-Button */
+.community-report {
+  margin-top: 14px;                  /* Platz nach oben */
+}
+
+/* Abstand NACH UNTEN für den Link (damit er "weiter runter" steht) */
+#backhome,
+#backHome {
+  margin-bottom: 10px !important;    /* ÜBER dem Report */
+}
+
+/* Startseite: Link AUS (Detailseite wird per JS geregelt) */
+body:not(.has-detail) #backhome,
+body:not(.has-detail) #backHome {
+  display: none !important;
+}
