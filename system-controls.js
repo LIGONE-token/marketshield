@@ -6,6 +6,14 @@
 (function () {
   "use strict";
 
+   // 🔒 Social-Bar sicherstellen (HTML bleibt unangetastet)
+if (!document.getElementById("systemSocialBar")) {
+  const div = document.createElement("div");
+  div.id = "systemSocialBar";
+  document.body.appendChild(div);
+}
+
+
   function log(msg) { console.log("[system-controls]", msg); }
 
   document.addEventListener("DOMContentLoaded", () => {
