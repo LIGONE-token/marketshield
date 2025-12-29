@@ -1,36 +1,26 @@
 /* =====================================================
    MarketShield – system-controls.js
-   FINAL – NUR EVENTS, KEIN ERZEUGEN, KEIN UMBRUCH
+   FINAL / SYNTAX-SAFE
 ===================================================== */
 
 (function () {
   "use strict";
 
-   // 🔒 Social-Bar sicherstellen (HTML bleibt unangetastet)
-if (!document.getElementById("systemSocialBar")) {
-  const div = document.createElement("div");
-  div.id = "systemSocialBar";
-  document.body.appendChild(div);
-}
-
-
-  function log(msg) { console.log("[system-controls]", msg); }
+  console.log("[system-controls] start");
 
   document.addEventListener("DOMContentLoaded", () => {
 
-    log("geladen");
+    console.log("[system-controls] DOM ready");
 
     /* ================= ZUR STARTSEITE ================= */
     const backHome = document.getElementById("backHome");
     if (backHome) {
-      backHome.onclick = (e) => {
+      backHome.addEventListener("click", (e) => {
         e.preventDefault();
         history.pushState({}, "", location.pathname);
         window.dispatchEvent(new Event("ms:home"));
-      };
-      log("backHome aktiv");
-    } else {
-      log("backHome FEHLT");
+      });
+      console.log("[system-controls] backHome OK");
     }
 
     /* ================= REPORT ================= */
@@ -39,28 +29,38 @@ if (!document.getElementById("systemSocialBar")) {
     const closeBtn    = document.getElementById("closeReportModal");
 
     if (reportBtn && reportModal) {
-      reportBtn.onclick = () => {
+      reportBtn.addEventListener("click", () => {
         reportModal.style.display = "block";
-      };
+      });
 
       if (closeBtn) {
-        closeBtn.onclick = () => {
+        closeBtn.addEventListener("click", () => {
           reportModal.style.display = "none";
-        };
+        });
       }
 
-      reportModal.onclick = (e) => {
+      reportModal.addEventListener("click", (e) => {
         if (e.target === reportModal) {
           reportModal.style.display = "none";
         }
-      };
+      });
 
-      log("Report aktiv");
-    } else {
-      log("Report-Elemente FEHLEN");
+      console.log("[system-controls] report OK");
     }
 
-    /* ================= SOCIAL / COPY / PRINT ================= */
+    /* ================= SOCIAL ================= */
+    const social = document.getElementById("systemSocialBar");
+    if (social) {
+      social.innerHTML = `
+        <button data-sys="copy">Kopieren</button>
+        <button data-sys="print">Drucken</button>
+        <button data-sys="wa">WhatsApp</button>
+        <button data-sys="tg">Telegram</button>
+        <button data-sys="x">X</button>
+      `;
+      console.log("[system-controls] social OK");
+    }
+
     document.body.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-sys]");
       if (!btn) return;
@@ -68,54 +68,30 @@ if (!document.getElementById("systemSocialBar")) {
       const url = location.href;
       const title = document.title;
 
-      switch (btn.dataset.sys) {
-        case "copy":
-          navigator.clipboard.writeText(url);
-          log("copy");
-          break;
-        case "print":
-          window.print();
-          break;
-        case "wa":
-          window.open(`https://wa.me/?text=${encodeURIComponent(title + " " + url)}`);
-          break;
-        case "tg":
-          window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`);
-          break;
-        case "x":
-          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`);
-          break;
-      }
+      if (btn.dataset.sys === "copy") navigator.clipboard.writeText(url);
+      if (btn.dataset.sys === "print") window.print();
+      if (btn.dataset.sys === "wa") window.open(`https://wa.me/?text=${encodeURIComponent(title + " " + url)}`);
+      if (btn.dataset.sys === "tg") window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`);
+      if (btn.dataset.sys === "x") window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`);
     });
 
-    /* ================= RECHTLICHER HINWEIS ================= */
-   /* ================= RECHTLICHER HINWEIS (AUTO) ================= */
-function ensureLegalHint() {
-  // schon vorhanden? → nichts tun
-  if (document.getElementById("legalHintLink")) return;
+    /* ================= LEGAL ================= */
+    const h2 = document.querySelector("#results h2");
+    if (h2 && !document.getElementById("legalHintLink")) {
+      const a = document.createElement("a");
+      a.id = "legalHintLink";
+      a.href = "#";
+      a.textContent = "Rechtlicher Hinweis";
+      a.style.cssText = "display:block;font-size:12px;opacity:.6;margin:6px 0;";
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        alert("MarketShield dient ausschließlich der Information. Keine Beratung.");
+      });
+      h2.insertAdjacentElement("afterend", a);
+      console.log("[system-controls] legal OK");
+    }
 
-  // Titel des Eintrags suchen
-  const h2 = document.querySelector("#results h2");
-  if (!h2) return;
-
-  const a = document.createElement("a");
-  a.id = "legalHintLink";
-  a.href = "#";
-  a.textContent = "Rechtlicher Hinweis";
-  a.style.cssText =
-    "display:block;font-size:12px;opacity:.6;text-decoration:underline;margin:6px 0;";
-
-  a.addEventListener("click", (e) => {
-    e.preventDefault();
-    alert(
-      "MarketShield dient ausschließlich der Information.\n" +
-      "Keine Beratung. Keine Gewähr."
-    );
+    console.log("[system-controls] ready");
   });
-
-  h2.insertAdjacentElement("afterend", a);
-}
-    // 🔔 Rechtlichen Hinweis JETZT setzen
-    ensureLegalHint();
 
 })();
