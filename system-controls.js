@@ -115,5 +115,7 @@ function ensureLegalHint() {
 
   h2.insertAdjacentElement("afterend", a);
 }
+    // 🔔 Rechtlichen Hinweis JETZT setzen
+    ensureLegalHint();
 
 })();
