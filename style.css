@@ -1770,3 +1770,36 @@ body:not(.has-detail) #backHome {
   border-radius: 6px;
   z-index: 1000000;
 }
+/* =====================================================
+   MarketShield – ABSOLUTER REPORT MODAL FIX
+   erzwingt Sichtbarkeit der weißen Box
+===================================================== */
+
+/* Overlay */
+#reportModal {
+  display: block !important;          /* JS setzt block */
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.6) !important;
+  z-index: 2147483647 !important;     /* maximal */
+}
+
+/* DIE WEISSE BOX – HIER lag der Fehler */
+#reportModal .report-modal-box {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  position: relative !important;
+  transform: none !important;         /* ← KILLT scale/translate */
+  height: auto !important;
+  max-height: none !important;
+  width: auto !important;
+
+  margin: 10vh auto !important;
+  padding: 20px !important;
+  background: #fff !important;
+  border-radius: 6px !important;
+
+  z-index: 2147483647 !important;
+}
