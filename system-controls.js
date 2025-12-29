@@ -1,84 +1,77 @@
 /* =====================================================
    MarketShield – system-controls.js
-   FINAL / CLEAN / NO LAYOUT TOUCH
+   FINAL / MINIMAL / NO LAYOUT TOUCH
 ===================================================== */
 (function () {
   "use strict";
 
   document.addEventListener("DOMContentLoaded", () => {
 
-    /* ================= STATE ================= */
     const hasDetail = new URLSearchParams(location.search).has("id");
 
-   (function () {
-  "use strict";
-
-  document.addEventListener("DOMContentLoaded", () => {
+    /* ================= ZUR STARTSEITE =================
+       - EXISTIERT in HTML
+       - NUR Sichtbarkeit steuern
+       - KEIN Styling, KEIN Verschieben
+    ==================================================== */
     const backHome =
       document.getElementById("backhome") ||
       document.getElementById("backHome");
 
-    if (!backHome) return;
+    if (backHome) {
+      backHome.style.display = hasDetail ? "" : "none";
+      backHome.onclick = (e) => {
+        e.preventDefault();
+        window.location.href = window.location.pathname;
+      };
+    }
 
-    // NUR Sichtbarkeit steuern – nichts erzeugen, nichts verschieben
-    const hasDetail = new URLSearchParams(location.search).has("id");
-    backHome.style.display = hasDetail ? "" : "none";
-
-    backHome.onclick = (e) => {
-      e.preventDefault();
-      window.location.href = window.location.pathname;
-    };
-  });
-})();
-
-    /* ================= REPORT =================
-       - EXISTIERENDER Button
+    /* ================= REPORT BUTTON =================
+       - EXISTIERT in HTML
+       - MUSS IMMER reagieren
        - Öffnet EXISTIERENDES Modal
-       - KEIN Formular-Handling
-       - KEIN neues UI
-    ============================================ */
+    ==================================================== */
     const reportBtn =
       document.getElementById("reportBtn") ||
       document.getElementById("reportbutton");
     const reportModal = document.getElementById("reportModal");
     const closeBtn = document.getElementById("closeReportModal");
 
-    if (reportBtn && reportModal) {
-      reportBtn.style.cursor = "pointer";
-      reportBtn.addEventListener("click", (e) => {
+    if (reportBtn) {
+      reportBtn.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        reportModal.style.display = "block";
-      }, true);
 
-      if (closeBtn) {
-        closeBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          reportModal.style.display = "none";
-        });
-      }
+        if (reportModal) {
+          reportModal.style.display = "block";
+        } else {
+          // Fallback: sichtbare Reaktion
+          alert("Report-Button aktiv (Modal fehlt).");
+        }
+      };
+    }
 
-      // Klick auf Hintergrund schließt
+    if (closeBtn && reportModal) {
+      closeBtn.onclick = (e) => {
+        e.preventDefault();
+        reportModal.style.display = "none";
+      };
       reportModal.addEventListener("click", (e) => {
         if (e.target === reportModal) reportModal.style.display = "none";
       });
     }
 
-    /* ================= SOCIAL =================
-       - KEINE Erzeugung neuer Elemente
-       - NUR vorhandene Leiste steuern
+    /* ================= SOCIAL LINKS =================
+       - EXISTIEREN bereits (systemSocialBar)
        - NUR in Detailansicht sichtbar
-    ============================================ */
+       - KEINE Erzeugung
+    ==================================================== */
     const social = document.getElementById("systemSocialBar");
     if (social) {
       social.style.display = hasDetail ? "" : "none";
     }
 
-    /* ================= SOCIAL ACTIONS =================
-       - Klick-Delegation
-       - Facebook ergänzt
-       - KEIN Layout-Eingriff
-    ==================================================== */
+    /* ================= SOCIAL KLICKS ================= */
     document.body.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-sys]");
       if (!btn) return;
