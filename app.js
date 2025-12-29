@@ -42,6 +42,22 @@ function makePreview(text, max = 170) {
   const t = normalizeText(text).replace(/\n+/g, " ").trim();
   return t.length <= max ? t : t.slice(0, max).trim() + " …";
 }
+function sanitizeBlock(block) {
+  let s = block.trim();
+
+  // Leere oder reine Trennlinien entfernen
+  if (!s || /^-+$/.test(s)) return "";
+
+  // KI-/Markdown-Artefakte entfernen
+  s = s.replace(/:contentReference\[[^\]]*\]\{[^}]*\}/gi, "");
+  s = s.replace(/\{index=\d+\}/gi, "");
+  s = s.replace(/\boaicite\b/gi, "");
+
+  // Übrig gebliebene Leerzeilen säubern
+  s = s.replace(/\n{3,}/g, "\n\n").trim();
+
+  return s;
+}
 
 /* ===== keep #shareBox, render only into .ms-content ===== */
 function ensureResultsScaffold() {
