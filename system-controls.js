@@ -1,49 +1,31 @@
 console.log("system-controls.js aktiv (FINAL)");
 
+// 🔑 Supabase ANON Key
+const SUPABASE_ANON_KEY = "sb_publishable_JHb4LBhP26eI7BgDS1jIkw_4OYn3-F9";
+
 document.addEventListener("DOMContentLoaded", () => {
+
+  /* ===== ZUR STARTSEITE ===== */
   const backHome = document.getElementById("backHome");
   if (backHome) {
-    backHome.style.display = "block";   // 🔥 sichtbar erzwingen
+    backHome.style.display = "block";
     backHome.addEventListener("click", () => {
       location.href = location.origin + location.pathname;
     });
   }
-});
 
-document.addEventListener("DOMContentLoaded", () => {
-  const reportBtn   = document.getElementById("reportBtn");
-  const reportModal = document.getElementById("reportModal");
-  const closeBtn    = document.getElementById("closeReportModal");
-
-  if (reportBtn && reportModal) {
-    reportBtn.addEventListener("click", () => {
-      reportModal.style.display = "block";
-    });
-  }
-
-  if (closeBtn && reportModal) {
-    closeBtn.addEventListener("click", () => {
-      reportModal.style.display = "none";
-    });
-  }
-});
-
-
-
-// 🔑 Supabase ANON Key
-const SUPABASE_ANON_KEY = "DEIN_NEUER_ANON_KEY";
-
-document.addEventListener("DOMContentLoaded", () => {
-
+  /* ===== REPORT MODAL ===== */
   const reportBtn   = document.getElementById("reportBtn");
   const reportModal = document.getElementById("reportModal");
   const closeBtn    = document.getElementById("closeReportModal");
   const reportBox   = document.querySelector(".report-modal-box");
   const reportForm  = document.getElementById("reportForm");
 
-  if (!reportBtn || !reportModal) return;
+  if (!reportBtn || !reportModal) {
+    console.warn("❌ Report-Elemente nicht gefunden");
+    return;
+  }
 
-  /* ===== Öffnen / Schließen ===== */
   const openModal = () => {
     reportModal.style.display = "block";
     document.body.style.overflow = "hidden";
@@ -54,21 +36,21 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.style.overflow = "";
   };
 
-  // 🔹 Öffnen – NUR click (wichtig!)
+  // Öffnen
   reportBtn.addEventListener("click", openModal);
 
-  // 🔹 Schließen – Button
+  // Schließen per Button
   if (closeBtn) {
     closeBtn.addEventListener("click", closeModal);
   }
 
-  // 🔹 Schließen – Klick auf Overlay
+  // Schließen per Overlay
   if (reportBox) {
     reportModal.addEventListener("click", closeModal);
     reportBox.addEventListener("click", (e) => e.stopPropagation());
   }
 
-  // 🔹 ESC (Desktop)
+  // ESC (Desktop)
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && reportModal.style.display === "block") {
       closeModal();
