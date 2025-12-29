@@ -1661,3 +1661,21 @@ svg,
   cursor: pointer !important;
   font-weight: 700 !important;
 }
+/* =====================================================
+   MarketShield – FIX: Zur Startseite korrekt platzieren
+===================================================== */
+.back-home,
+#backhome,
+#backHome {
+  display: inline-block !important;   /* NICHT volle Breite */
+  width: auto !important;
+
+  margin: 0 0 10px 0 !important;      /* Abstand NACH UNTEN */
+  padding: 0 !important;
+
+  position: static !important;        /* kein Overlay */
+  background: none !important;
+
+  font-weight: 600;
+  cursor: pointer;
+}
