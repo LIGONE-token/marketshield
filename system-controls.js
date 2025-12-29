@@ -15,18 +15,23 @@
       });
     }
 
-    /* === REPORT === */
-    const reportBtn   = document.getElementById("reportBtn");
-    const reportModal = document.getElementById("reportModal");
-    const closeBtn    = document.getElementById("closeReportModal");
+   // === REPORT-BUTTON: MUSS KLICKEN ===
+const reportBtn =
+  document.getElementById("reportBtn") ||
+  document.getElementById("reportbutton");
 
-    if (reportBtn && reportModal) {
-      reportBtn.onclick = () => reportModal.style.display = "block";
-      if (closeBtn) closeBtn.onclick = () => reportModal.style.display = "none";
-      reportModal.onclick = (e) => {
-        if (e.target === reportModal) reportModal.style.display = "none";
-      };
-    }
+if (reportBtn) {
+  reportBtn.style.cursor = "pointer";
+
+  reportBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Sichtbare, eindeutige Reaktion (unzerstörbar)
+    alert("Report-Button ist aktiv.");
+  }, true);
+}
+
 
   });
 })();
