@@ -60,24 +60,25 @@ function renderIndustry(score) {
 
   const clamped = Math.min(10, Math.max(1, n));
   const MAX = 90;
-  const w = Math.round((clamped / 10) * MAX);
+  const width = Math.round((clamped / 10) * MAX);
+
+  let color = "#2ecc71";          // grün
+  if (clamped >= 4) color = "#f1c40f"; // gelb
+  if (clamped >= 7) color = "#e74c3c"; // rot
 
   return `
     <div style="
-      position:relative;
       width:${MAX}px;
       height:8px;
+      background:#e0e0e0;
       border-radius:4px;
-      background:linear-gradient(90deg,#2ecc71 0%,#f1c40f 50%,#e74c3c 100%);
       overflow:hidden;
     ">
       <div style="
-        position:absolute;
-        left:0;
-        top:0;
+        width:${width}px;
         height:8px;
-        width:${w}px;
-        background:rgba(0,0,0,.25);
+        background:${color};
+        border-radius:4px;
       "></div>
     </div>
   `;
