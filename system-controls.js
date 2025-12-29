@@ -1,89 +1,134 @@
 /* =====================================================
    MarketShield – system-controls.js
-   FINAL / STATE-AWARE / NO LAYOUT TOUCH
+   FINAL / STABLE / NO LAYOUT CHANGES
 ===================================================== */
 (function () {
   "use strict";
 
-  function updateVisibility() {
-    const hasDetail = new URLSearchParams(location.search).has("id");
-
-    // === ZUR STARTSEITE – RICHTIG ÜBER REPORT ===
-const backHome =
-  document.getElementById("backhome") ||
-  document.getElementById("backHome");
-const reportBtn =
-  document.getElementById("reportBtn") ||
-  document.getElementById("reportbutton");
-
-if (backHome && reportBtn) {
-  const hasDetail = new URLSearchParams(location.search).has("id");
-
-  backHome.style.display = hasDetail ? "" : "none";
-
-  // Einmalig: ÜBER dem Report-Button einordnen
-  if (reportBtn.parentNode && reportBtn.previousElementSibling !== backHome) {
-    reportBtn.parentNode.insertBefore(backHome, reportBtn);
+  function hasDetail() {
+    return new URLSearchParams(location.search).has("id");
   }
 
-  backHome.onclick = (e) => {
-    e.preventDefault();
-    window.location.href = window.location.pathname;
-  };
-}
+  function ensureSocialBar() {
+    const shareBox = document.getElementById("shareBox");
+    if (!shareBox) return null;
 
-
-    // Social – NUR in Detailansicht
-    const social = document.getElementById("systemSocialBar");
-    if (social) {
-      social.style.display = hasDetail ? "" : "none";
+    let bar = document.getElementById("systemSocialBar");
+    if (!bar) {
+      bar = document.createElement("div");
+      bar.id = "systemSocialBar";
+      bar.className = "system-social-bar";
+      shareBox.appendChild(bar);
     }
+
+    // nur Buttons, kein Layout erzwingen
+    bar.innerHTML = `
+      <button data-sys="copy">Kopieren</button>
+      <button data-sys="print">Drucken</button>
+      <button data-sys="fb">Facebook</button>
+      <button data-sys="wa">WhatsApp</button>
+      <button data-sys="tg">Telegram</button>
+      <button data-sys="x">X</button>
+    `;
+
+    return bar;
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
-    // Initial setzen
-    updateVisibility();
+  function updateVisibility() {
+    const detail = hasDetail();
 
-    // Klick: Zur Startseite
+    // Zur Startseite – nur Detail
     const backHome =
       document.getElementById("backhome") ||
       document.getElementById("backHome");
 
     if (backHome) {
+      backHome.style.display = detail ? "" : "none";
       backHome.style.cursor = "pointer";
-      backHome.onclick = (e) => {
-        e.preventDefault();
-        // hart zurück + danach Sichtbarkeit korrekt setzen
-        history.pushState({}, "", location.pathname);
-        updateVisibility();
-      };
     }
 
-    // Report-Button – MUSS reagieren
-    const reportBtn =
-      document.getElementById("reportBtn") ||
-      document.getElementById("reportbutton");
+    // Social – nur Detail
+    const bar = ensureSocialBar();
+    if (bar) {
+      bar.style.display = detail ? "" : "none";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // initial + immer wenn app.js State wechselt
+    updateVisibility();
+    window.addEventListener("ms:state", updateVisibility);
+    window.addEventListener("popstate", updateVisibility);
+
+    /* ===== Zur Startseite: nur Klick, kein Layout ===== */
+    const backHome =
+      document.getElementById("backhome") ||
+      document.getElementById("backHome");
+
+    if (backHome) {
+      backHome.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.href = window.location.pathname;
+      });
+    }
+
+    /* ===== Report: Modal öffnen/schließen ===== */
+    const reportBtn = document.getElementById("reportBtn");
     const reportModal = document.getElementById("reportModal");
     const closeBtn = document.getElementById("closeReportModal");
 
     if (reportBtn && reportModal) {
-      reportBtn.onclick = (e) => {
+      reportBtn.style.cursor = "pointer";
+      reportBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
         reportModal.style.display = "block";
-      };
+      }, true);
+
       if (closeBtn) {
-        closeBtn.onclick = (e) => {
+        closeBtn.addEventListener("click", (e) => {
           e.preventDefault();
           reportModal.style.display = "none";
-        };
+        });
       }
-      reportModal.onclick = (e) => {
+
+      reportModal.addEventListener("click", (e) => {
         if (e.target === reportModal) reportModal.style.display = "none";
-      };
+      });
     }
 
-    // Reagiere auf History-Änderungen (Kartenklicks etc.)
-    window.addEventListener("popstate", updateVisibility);
+    /* ===== Social Actions (inkl. Facebook) ===== */
+    document.body.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-sys]");
+      if (!btn) return;
+
+      const url = location.href;
+      const title = document.title;
+
+      if (btn.dataset.sys === "copy") {
+        if (navigator.clipboard) navigator.clipboard.writeText(url);
+        return;
+      }
+      if (btn.dataset.sys === "print") {
+        window.print();
+        return;
+      }
+      if (btn.dataset.sys === "fb") {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank");
+        return;
+      }
+      if (btn.dataset.sys === "wa") {
+        window.open(`https://wa.me/?text=${encodeURIComponent(title + " " + url)}`, "_blank");
+        return;
+      }
+      if (btn.dataset.sys === "tg") {
+        window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, "_blank");
+        return;
+      }
+      if (btn.dataset.sys === "x") {
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, "_blank");
+        return;
+      }
+    });
   });
 })();
