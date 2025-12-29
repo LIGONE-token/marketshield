@@ -1,54 +1,49 @@
 /* =====================================================
-   MarketShield – REPORT MODAL FINAL BEHAVIOR
-   Öffnen + Schließen + Submit abfangen
+   MarketShield – REPORT MODAL STABLE FIX
+   Öffnen + Schließen + Submit (ohne Konflikte)
 ===================================================== */
 (function () {
   "use strict";
 
-  // ===== Öffnen (Event Delegation – stabil) =====
+  function openModal() {
+    const m = document.getElementById("reportModal");
+    if (m) m.style.display = "block";
+  }
+
+  function closeModal() {
+    const m = document.getElementById("reportModal");
+    if (m) m.style.display = "none";
+  }
+
+  // ===== Öffnen (delegiert, robust) =====
   document.addEventListener("click", function (e) {
     const btn = e.target.closest("#reportBtn");
     if (!btn) return;
-
     e.preventDefault();
-    e.stopPropagation();
+    openModal();
+  });
 
-    const modal = document.getElementById("reportModal");
-    if (modal) modal.style.display = "block";
-  }, true);
-
-  // ===== Schließen per Button =====
+  // ===== Schließen: Button =====
   document.addEventListener("click", function (e) {
-    if (e.target.id === "closeReportModal") {
-      e.preventDefault();
-      const modal = document.getElementById("reportModal");
-      if (modal) modal.style.display = "none";
-    }
-  }, true);
+    const closeBtn = e.target.closest("#closeReportModal");
+    if (!closeBtn) return;
+    e.preventDefault();
+    closeModal();
+  });
 
-  // ===== Schließen bei Klick auf Overlay =====
+  // ===== Schließen: Overlay =====
   document.addEventListener("click", function (e) {
-    if (e.target.id === "reportModal") {
-      const modal = document.getElementById("reportModal");
-      if (modal) modal.style.display = "none";
+    if (e.target && e.target.id === "reportModal") {
+      closeModal();
     }
-  }, true);
+  });
 
-  // ===== FORMULAR ABFANGEN (Senden) =====
+  // ===== Submit abfangen (Senden) =====
   document.addEventListener("submit", function (e) {
-    const form = e.target;
-    if (!form || form.id !== "reportForm") return;
-
-    e.preventDefault(); // ⛔ echtes Submit verhindern
-
-    // 👉 HIER könntest du später Daten speichern / senden
-
-    // Modal schließen
-    const modal = document.getElementById("reportModal");
-    if (modal) modal.style.display = "none";
-
-    // Optional: kleines Feedback
-    alert("Danke! Dein Hinweis wurde gespeichert.");
-  }, true);
-
+    if (e.target && e.target.id === "reportForm") {
+      e.preventDefault(); // echtes Submit verhindern
+      closeModal();
+      alert("Danke! Dein Hinweis wurde gespeichert.");
+    }
+  });
 })();
