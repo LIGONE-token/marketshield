@@ -1,6 +1,6 @@
 /* =====================================================
    MarketShield – app.js
-   CONTENT ONLY (STABIL / SYSTEMFREI)
+   CONTENT ONLY / STABIL
 ===================================================== */
 
 let currentEntryId = null;
@@ -31,18 +31,8 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
-/* Nur Artefakte entfernen – Struktur behalten */
-function stripArtifacts(s) {
-  return String(s || "")
-    .replace(/:contentReference\[[^\]]*\]\{[^}]*\}/gi, "")
-    .replace(/\[oaicite:[^\]]*\]/gi, "")
-    .replace(/[ \t]{2,}/g, " ")
-    .trim();
-}
-
 function normalizeText(text) {
-  return stripArtifacts(String(text || ""))
-    .replace(/\\n/g, "\n")
+  return String(text || "")
     .replace(/\r\n|\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
@@ -54,7 +44,6 @@ function makePreview(text, max = 170) {
 }
 
 /* ================= SCORES ================= */
-
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -79,86 +68,34 @@ function renderIndustry(score) {
       <div style="width:${MAX}px;height:6px;background:#e0e0e0;border-radius:4px;overflow:hidden;">
         <div style="width:${w}px;height:6px;background:hsl(${hue},85%,45%);border-radius:4px;"></div>
       </div>
-      <div style="font-size:14px;opacity:.75;">
-        Industrie-Verarbeitungsgrad
-      </div>
+      <div style="font-size:14px;opacity:.75;">Industrie-Verarbeitungsgrad</div>
     </div>
   `;
 }
 
 function renderScoreBlock(score, processing) {
-  const health = renderHealth(score);
-  const hasIndustry = Number.isFinite(Number(processing)) && Number(processing) > 0;
+  const h = renderHealth(score);
+  const i = Number.isFinite(Number(processing)) && Number(processing) > 0
+    ? renderIndustry(processing) : "";
 
-  if (!health && !hasIndustry) return "";
+  if (!h && !i) return "";
 
   return `
     <div style="margin:12px 0;display:flex;flex-direction:column;gap:10px;align-items:flex-start;">
-
-      ${health ? `
-        <div style="font-size:14px;line-height:1;">
-          ${health}
-        </div>
-      ` : ""}
-
-      ${hasIndustry ? renderIndustry(processing) : ""}
-
+      ${h ? `<div style="font-size:14px;line-height:1;">${h}</div>` : ""}
+      ${i}
     </div>
   `;
 }
 
-/* ================= STARTSEITE (LEER) ================= */
+/* ================= START ================= */
 function showStart() {
   currentEntryId = null;
   const box = $("results");
   if (box) box.innerHTML = "";
 }
 
-/* ================= TABELLEN ================= */
-function renderSummaryHtml(raw) {
-  const text = normalizeText(raw);
-  const blocks = text.split(/\n\s*\n/);
-
-  return blocks.map(block => {
-    const table = mdTableToHtml(block);
-    if (table) return table;
-    return `<p style="margin:0 0 14px 0; white-space:pre-wrap; line-height:1.6;">${escapeHtml(block)}</p>`;
-  }).join("");
-}
-
-function mdTableToHtml(block) {
-  const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
-  if (lines.length < 2 || !lines[0].includes("|")) return null;
-
-  const sep = lines[1].replace(/\s+/g, "");
-  if (!sep.includes("|") || !/^[-:|]+$/.test(sep)) return null;
-
-  const parseRow = (line) => {
-    let s = line;
-    if (s.startsWith("|")) s = s.slice(1);
-    if (s.endsWith("|")) s = s.slice(0, -1);
-    return s.split("|").map(c => escapeHtml(c.trim()));
-  };
-
-  const header = parseRow(lines[0]);
-  const rows = lines.slice(2).filter(l => l.includes("|")).map(parseRow);
-  if (header.length < 2) return null;
-
-  return `
-    <div style="margin:14px 0; overflow:auto;">
-      <table style="border-collapse:collapse;width:auto;max-width:100%;font-size:14px;">
-        <thead>
-          <tr>${header.map(h => `<th style="border:1px solid #ddd;padding:8px 10px;background:#f6f6f6;text-align:left;">${h}</th>`).join("")}</tr>
-        </thead>
-        <tbody>
-          ${rows.map(r => `<tr>${r.map(c => `<td style="border:1px solid #ddd;padding:8px 10px;vertical-align:top;">${c}</td>`).join("")}</tr>`).join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-/* ================= LISTE ================= */
+/* ================= LIST ================= */
 function renderList(data = []) {
   const box = $("results");
   if (!box) return;
@@ -173,10 +110,13 @@ function renderList(data = []) {
     </div>
   `).join("");
 
-  // 🔥 DAS HAT GEFEHLT
-  bindEntryCards();
+  document.querySelectorAll(".entry-card").forEach(card => {
+    card.onclick = () => {
+      history.pushState({}, "", "?id=" + card.dataset.id);
+      loadEntry(card.dataset.id);
+    };
+  });
 }
-
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
@@ -191,35 +131,20 @@ async function loadEntry(id) {
 
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
+    <div id="legalHintAnchor"></div>
     ${renderScoreBlock(e.score, e.processing_score)}
-    <div id="entryContent">
-      ${renderSummaryHtml(e.summary)}
-    </div>
-
-    <!-- Action-Buttons bleiben im HTML, Logik kommt aus system-controls.js -->
-<div id="entryActions" class="entry-actions">
-  <button id="shareFb">Facebook</button>
-  <button id="shareX">X</button>
-  <button id="shareTg">Telegram</button>
-  <button id="shareWa">WhatsApp</button>
-
-  <button id="copyLink">Link kopieren</button>
-  <button id="printPage">Drucken</button>
-</div>
+    <div>${escapeHtml(e.summary)}</div>
   `;
 }
 
-/* ================= SUCHE ================= */
+/* ================= SEARCH ================= */
 function initSearch() {
   const input = $("searchInput");
   if (!input) return;
 
   input.addEventListener("input", async (e) => {
     const q = e.target.value.trim();
-    if (q.length < 2) {
-      showStart();
-      return;
-    }
+    if (q.length < 2) return showStart();
 
     const enc = encodeURIComponent(q);
     renderList(await supa(
@@ -228,12 +153,9 @@ function initSearch() {
   });
 }
 
-/* ================= KATEGORIEN ================= */
+/* ================= CATEGORIES ================= */
 async function loadCategories() {
-  const grid =
-    document.querySelector(".category-grid") ||
-    document.getElementById("categoryGrid");
-
+  const grid = document.querySelector(".category-grid");
   if (!grid) return;
 
   const data = await fetch("categories.json").then(r => r.json());
@@ -241,7 +163,6 @@ async function loadCategories() {
 
   (data.categories || []).forEach(c => {
     const b = document.createElement("button");
-    b.type = "button";
     b.textContent = c.title;
     b.onclick = async () => {
       renderList(await supa(
@@ -251,17 +172,6 @@ async function loadCategories() {
     grid.appendChild(b);
   });
 }
-
-/* ================= NAVIGATION (PASSIV) ================= */
-function bindEntryCards() {
-  document.querySelectorAll(".entry-card").forEach(card => {
-    card.onclick = () => {
-      history.pushState({}, "", "?id=" + card.dataset.id);
-      loadEntry(card.dataset.id);
-    };
-  });
-}
-
 
 /* ================= HISTORY ================= */
 window.addEventListener("popstate", () => {
@@ -279,3 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (id) loadEntry(id);
   else showStart();
 });
+
+/* ================= HOME EVENT FROM SYSTEM ================= */
+window.addEventListener("ms:home", showStart);
