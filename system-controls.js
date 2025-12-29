@@ -81,17 +81,31 @@
     });
 
     /* ================= RECHTLICHER HINWEIS ================= */
-    const legal = document.getElementById("legalHintLink");
-    if (legal) {
-      legal.onclick = (e) => {
-        e.preventDefault();
-        alert("MarketShield dient ausschließlich der Information. Keine Beratung. Angaben ohne Gewähr.");
-      };
-      log("Legal aktiv");
-    } else {
-      log("Legal-Link FEHLT");
-    }
+   /* ================= RECHTLICHER HINWEIS (AUTO) ================= */
+function ensureLegalHint() {
+  // schon vorhanden? → nichts tun
+  if (document.getElementById("legalHintLink")) return;
 
-    log("bereit");
+  // Titel des Eintrags suchen
+  const h2 = document.querySelector("#results h2");
+  if (!h2) return;
+
+  const a = document.createElement("a");
+  a.id = "legalHintLink";
+  a.href = "#";
+  a.textContent = "Rechtlicher Hinweis";
+  a.style.cssText =
+    "display:block;font-size:12px;opacity:.6;text-decoration:underline;margin:6px 0;";
+
+  a.addEventListener("click", (e) => {
+    e.preventDefault();
+    alert(
+      "MarketShield dient ausschließlich der Information.\n" +
+      "Keine Beratung. Keine Gewähr."
+    );
   });
+
+  h2.insertAdjacentElement("afterend", a);
+}
+
 })();
