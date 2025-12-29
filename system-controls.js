@@ -1,5 +1,16 @@
 console.log("system-controls.js aktiv (FINAL)");
 
+document.addEventListener("DOMContentLoaded", () => {
+  const backHome = document.getElementById("backHome");
+  if (backHome) {
+    backHome.style.display = "block";   // 🔥 sichtbar erzwingen
+    backHome.addEventListener("click", () => {
+      location.href = location.origin + location.pathname;
+    });
+  }
+});
+
+
 // 🔑 Supabase ANON Key
 const SUPABASE_ANON_KEY = "DEIN_NEUER_ANON_KEY";
 
