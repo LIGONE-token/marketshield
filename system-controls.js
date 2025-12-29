@@ -8,14 +8,30 @@
   function updateVisibility() {
     const hasDetail = new URLSearchParams(location.search).has("id");
 
-    // Zur Startseite – NUR in Detailansicht
-    const backHome =
-      document.getElementById("backhome") ||
-      document.getElementById("backHome");
+    // === ZUR STARTSEITE – RICHTIG ÜBER REPORT ===
+const backHome =
+  document.getElementById("backhome") ||
+  document.getElementById("backHome");
+const reportBtn =
+  document.getElementById("reportBtn") ||
+  document.getElementById("reportbutton");
 
-    if (backHome) {
-      backHome.style.display = hasDetail ? "" : "none";
-    }
+if (backHome && reportBtn) {
+  const hasDetail = new URLSearchParams(location.search).has("id");
+
+  backHome.style.display = hasDetail ? "" : "none";
+
+  // Einmalig: ÜBER dem Report-Button einordnen
+  if (reportBtn.parentNode && reportBtn.previousElementSibling !== backHome) {
+    reportBtn.parentNode.insertBefore(backHome, reportBtn);
+  }
+
+  backHome.onclick = (e) => {
+    e.preventDefault();
+    window.location.href = window.location.pathname;
+  };
+}
+
 
     // Social – NUR in Detailansicht
     const social = document.getElementById("systemSocialBar");
