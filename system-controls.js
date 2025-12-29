@@ -1,160 +1,82 @@
-/* =====================================================
-   MarketShield – system-controls.js
-   UI-KLICK-LOGIK (FIXED / STABIL)
-===================================================== */
+console.log("system-controls.js geladen");
 
-(function () {
+document.addEventListener("DOMContentLoaded", () => {
 
-  const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+  /* ========= REPORT BUTTON (OBEN, FEST) ========= */
+  const reportBtn   = document.getElementById("reportBtn");
+  const reportModal = document.getElementById("reportModal");
+  const closeBtn    = document.getElementById("closeReportModal");
+  const reportForm  = document.getElementById("reportForm");
 
-  const $ = (id) => document.getElementById(id);
-
-  function getEntryUrl() {
-    const base = location.origin + location.pathname;
-    return window.currentEntryId ? `${base}?id=${window.currentEntryId}` : base;
+  if (reportBtn && reportModal) {
+    reportBtn.onclick = () => {
+      reportModal.style.display = "block";
+    };
   }
 
-  /* =====================================================
-     1️⃣ REPORTBUTTON – EINZIGER CAPTURE-LISTENER
-  ===================================================== */
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest("#reportBtn");
-    if (!btn) return;
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      reportModal.style.display = "none";
+    };
+  }
 
-    e.preventDefault(); // ❗ reicht vollkommen
+  if (reportForm) {
+    reportForm.onsubmit = async (e) => {
+      e.preventDefault();
 
-    const modal = $("reportModal");
-    if (!modal) {
-      alert("Report-Modal fehlt im HTML");
-      return;
-    }
+      const text = reportForm.querySelector("textarea")?.value?.trim();
+      if (!text || text.length < 3) {
+        alert("Bitte Beschreibung eingeben.");
+        return;
+      }
 
-    modal.style.display = "block";
-  }, true); // ✅ capture, aber KEIN stopPropagation
-
-  /* =====================================================
-     2️⃣ REPORT MODAL SCHLIESSEN
-  ===================================================== */
-  document.addEventListener("click", (e) => {
-    if (
-      e.target.id === "closeReportModal" ||
-      e.target.dataset.action === "cancel-report"
-    ) {
-      const modal = $("reportModal");
-      if (modal) modal.style.display = "none";
-    }
-  });
-
-  /* =====================================================
-     3️⃣ REPORT SENDEN
-  ===================================================== */
-  document.addEventListener("submit", async (e) => {
-    if (e.target.id !== "reportForm") return;
-
-    e.preventDefault();
-
-    const ta = e.target.querySelector("textarea");
-    const text = ta?.value?.trim();
-    if (!text || text.length < 3) {
-      alert("Bitte Beschreibung eingeben.");
-      return;
-    }
-
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      await fetch("https://thrdlycfwlsegriduqvw.supabase.co/rest/v1/reports", {
         method: "POST",
         headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
+          apikey: "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD",
+          Authorization: "Bearer sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
           description: text,
           entry_id: window.currentEntryId || null,
-          page_url: getEntryUrl(),
+          page_url: location.href,
           created_at: new Date().toISOString()
         })
       });
 
-      e.target.reset();
-      $("reportModal").style.display = "none";
-      alert("Danke! Hinweis gespeichert.");
-    } catch {
-      alert("Fehler beim Senden.");
-    }
-  });
+      reportForm.reset();
+      reportModal.style.display = "none";
+      alert("Danke! Meldung gespeichert.");
+    };
+  }
 
-  /* =====================================================
-     4️⃣ ZUR STARTSEITE
-  ===================================================== */
-  document.addEventListener("click", (e) => {
-    const home =
-      e.target.closest("#backHome") ||
-      e.target.closest('[data-action="home"]');
-
-    if (!home) return;
-
-    e.preventDefault();
-    location.href = location.origin + location.pathname;
-  });
-
-  /* =====================================================
-     5️⃣ SOCIAL BUTTONS
-  ===================================================== */
-  document.addEventListener("click", (e) => {
-    const t = e.target;
-
-    const url = encodeURIComponent(getEntryUrl());
+  /* ========= ENTRY ACTIONS (unten) ========= */
+  document.addEventListener("click", async (e) => {
+    const url   = encodeURIComponent(location.href);
     const title = encodeURIComponent(
-      document.querySelector("h2")?.innerText || "MarketShield"
+      document.querySelector("h2")?.innerText || document.title
     );
 
-    if (t.closest("#shareFb"))
+    if (e.target.id === "shareFb")
       window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`);
 
-    if (t.closest("#shareX"))
+    if (e.target.id === "shareX")
       window.open(`https://twitter.com/intent/tweet?text=${title}%0A${url}`);
 
-    if (t.closest("#shareTg"))
+    if (e.target.id === "shareTg")
       window.open(`https://t.me/share/url?url=${url}&text=${title}`);
 
-    if (t.closest("#shareWa"))
+    if (e.target.id === "shareWa")
       window.open(`https://wa.me/?text=${title}%0A${url}`);
+
+    if (e.target.id === "copyLink") {
+      await navigator.clipboard.writeText(location.href);
+      alert("Link kopiert");
+    }
+
+    if (e.target.id === "printPage") {
+      window.print();
+    }
   });
-
-  /* =====================================================
-     6️⃣ KOPIEREN
-  ===================================================== */
-  document.addEventListener("click", async (e) => {
-    if (!e.target.closest("#copyLink")) return;
-
-    e.preventDefault();
-    await navigator.clipboard.writeText(getEntryUrl());
-    alert("Link kopiert");
-  });
-
-  /* =====================================================
-     7️⃣ DRUCKEN
-  ===================================================== */
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest("#printPage")) return;
-
-    e.preventDefault();
-    window.print();
-  });
-
-  /* =====================================================
-     8️⃣ RECHTLICHER HINWEIS
-  ===================================================== */
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest("#legalHint")) return;
-
-    e.preventDefault();
-    alert(
-      "MarketShield dient der Information.\n" +
-      "Keine Beratung. Angaben ohne Gewähr."
-    );
-  });
-
-})();
+});
