@@ -1,49 +1,59 @@
 /* =====================================================
-   MarketShield – REPORT MODAL STABLE FIX
-   Öffnen + Schließen + Submit (ohne Konflikte)
+   MarketShield – REPORT MODAL FINAL, KONFLIKTFREI
 ===================================================== */
 (function () {
   "use strict";
 
+  const getModal = () => document.getElementById("reportModal");
+
   function openModal() {
-    const m = document.getElementById("reportModal");
+    const m = getModal();
     if (m) m.style.display = "block";
   }
 
   function closeModal() {
-    const m = document.getElementById("reportModal");
+    const m = getModal();
     if (m) m.style.display = "none";
   }
 
-  // ===== Öffnen (delegiert, robust) =====
+  // ===== SCHLIESSEN HAT IMMER VORRANG =====
+  document.addEventListener("click", function (e) {
+
+    // 1) Klick auf Schließen-Button
+    if (e.target && e.target.id === "closeReportModal") {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      closeModal();
+      return;
+    }
+
+    // 2) Klick auf Overlay (dunkler Hintergrund)
+    if (e.target && e.target.id === "reportModal") {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      closeModal();
+      return;
+    }
+
+  }, true); // capture, damit nichts dazwischenfunkt
+
+  // ===== ÖFFNEN (nur wenn NICHT geschlossen wurde) =====
   document.addEventListener("click", function (e) {
     const btn = e.target.closest("#reportBtn");
     if (!btn) return;
+
     e.preventDefault();
+    e.stopImmediatePropagation();
     openModal();
-  });
+  }, true);
 
-  // ===== Schließen: Button =====
-  document.addEventListener("click", function (e) {
-    const closeBtn = e.target.closest("#closeReportModal");
-    if (!closeBtn) return;
-    e.preventDefault();
-    closeModal();
-  });
-
-  // ===== Schließen: Overlay =====
-  document.addEventListener("click", function (e) {
-    if (e.target && e.target.id === "reportModal") {
-      closeModal();
-    }
-  });
-
-  // ===== Submit abfangen (Senden) =====
+  // ===== SUBMIT ABFANGEN =====
   document.addEventListener("submit", function (e) {
     if (e.target && e.target.id === "reportForm") {
-      e.preventDefault(); // echtes Submit verhindern
+      e.preventDefault();
       closeModal();
       alert("Danke! Dein Hinweis wurde gespeichert.");
     }
-  });
+  }, true);
+
 })();
