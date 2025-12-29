@@ -1,61 +1,52 @@
 /* =====================================================
-   MarketShield – REPORT MODAL ABSOLUTE FIX
-   Modal schließt IMMER bei Navigation / State-Wechsel
+   MarketShield – REPORT MODAL FINAL (OPEN + CLOSE)
 ===================================================== */
 (function () {
   "use strict";
 
-  const modalId = "reportModal";
-
   function getModal() {
-    return document.getElementById(modalId);
+    return document.getElementById("reportModal");
   }
 
   function openModal() {
-    const m = getModal();
-    if (m) m.style.display = "block";
+    const modal = getModal();
+    if (modal) modal.classList.add("open");
   }
 
   function closeModal() {
-    const m = getModal();
-    if (m) m.style.display = "none";
+    const modal = getModal();
+    if (modal) modal.classList.remove("open");
   }
 
-  /* ================== ÖFFNEN ================== */
+  // ===== Öffnen =====
   document.addEventListener("click", function (e) {
     const btn = e.target.closest("#reportBtn");
     if (!btn) return;
 
     e.preventDefault();
-    e.stopImmediatePropagation();
     openModal();
-  }, true);
+  });
 
-  /* ================== SCHLIESSEN ================== */
+  // ===== Schließen (Button + Overlay) =====
   document.addEventListener("click", function (e) {
     if (
       e.target.id === "closeReportModal" ||
-      e.target.id === modalId
+      e.target.id === "reportModal"
     ) {
       e.preventDefault();
-      e.stopImmediatePropagation();
       closeModal();
     }
-  }, true);
+  });
 
-  /* ================== SUBMIT ================== */
+  // ===== Submit =====
   document.addEventListener("submit", function (e) {
-    if (e.target && e.target.id === "reportForm") {
+    if (e.target.id === "reportForm") {
       e.preventDefault();
       closeModal();
       alert("Danke! Dein Hinweis wurde gespeichert.");
     }
-  }, true);
+  });
 
-  /* ================== ABSOLUTER NOTAUS ================== */
-  // SCHLIESST DAS MODAL BEI JEDER SEITENÄNDERUNG
+  // ===== Sicherheit: bei Navigation schließen =====
   window.addEventListener("popstate", closeModal);
-  window.addEventListener("hashchange", closeModal);
-  window.addEventListener("load", closeModal);
-
 })();
