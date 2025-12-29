@@ -90,29 +90,31 @@ function renderScoreBlock(score, processing) {
 
   if (!health && !hasIndustry) return "";
 
-  const LABEL_W = 190;
+  const ICON_COL = 110; // feste Breite links (HERZEN / BALKEN)
   const FONT = 14;
 
   return `
-    <div style="margin:12px 0;">
+    <div style="margin:12px 0;display:flex;flex-direction:column;gap:8px;">
 
       ${health ? `
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="min-width:${LABEL_W}px;font-size:${FONT}px;opacity:.75;">
-            Gesundheit
-          </div>
+        <div style="display:grid;grid-template-columns:${ICON_COL}px auto;align-items:center;">
           <div style="font-size:${FONT}px;line-height:1;">
             ${health}
+          </div>
+          <div style="font-size:${FONT}px;opacity:.75;">
+            Gesundheit
           </div>
         </div>
       ` : ""}
 
       ${hasIndustry ? `
-        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
-          <div style="min-width:${LABEL_W}px;font-size:${FONT}px;opacity:.75;">
+        <div style="display:grid;grid-template-columns:${ICON_COL}px auto;align-items:center;">
+          <div>
+            ${renderIndustry(processing)}
+          </div>
+          <div style="font-size:${FONT}px;opacity:.75;">
             Industrie-Verarbeitungsgrad
           </div>
-          ${renderIndustry(processing)}
         </div>
       ` : ""}
 
