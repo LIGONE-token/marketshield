@@ -1729,3 +1729,17 @@ body:not(.has-detail) #backHome {
   position: static !important;
   width: auto;
 }
+/* ===== Report Modal FINAL FIX ===== */
+#reportModal {
+  display: none;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.6);
+  z-index: 999999 !important;
+}
+
+#reportModal .report-modal-box {
+  position: relative;
+  z-index: 1000000;
+  background: #fff;
+}
