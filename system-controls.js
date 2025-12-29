@@ -1,4 +1,3 @@
-console.log("system-controls.js geladen – Report-Fix aktiv");
 
 (function () {
 
@@ -15,8 +14,6 @@ console.log("system-controls.js geladen – Report-Fix aktiv");
     // Doppelte Bindings verhindern
     if (btn.dataset.bound === "1") return;
     btn.dataset.bound = "1";
-
-    console.log("✅ ReportButton gebunden");
 
     const open = () => {
       modal.style.display = "block";
