@@ -54,6 +54,7 @@ function makePreview(text, max = 170) {
 }
 
 /* ================= SCORES ================= */
+
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -91,6 +92,7 @@ function renderScoreBlock(score, processing) {
 
   return `
     <div style="margin:10px 0;">
+
       ${health ? `
         <div style="display:flex;align-items:center;gap:8px;font-size:15px;margin-bottom:6px;">
           <div style="min-width:90px;opacity:.75;">Gesundheit</div>
@@ -100,15 +102,13 @@ function renderScoreBlock(score, processing) {
 
       ${hasIndustry ? `
         <div style="display:flex;align-items:center;gap:8px;">
-          <div style="min-width:90px;opacity:.75;font-size:13px;">Industrie</div>
           ${renderIndustry(processing)}
         </div>
       ` : ""}
+
     </div>
   `;
 }
-
-
 
 /* ================= STARTSEITE (LEER) ================= */
 function showStart() {
