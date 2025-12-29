@@ -1,6 +1,6 @@
 /* =====================================================
    MarketShield – app.js
-   CONTENT ONLY / STABIL
+   FINAL / CONTENT ONLY / STABIL (preserves shareBox)
 ===================================================== */
 
 let currentEntryId = null;
@@ -42,6 +42,32 @@ function makePreview(text, max = 170) {
   const t = normalizeText(text).replace(/\n+/g, " ").trim();
   return t.length <= max ? t : t.slice(0, max).trim() + " …";
 }
+
+/* ===== keep #shareBox, render only into .ms-content ===== */
+function ensureResultsScaffold() {
+  const root = $("results");
+  if (!root) return null;
+
+  // ensure shareBox exists
+  let shareBox = $("shareBox");
+  if (!shareBox) {
+    shareBox = document.createElement("div");
+    shareBox.id = "shareBox";
+    root.insertBefore(shareBox, root.firstChild);
+  }
+
+  // ensure content box exists
+  let content = root.querySelector(".ms-content");
+  if (!content) {
+    content = document.createElement("div");
+    content.className = "ms-content";
+    root.appendChild(content);
+  }
+
+  return content;
+}
+
+/* ================= TABLE RENDER ================= */
 function mdTableToHtml(block) {
   const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
   if (lines.length < 2 || !lines[0].includes("|")) return null;
@@ -114,63 +140,37 @@ function renderIndustry(score) {
   const MAX = 90;
   const width = Math.round((clamped / 10) * MAX);
 
-  let color = "#2ecc71";          // grün
-  if (clamped >= 4) color = "#f1c40f"; // gelb
-  if (clamped >= 7) color = "#e74c3c"; // rot
+  let color = "#2ecc71";
+  if (clamped >= 4) color = "#f1c40f";
+  if (clamped >= 7) color = "#e74c3c";
 
   return `
-    <div style="
-      width:${MAX}px;
-      height:8px;
-      background:#e0e0e0;
-      border-radius:4px;
-      overflow:hidden;
-    ">
-      <div style="
-        width:${width}px;
-        height:8px;
-        background:${color};
-        border-radius:4px;
-      "></div>
+    <div style="width:${MAX}px;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden;">
+      <div style="width:${width}px;height:8px;background:${color};border-radius:4px;"></div>
     </div>
   `;
 }
 
-
 function renderScoreBlock(score, processing) {
   const health = renderHealth(score);
   const hasIndustry = Number.isFinite(Number(processing)) && Number(processing) > 0;
-
   if (!health && !hasIndustry) return "";
 
-  const ICON_COL = 110; // feste Breite links (HERZEN / BALKEN)
+  const ICON_COL = 110;
   const FONT = 14;
 
   return `
     <div style="margin:12px 0;display:flex;flex-direction:column;gap:8px;">
-
       ${health ? `
         <div style="display:grid;grid-template-columns:${ICON_COL}px auto;align-items:center;">
-          <div style="font-size:${FONT}px;line-height:1;">
-            ${health}
-          </div>
-          <div style="font-size:${FONT}px;opacity:.75;">
-            Gesundheit
-          </div>
-        </div>
-      ` : ""}
-
+          <div style="font-size:${FONT}px;line-height:1;">${health}</div>
+          <div style="font-size:${FONT}px;opacity:.75;">Gesundheit</div>
+        </div>` : ""}
       ${hasIndustry ? `
         <div style="display:grid;grid-template-columns:${ICON_COL}px auto;align-items:center;">
-          <div>
-            ${renderIndustry(processing)}
-          </div>
-          <div style="font-size:${FONT}px;opacity:.75;">
-            Industrie-Verarbeitungsgrad
-          </div>
-        </div>
-      ` : ""}
-
+          <div>${renderIndustry(processing)}</div>
+          <div style="font-size:${FONT}px;opacity:.75;">Industrie-Verarbeitungsgrad</div>
+        </div>` : ""}
     </div>
   `;
 }
@@ -178,13 +178,16 @@ function renderScoreBlock(score, processing) {
 /* ================= START ================= */
 function showStart() {
   currentEntryId = null;
-  const box = $("results");
+  const box = ensureResultsScaffold();
   if (box) box.innerHTML = "";
+
+  // system-controls reagiert darauf (Social/Home verstecken)
+  window.dispatchEvent(new Event("ms:state"));
 }
 
 /* ================= LIST ================= */
 function renderList(data = []) {
-  const box = $("results");
+  const box = ensureResultsScaffold();
   if (!box) return;
 
   box.innerHTML = data.map(e => `
@@ -203,11 +206,13 @@ function renderList(data = []) {
       loadEntry(card.dataset.id);
     };
   });
+
+  window.dispatchEvent(new Event("ms:state"));
 }
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
-  const box = $("results");
+  const box = ensureResultsScaffold();
   if (!box) return;
 
   const d = await supa(`entries?select=*&id=eq.${id}`);
@@ -218,14 +223,11 @@ async function loadEntry(id) {
 
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-    <div id="legalHintAnchor"></div>
     ${renderScoreBlock(e.score, e.processing_score)}
-<div>
-  ${renderSummaryHtml(e.summary)}
-</div>
-
-
+    <div>${renderSummaryHtml(e.summary)}</div>
   `;
+
+  window.dispatchEvent(new Event("ms:state"));
 }
 
 /* ================= SEARCH ================= */
@@ -273,6 +275,7 @@ window.addEventListener("popstate", () => {
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
+  ensureResultsScaffold();
   loadCategories();
   initSearch();
 
@@ -280,6 +283,3 @@ document.addEventListener("DOMContentLoaded", () => {
   if (id) loadEntry(id);
   else showStart();
 });
-
-/* ================= HOME EVENT FROM SYSTEM ================= */
-window.addEventListener("ms:home", showStart);
