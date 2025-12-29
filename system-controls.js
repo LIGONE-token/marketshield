@@ -1,4 +1,4 @@
-console.log("system-controls.js aktiv");
+console.log("system-controls.js aktiv (FINAL)");
 
 // 🔑 Supabase ANON Key
 const SUPABASE_ANON_KEY = "DEIN_NEUER_ANON_KEY";
