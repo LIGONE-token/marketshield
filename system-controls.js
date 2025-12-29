@@ -41,8 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
       await fetch("https://thrdlycfwlsegriduqvw.supabase.co/rest/v1/reports", {
         method: "POST",
         headers: {
-          apikey: "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD",
-          Authorization: "Bearer sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD",
+          apikey: "",
+          Authorization: "",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
