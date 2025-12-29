@@ -1,36 +1,39 @@
-// 🔑 SUPABASE – ANON PUBLIC KEY (neu, rotiert)
-const SUPABASE_ANON_KEY = "sb_publishable_JHb4LBhP26eI7BgDS1jIkw_4OYn3-F9";
+console.log("system-controls.js aktiv");
 
-console.log("system-controls.js FINAL geladen");
+document.addEventListener("DOMContentLoaded", () => {
 
-/* ================= REPORT BUTTON – IMMER AKTIV ================= */
-function bindReportButton() {
-  const btn = document.getElementById("reportBtn");
-  const modal = document.getElementById("reportModal");
-  const close = document.getElementById("closeReportModal");
-  const form = document.getElementById("reportForm");
-
-  if (btn && modal && !btn.dataset.bound) {
-    btn.dataset.bound = "1";
-    btn.addEventListener("click", () => {
-      modal.style.display = "block";
-    });
-    console.log("✅ ReportButton gebunden");
-  }
-
-  if (close && modal && !close.dataset.bound) {
-    close.dataset.bound = "1";
-    close.addEventListener("click", () => {
-      modal.style.display = "none";
+  /* ===== ZUR STARTSEITE ===== */
+  const backHome = document.getElementById("backHome");
+  if (backHome) {
+    backHome.style.display = "block"; // sichtbar machen
+    backHome.addEventListener("click", () => {
+      location.href = location.origin + location.pathname;
     });
   }
 
-  if (form && !form.dataset.bound) {
-    form.dataset.bound = "1";
-    form.addEventListener("submit", async (e) => {
+  /* ===== REPORT MODAL ===== */
+  const reportBtn   = document.getElementById("reportBtn");
+  const reportModal = document.getElementById("reportModal");
+  const closeBtn    = document.getElementById("closeReportModal");
+  const reportForm  = document.getElementById("reportForm");
+
+  if (reportBtn && reportModal) {
+    reportBtn.addEventListener("click", () => {
+      reportModal.style.display = "block";
+    });
+  }
+
+  if (closeBtn && reportModal) {
+    closeBtn.addEventListener("click", () => {
+      reportModal.style.display = "none";
+    });
+  }
+
+  if (reportForm) {
+    reportForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const text = form.querySelector("textarea")?.value.trim();
+      const text = reportForm.querySelector("textarea")?.value.trim();
       if (!text || text.length < 3) {
         alert("Bitte Beschreibung eingeben.");
         return;
@@ -51,13 +54,10 @@ function bindReportButton() {
         })
       });
 
-      form.reset();
-      modal.style.display = "none";
+      reportForm.reset();
+      reportModal.style.display = "none";
       alert("Danke! Meldung gespeichert.");
     });
   }
-}
 
-/* ================= SOFORT + SELBSTHEILUNG ================= */
-bindReportButton();
-setInterval(bindReportButton, 500);
+});
