@@ -93,7 +93,7 @@ if (!isSeparator) return null;
   const rows = lines.slice(2).map(parseRow);
 
   return `
-    <div style="margin:3px 0;overflow:auto;">
+    <div style="margin:14px 0;overflow:auto;">
       <table style="border-collapse:collapse;font-size:14px;">
         <thead>
           <tr>
