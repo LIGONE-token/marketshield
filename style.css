@@ -1614,11 +1614,3 @@ svg,
   min-width: 18px !important;
   min-height: 18px !important;
 }
-/* 🔥 DEBUG – MODAL SICHTBAR MACHEN */
-#reportModal {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  z-index: 999999 !important;
-}
