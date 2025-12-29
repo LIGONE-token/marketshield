@@ -72,30 +72,23 @@
       });
     }
 
-    /* ===== Report: Modal öffnen/schließen ===== */
-    const reportBtn = document.getElementById("reportBtn");
-    const reportModal = document.getElementById("reportModal");
-    const closeBtn = document.getElementById("closeReportModal");
+    document.addEventListener("DOMContentLoaded", () => {
+  const reportBtn = document.getElementById("reportBtn");
 
-    if (reportBtn && reportModal) {
-      reportBtn.style.cursor = "pointer";
-      reportBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        reportModal.style.display = "block";
-      }, true);
+  if (!reportBtn) return;
 
-      if (closeBtn) {
-        closeBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          reportModal.style.display = "none";
-        });
-      }
+  reportBtn.addEventListener(
+    "click",
+    (e) => {
+      e.preventDefault();      // ⛔ verhindert Submit / Reload
+      e.stopPropagation();     // ⛔ verhindert Fremd-Handler
 
-      reportModal.addEventListener("click", (e) => {
-        if (e.target === reportModal) reportModal.style.display = "none";
-      });
-    }
+      // 🔴 SICHTBARE REAKTION – Beweis, dass der Button lebt
+      alert("Report-Button funktioniert.");
+    },
+    true // 🔒 Capture-Phase: kommt VOR allen anderen
+  );
+});
 
     /* ===== Social Actions (inkl. Facebook) ===== */
     document.body.addEventListener("click", (e) => {
