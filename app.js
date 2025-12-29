@@ -75,11 +75,13 @@ function renderIndustry(score) {
   const hue = Math.round(120 - (clamped - 1) * (120 / 9));
 
   return `
-    <div style="display:flex;align-items:center;gap:8px;font-size:13px;opacity:.9;">
+    <div style="display:flex;flex-direction:column;gap:4px;">
       <div style="width:${MAX}px;height:6px;background:#e0e0e0;border-radius:4px;overflow:hidden;">
         <div style="width:${w}px;height:6px;background:hsl(${hue},85%,45%);border-radius:4px;"></div>
       </div>
-      <div style="opacity:.75;">Industrie-Verarbeitungsgrad</div>
+      <div style="font-size:14px;opacity:.75;">
+        Industrie-Verarbeitungsgrad
+      </div>
     </div>
   `;
 }
@@ -91,20 +93,15 @@ function renderScoreBlock(score, processing) {
   if (!health && !hasIndustry) return "";
 
   return `
-    <div style="margin:10px 0;">
+    <div style="margin:12px 0;display:flex;flex-direction:column;gap:10px;align-items:flex-start;">
 
       ${health ? `
-        <div style="display:flex;align-items:center;gap:8px;font-size:15px;margin-bottom:6px;">
-          <div style="min-width:90px;opacity:.75;">Gesundheit</div>
-          <div>${health}</div>
+        <div style="font-size:14px;line-height:1;">
+          ${health}
         </div>
       ` : ""}
 
-      ${hasIndustry ? `
-        <div style="display:flex;align-items:center;gap:8px;">
-          ${renderIndustry(processing)}
-        </div>
-      ` : ""}
+      ${hasIndustry ? renderIndustry(processing) : ""}
 
     </div>
   `;
