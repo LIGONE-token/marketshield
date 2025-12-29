@@ -167,7 +167,9 @@ async function loadEntry(id) {
     <h2>${escapeHtml(e.title)}</h2>
     <div id="legalHintAnchor"></div>
     ${renderScoreBlock(e.score, e.processing_score)}
-    <div>${escapeHtml(e.summary)}</div>
+<div style="line-height:1.6;">
+  ${escapeHtml(e.summary).replace(/\n\s*\n/g, "</p><p>").replace(/^/, "<p>").replace(/$/, "</p>")}
+</div>
   `;
 }
 
