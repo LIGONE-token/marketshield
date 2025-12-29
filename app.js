@@ -201,7 +201,15 @@ async function loadEntry(id) {
     </div>
 
     <!-- Action-Buttons bleiben im HTML, Logik kommt aus system-controls.js -->
-    <div id="entryActions"></div>
+<div id="entryActions" class="entry-actions">
+  <button id="shareFb">Facebook</button>
+  <button id="shareX">X</button>
+  <button id="shareTg">Telegram</button>
+  <button id="shareWa">WhatsApp</button>
+
+  <button id="copyLink">Link kopieren</button>
+  <button id="printPage">Drucken</button>
+</div>
   `;
 }
 
