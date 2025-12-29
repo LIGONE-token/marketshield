@@ -61,29 +61,61 @@ function renderIndustry(score) {
   const clamped = Math.min(10, Math.max(1, n));
   const MAX = 90;
   const w = Math.round((clamped / 10) * MAX);
-  const hue = Math.round(120 - (clamped - 1) * (120 / 9));
 
   return `
-    <div style="display:flex;flex-direction:column;gap:4px;">
-      <div style="width:${MAX}px;height:6px;background:#e0e0e0;border-radius:4px;overflow:hidden;">
-        <div style="width:${w}px;height:6px;background:hsl(${hue},85%,45%);border-radius:4px;"></div>
-      </div>
-      <div style="font-size:14px;opacity:.75;">Industrie-Verarbeitungsgrad</div>
+    <div style="
+      position:relative;
+      width:${MAX}px;
+      height:8px;
+      border-radius:4px;
+      background:linear-gradient(90deg,#2ecc71 0%,#f1c40f 50%,#e74c3c 100%);
+      overflow:hidden;
+    ">
+      <div style="
+        position:absolute;
+        left:0;
+        top:0;
+        height:8px;
+        width:${w}px;
+        background:rgba(0,0,0,.25);
+      "></div>
     </div>
   `;
 }
 
-function renderScoreBlock(score, processing) {
-  const h = renderHealth(score);
-  const i = Number.isFinite(Number(processing)) && Number(processing) > 0
-    ? renderIndustry(processing) : "";
 
-  if (!h && !i) return "";
+function renderScoreBlock(score, processing) {
+  const health = renderHealth(score);
+  const hasIndustry = Number.isFinite(Number(processing)) && Number(processing) > 0;
+
+  if (!health && !hasIndustry) return "";
+
+  const LABEL_W = 190;
+  const FONT = 14;
 
   return `
-    <div style="margin:12px 0;display:flex;flex-direction:column;gap:10px;align-items:flex-start;">
-      ${h ? `<div style="font-size:14px;line-height:1;">${h}</div>` : ""}
-      ${i}
+    <div style="margin:12px 0;">
+
+      ${health ? `
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="min-width:${LABEL_W}px;font-size:${FONT}px;opacity:.75;">
+            Gesundheit
+          </div>
+          <div style="font-size:${FONT}px;line-height:1;">
+            ${health}
+          </div>
+        </div>
+      ` : ""}
+
+      ${hasIndustry ? `
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+          <div style="min-width:${LABEL_W}px;font-size:${FONT}px;opacity:.75;">
+            Industrie-Verarbeitungsgrad
+          </div>
+          ${renderIndustry(processing)}
+        </div>
+      ` : ""}
+
     </div>
   `;
 }
