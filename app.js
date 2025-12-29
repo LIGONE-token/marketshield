@@ -134,15 +134,20 @@ function renderSummaryHtml(raw) {
   const text = normalizeText(raw);
   const blocks = text.split(/\n\s*\n/);
 
-  return blocks.map(block => {
-    const table = mdTableToHtml(block);
-    if (table) return table;
+  return blocks
+    .map(b => sanitizeBlock(b))   // 🔒 Müll raus
+    .filter(Boolean)              // 🔒 leere Blöcke weg
+    .map(block => {
+      const table = mdTableToHtml(block);
+      if (table) return table;
 
-    return `<p style="margin:0 0 14px 0;line-height:1.6;">
-      ${escapeHtml(block)}
-    </p>`;
-  }).join("");
+      return `<p style="margin:0 0 8px 0;line-height:1.6;">
+        ${escapeHtml(block)}
+      </p>`;
+    })
+    .join("");
 }
+
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
