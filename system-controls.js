@@ -7,15 +7,19 @@
 
   document.addEventListener("DOMContentLoaded", () => {
 
-    /* ================= ZUR STARTSEITE ================= */
-    const backHome = document.getElementById("backHome");
-    if (backHome) {
-      backHome.style.cursor = "pointer";
-      backHome.onclick = (e) => {
-        e.preventDefault();
-        window.location.href = window.location.pathname;
-      };
-    }
+   /* ================= ZUR STARTSEITE ================= */
+const backHome =
+  document.getElementById("backHome") ||
+  document.getElementById("backhome");
+
+if (backHome) {
+  backHome.style.cursor = "pointer";
+  backHome.onclick = (e) => {
+    e.preventDefault();
+    window.location.href = window.location.pathname;
+  };
+}
+
 
     /* ================= REPORT ================= */
     const reportBtn   = document.getElementById("reportBtn");
