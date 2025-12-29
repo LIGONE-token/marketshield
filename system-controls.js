@@ -1,51 +1,37 @@
 /* =====================================================
-   MarketShield – Report Button HARD FIX
-   Klick = Reaktion. Immer.
+   MarketShield – REPORT BUTTON FINAL FIX
+   Event Delegation – nicht zerstörbar
 ===================================================== */
 (function () {
   "use strict";
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const reportBtn   = document.getElementById("reportBtn");
-    const reportModal = document.getElementById("reportModal");
-    const closeBtn    = document.getElementById("closeReportModal");
+  // GLOBALER Klick-Fänger (überlebt jedes Re-Render)
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("#reportBtn");
+    if (!btn) return;
 
-    if (!reportBtn) {
-      console.warn("Report-Button nicht gefunden");
+    e.preventDefault();
+    e.stopPropagation();
+
+    const modal = document.getElementById("reportModal");
+    if (!modal) {
+      alert("Report-Modal nicht gefunden – Button lebt.");
       return;
     }
 
-    // 🔒 HARD BIND – kommt vor allen anderen Listenern
-    reportBtn.addEventListener(
-      "click",
-      (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    modal.style.display = "block";
+  }, true); // capture-phase
 
-        if (reportModal) {
-          reportModal.style.display = "block";
-        } else {
-          alert("Report-Button klickbar (Modal fehlt)");
-        }
-      },
-      true // ← Capture-Phase (entscheidend!)
-    );
-
-    // Schließen-Button
-    if (closeBtn && reportModal) {
-      closeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        reportModal.style.display = "none";
-      });
+  // Schließen
+  document.addEventListener("click", function (e) {
+    if (e.target.id === "closeReportModal") {
+      e.preventDefault();
+      const modal = document.getElementById("reportModal");
+      if (modal) modal.style.display = "none";
     }
-
-    // Klick außerhalb schließt Modal
-    if (reportModal) {
-      reportModal.addEventListener("click", (e) => {
-        if (e.target === reportModal) {
-          reportModal.style.display = "none";
-        }
-      });
+    if (e.target.id === "reportModal") {
+      const modal = document.getElementById("reportModal");
+      if (modal) modal.style.display = "none";
     }
   });
 })();
