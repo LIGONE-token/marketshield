@@ -98,6 +98,13 @@
 
       if (target) target.appendChild(legal);
     }
+const backHome = document.getElementById("backHome");
+if (backHome) {
+  backHome.style.cursor = "pointer";
+  backHome.onclick = () => {
+    window.location.href = window.location.pathname;
+  };
+}
 
   });
 })();
