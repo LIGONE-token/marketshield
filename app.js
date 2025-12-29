@@ -42,6 +42,58 @@ function makePreview(text, max = 170) {
   const t = normalizeText(text).replace(/\n+/g, " ").trim();
   return t.length <= max ? t : t.slice(0, max).trim() + " …";
 }
+function mdTableToHtml(block) {
+  const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2 || !lines[0].includes("|")) return null;
+
+  const sep = lines[1].replace(/\s+/g, "");
+  if (!sep.includes("|") || !/^[-:|]+$/.test(sep)) return null;
+
+  const parseRow = (line) => {
+    let s = line;
+    if (s.startsWith("|")) s = s.slice(1);
+    if (s.endsWith("|")) s = s.slice(0, -1);
+    return s.split("|").map(c => escapeHtml(c.trim()));
+  };
+
+  const header = parseRow(lines[0]);
+  const rows = lines.slice(2).map(parseRow);
+
+  return `
+    <div style="margin:14px 0;overflow:auto;">
+      <table style="border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr>
+            ${header.map(h =>
+              `<th style="border:1px solid #ddd;padding:8px;background:#f6f6f6;text-align:left;">${h}</th>`
+            ).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r =>
+            `<tr>${r.map(c =>
+              `<td style="border:1px solid #ddd;padding:8px;vertical-align:top;">${c}</td>`
+            ).join("")}</tr>`
+          ).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderSummaryHtml(raw) {
+  const text = normalizeText(raw);
+  const blocks = text.split(/\n\s*\n/);
+
+  return blocks.map(block => {
+    const table = mdTableToHtml(block);
+    if (table) return table;
+
+    return `<p style="margin:0 0 14px 0;line-height:1.6;">
+      ${escapeHtml(block)}
+    </p>`;
+  }).join("");
+}
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
@@ -168,12 +220,10 @@ async function loadEntry(id) {
     <h2>${escapeHtml(e.title)}</h2>
     <div id="legalHintAnchor"></div>
     ${renderScoreBlock(e.score, e.processing_score)}
-<div style="line-height:1.6;">
-  ${escapeHtml(e.summary)
-    .split(/\n\s*\n/)
-    .map(p => `<p>${p}</p>`)
-    .join("")}
+<div>
+  ${renderSummaryHtml(e.summary)}
 </div>
+
 
   `;
 }
