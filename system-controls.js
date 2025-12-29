@@ -10,6 +10,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+  const reportBtn   = document.getElementById("reportBtn");
+  const reportModal = document.getElementById("reportModal");
+  const closeBtn    = document.getElementById("closeReportModal");
+
+  if (reportBtn && reportModal) {
+    reportBtn.addEventListener("click", () => {
+      reportModal.style.display = "block";
+    });
+  }
+
+  if (closeBtn && reportModal) {
+    closeBtn.addEventListener("click", () => {
+      reportModal.style.display = "none";
+    });
+  }
+});
+
+
 
 // 🔑 Supabase ANON Key
 const SUPABASE_ANON_KEY = "DEIN_NEUER_ANON_KEY";
