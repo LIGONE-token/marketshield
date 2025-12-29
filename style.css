@@ -1621,3 +1621,23 @@ svg,
   background: rgba(0,0,0,0.4);
   z-index: 1000;
 }
+/* Modal vollflächig & touch-sicher */
+.report-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 1000;
+  touch-action: manipulation; /* wichtig für Mobile */
+}
+
+/* Box scrollt innen, nicht die Seite */
+.report-modal-box {
+  background: #fff;
+  max-width: 520px;
+  margin: 8vh auto;
+  padding: 16px;
+  border-radius: 8px;
+  max-height: 84vh;
+  overflow-y: auto;
+}
