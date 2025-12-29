@@ -1,8 +1,16 @@
-console.log("system-controls.js geladen");
+console.log("system-controls.js aktiv");
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ========= REPORT BUTTON (OBEN, FEST) ========= */
+  /* ================= ZUR STARTSEITE ================= */
+  const backHome = document.getElementById("backHome");
+  if (backHome) {
+    backHome.onclick = () => {
+      location.href = location.origin + location.pathname;
+    };
+  }
+
+  /* ================= REPORT BUTTON ================= */
   const reportBtn   = document.getElementById("reportBtn");
   const reportModal = document.getElementById("reportModal");
   const closeBtn    = document.getElementById("closeReportModal");
@@ -14,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  if (closeBtn) {
+  if (closeBtn && reportModal) {
     closeBtn.onclick = () => {
       reportModal.style.display = "none";
     };
@@ -51,32 +59,4 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  /* ========= ENTRY ACTIONS (unten) ========= */
-  document.addEventListener("click", async (e) => {
-    const url   = encodeURIComponent(location.href);
-    const title = encodeURIComponent(
-      document.querySelector("h2")?.innerText || document.title
-    );
-
-    if (e.target.id === "shareFb")
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`);
-
-    if (e.target.id === "shareX")
-      window.open(`https://twitter.com/intent/tweet?text=${title}%0A${url}`);
-
-    if (e.target.id === "shareTg")
-      window.open(`https://t.me/share/url?url=${url}&text=${title}`);
-
-    if (e.target.id === "shareWa")
-      window.open(`https://wa.me/?text=${title}%0A${url}`);
-
-    if (e.target.id === "copyLink") {
-      await navigator.clipboard.writeText(location.href);
-      alert("Link kopiert");
-    }
-
-    if (e.target.id === "printPage") {
-      window.print();
-    }
-  });
 });
