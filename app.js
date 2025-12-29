@@ -56,6 +56,12 @@ function sanitizeBlock(block) {
   // Übrig gebliebene Leerzeilen säubern
   s = s.replace(/\n{3,}/g, "\n\n").trim();
 
+   // Kaputte Vergleichssätze reparieren
+  s = s.replace(
+  /\b(neue|moderne)?\s*Krypto-Modelle\s+wie\s+(verfolgen|setzen|zielen)\b/gi,
+  "Neue Krypto-Modelle verfolgen"
+);
+
   return s;
 }
 
