@@ -221,11 +221,14 @@ async function loadEntry(id) {
 
   currentEntryId = id;
 
-  box.innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
-    ${renderScoreBlock(e.score, e.processing_score)}
-    <div>${renderSummaryHtml(e.summary)}</div>
-  `;
+ box.innerHTML = `
+  <h2>${escapeHtml(e.title)}</h2>
+  ${renderScoreBlock(e.score, e.processing_score)}
+  <div class="entry-text">
+    ${renderSummaryHtml(e.summary)}
+  </div>
+`;
+
 
   window.dispatchEvent(new Event("ms:state"));
 }
