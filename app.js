@@ -86,23 +86,40 @@ function renderIndustry(score) {
 
 function renderScoreBlock(score, processing) {
   const health = renderHealth(score);
-  const industry = renderIndustry(processing);
+  const industry = Number(processing);
 
-  if (!health && !industry) return "";
+  if (!health && !Number.isFinite(industry)) return "";
 
   return `
-    <div class="score-block">
+    <div style="
+      margin:10px 0 14px 0;
+      padding:8px 10px;
+      border-radius:8px;
+      background:#f7f7f7;
+    ">
 
       ${health ? `
-        <div class="score-row">
-          <div class="score-title">Gesundheit</div>
-          <div class="score-value score-health">${health}</div>
+        <div style="
+          display:flex;
+          align-items:center;
+          gap:10px;
+          font-size:15px;
+          margin-bottom:6px;
+        ">
+          <div style="min-width:90px;opacity:.7;">Gesundheit</div>
+          <div>${health}</div>
         </div>
       ` : ""}
 
-      ${industry ? `
-        <div class="score-row">
-          ${industry}
+      ${Number.isFinite(industry) ? `
+        <div style="
+          display:flex;
+          align-items:center;
+          gap:10px;
+          font-size:13px;
+        ">
+          <div style="min-width:90px;opacity:.7;">Industrie-Verarbeitungsgrad</div>
+          ${renderIndustry(industry)}
         </div>
       ` : ""}
 
