@@ -67,65 +67,47 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
+
   const clamped = Math.min(10, Math.max(1, n));
   const MAX = 90;
   const w = Math.round((clamped / 10) * MAX);
   const hue = Math.round(120 - (clamped - 1) * (120 / 9));
 
   return `
-    <div style="margin-top:6px;">
-      <div style="display:flex;align-items:center;gap:8px;font-size:13px;opacity:.85;">
-        <div style="width:${MAX}px;height:6px;background:#e0e0e0;border-radius:4px;overflow:hidden;">
-          <div style="width:${w}px;height:6px;background:hsl(${hue},85%,45%);border-radius:4px;"></div>
-        </div>
-        <div>Industrie-Verarbeitungsgrad</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;opacity:.9;">
+      <div style="width:${MAX}px;height:6px;background:#e0e0e0;border-radius:4px;overflow:hidden;">
+        <div style="width:${w}px;height:6px;background:hsl(${hue},85%,45%);border-radius:4px;"></div>
       </div>
+      <div style="opacity:.75;">Industrie-Verarbeitungsgrad</div>
     </div>
   `;
 }
 
 function renderScoreBlock(score, processing) {
   const health = renderHealth(score);
-  const industry = Number(processing);
+  const hasIndustry = Number.isFinite(Number(processing)) && Number(processing) > 0;
 
-  if (!health && !Number.isFinite(industry)) return "";
+  if (!health && !hasIndustry) return "";
 
   return `
-    <div style="
-      margin:10px 0 14px 0;
-      padding:8px 10px;
-      border-radius:8px;
-      background:#f7f7f7;
-    ">
-
+    <div style="margin:10px 0;">
       ${health ? `
-        <div style="
-          display:flex;
-          align-items:center;
-          gap:10px;
-          font-size:15px;
-          margin-bottom:6px;
-        ">
-          <div style="min-width:90px;opacity:.7;">Gesundheit</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:15px;margin-bottom:6px;">
+          <div style="min-width:90px;opacity:.75;">Gesundheit</div>
           <div>${health}</div>
         </div>
       ` : ""}
 
-      ${Number.isFinite(industry) ? `
-        <div style="
-          display:flex;
-          align-items:center;
-          gap:10px;
-          font-size:13px;
-        ">
-          <div style="min-width:90px;opacity:.7;">Industrie-Verarbeitungsgrad</div>
-          ${renderIndustry(industry)}
+      ${hasIndustry ? `
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="min-width:90px;opacity:.75;font-size:13px;">Industrie</div>
+          ${renderIndustry(processing)}
         </div>
       ` : ""}
-
     </div>
   `;
 }
+
 
 
 /* ================= STARTSEITE (LEER) ================= */
