@@ -1,10 +1,15 @@
 /* =====================================================
-   MarketShield – REPORT MODAL FINAL, KONFLIKTFREI
+   MarketShield – REPORT MODAL ABSOLUTE FIX
+   Modal schließt IMMER bei Navigation / State-Wechsel
 ===================================================== */
 (function () {
   "use strict";
 
-  const getModal = () => document.getElementById("reportModal");
+  const modalId = "reportModal";
+
+  function getModal() {
+    return document.getElementById(modalId);
+  }
 
   function openModal() {
     const m = getModal();
@@ -16,28 +21,7 @@
     if (m) m.style.display = "none";
   }
 
-  // ===== SCHLIESSEN HAT IMMER VORRANG =====
-  document.addEventListener("click", function (e) {
-
-    // 1) Klick auf Schließen-Button
-    if (e.target && e.target.id === "closeReportModal") {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      closeModal();
-      return;
-    }
-
-    // 2) Klick auf Overlay (dunkler Hintergrund)
-    if (e.target && e.target.id === "reportModal") {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      closeModal();
-      return;
-    }
-
-  }, true); // capture, damit nichts dazwischenfunkt
-
-  // ===== ÖFFNEN (nur wenn NICHT geschlossen wurde) =====
+  /* ================== ÖFFNEN ================== */
   document.addEventListener("click", function (e) {
     const btn = e.target.closest("#reportBtn");
     if (!btn) return;
@@ -47,7 +31,19 @@
     openModal();
   }, true);
 
-  // ===== SUBMIT ABFANGEN =====
+  /* ================== SCHLIESSEN ================== */
+  document.addEventListener("click", function (e) {
+    if (
+      e.target.id === "closeReportModal" ||
+      e.target.id === modalId
+    ) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      closeModal();
+    }
+  }, true);
+
+  /* ================== SUBMIT ================== */
   document.addEventListener("submit", function (e) {
     if (e.target && e.target.id === "reportForm") {
       e.preventDefault();
@@ -55,5 +51,11 @@
       alert("Danke! Dein Hinweis wurde gespeichert.");
     }
   }, true);
+
+  /* ================== ABSOLUTER NOTAUS ================== */
+  // SCHLIESST DAS MODAL BEI JEDER SEITENÄNDERUNG
+  window.addEventListener("popstate", closeModal);
+  window.addEventListener("hashchange", closeModal);
+  window.addEventListener("load", closeModal);
 
 })();
