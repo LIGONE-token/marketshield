@@ -1,92 +1,55 @@
-console.log("system-controls.js aktiv (FINAL)");
+console.log("system-controls.js geladen – Report-Fix aktiv");
 
-// 🔑 Supabase ANON Key
-const SUPABASE_ANON_KEY = "sb_publishable_JHb4LBhP26eI7BgDS1jIkw_4OYn3-F9";
+(function () {
 
-document.addEventListener("DOMContentLoaded", () => {
+  function bindReport() {
+    const btn   = document.getElementById("reportBtn");
+    const modal = document.getElementById("reportModal");
+    const close = document.getElementById("closeReportModal");
+    const box   = document.querySelector(".report-modal-box");
 
-  /* ===== ZUR STARTSEITE ===== */
-  const backHome = document.getElementById("backHome");
-  if (backHome) {
-    backHome.style.display = "block";
-    backHome.addEventListener("click", () => {
-      location.href = location.origin + location.pathname;
-    });
-  }
-
-  /* ===== REPORT MODAL ===== */
-  const reportBtn   = document.getElementById("reportBtn");
-  const reportModal = document.getElementById("reportModal");
-  const closeBtn    = document.getElementById("closeReportModal");
-  const reportBox   = document.querySelector(".report-modal-box");
-  const reportForm  = document.getElementById("reportForm");
-
-  if (!reportBtn || !reportModal) {
-    console.warn("❌ Report-Elemente nicht gefunden");
-    return;
-  }
-
-  const openModal = () => {
-    reportModal.style.display = "block";
-    document.body.style.overflow = "hidden";
-  };
-
-  const closeModal = () => {
-    reportModal.style.display = "none";
-    document.body.style.overflow = "";
-  };
-
-  // Öffnen
-  reportBtn.addEventListener("click", openModal);
-
-  // Schließen per Button
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeModal);
-  }
-
-  // Schließen per Overlay
-  if (reportBox) {
-    reportModal.addEventListener("click", closeModal);
-    reportBox.addEventListener("click", (e) => e.stopPropagation());
-  }
-
-  // ESC (Desktop)
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && reportModal.style.display === "block") {
-      closeModal();
+    if (!btn || !modal) {
+      return; // DOM noch nicht bereit
     }
-  });
 
-  /* ===== REPORT SENDEN ===== */
-  if (reportForm) {
-    reportForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    // Doppelte Bindings verhindern
+    if (btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
 
-      const text = reportForm.querySelector("textarea")?.value.trim();
-      if (!text || text.length < 3) {
-        alert("Bitte Beschreibung eingeben.");
-        return;
-      }
+    console.log("✅ ReportButton gebunden");
 
-      await fetch("https://thrdlycfwlsegriduqvw.supabase.co/rest/v1/reports", {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          description: text,
-          entry_id: window.currentEntryId || null,
-          page_url: location.href,
-          created_at: new Date().toISOString()
-        })
-      });
+    const open = () => {
+      modal.style.display = "block";
+      document.body.style.overflow = "hidden";
+    };
 
-      reportForm.reset();
-      closeModal();
-      alert("Danke! Meldung gespeichert.");
+    const closeModal = () => {
+      modal.style.display = "none";
+      document.body.style.overflow = "";
+    };
+
+    // Öffnen
+    btn.addEventListener("click", open);
+
+    // Schließen (Button)
+    if (close) {
+      close.addEventListener("click", closeModal);
+    }
+
+    // Schließen (Overlay)
+    modal.addEventListener("click", closeModal);
+    if (box) {
+      box.addEventListener("click", e => e.stopPropagation());
+    }
+
+    // ESC
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeModal();
     });
   }
 
-});
+  // 🔥 SOFORT + SELBSTHEILUNG
+  bindReport();
+  setInterval(bindReport, 500);
+
+})();
