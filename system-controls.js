@@ -50,3 +50,21 @@
   setInterval(bindReport, 500);
 
 })();
+/* ===== HARD FIX: Sichtbarkeit & Klickbarkeit ===== */
+setInterval(() => {
+  const backHome = document.getElementById("backHome");
+  if (backHome) {
+    backHome.style.display = "block";
+    backHome.style.pointerEvents = "auto";
+  }
+
+  const reportBtn = document.getElementById("reportBtn");
+  if (reportBtn && !reportBtn.dataset.forceBound) {
+    reportBtn.dataset.forceBound = "1";
+    reportBtn.style.pointerEvents = "auto";
+    reportBtn.addEventListener("click", () => {
+      const modal = document.getElementById("reportModal");
+      if (modal) modal.style.display = "block";
+    });
+  }
+}, 500);
