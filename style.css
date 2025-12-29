@@ -1785,8 +1785,6 @@ body:not(.has-detail) #backHome {
 }
 
 /* DIE WEISSE BOX – HIER lag der Fehler */
-#reportModal .report-modal-box {
-  display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
 
