@@ -1,6 +1,6 @@
 /* =====================================================
    MarketShield – system-controls.js
-   FINAL / LOCKED / HTML-INDEPENDENT
+   FINAL / LOCKED / SYNTAX-CLEAN
 ===================================================== */
 (function () {
   "use strict";
@@ -10,10 +10,11 @@
     /* ================= ZUR STARTSEITE ================= */
     const backHome = document.getElementById("backHome");
     if (backHome) {
-      backHome.addEventListener("click", (e) => {
+      backHome.style.cursor = "pointer";
+      backHome.onclick = (e) => {
         e.preventDefault();
-        location.href = location.pathname;
-      });
+        window.location.href = window.location.pathname;
+      };
     }
 
     /* ================= REPORT ================= */
@@ -22,18 +23,18 @@
     const closeBtn    = document.getElementById("closeReportModal");
 
     if (reportBtn && reportModal) {
-      reportBtn.addEventListener("click", (e) => {
+      reportBtn.onclick = (e) => {
         e.preventDefault();
         reportModal.style.display = "block";
-      });
+      };
       if (closeBtn) {
-        closeBtn.addEventListener("click", () => {
+        closeBtn.onclick = () => {
           reportModal.style.display = "none";
-        });
+        };
       }
-      reportModal.addEventListener("click", (e) => {
+      reportModal.onclick = (e) => {
         if (e.target === reportModal) reportModal.style.display = "none";
-      });
+      };
     }
 
     /* ================= SYSTEM SOCIAL BAR ================= */
@@ -87,10 +88,13 @@
       legal.style.cssText =
         "display:block;font-size:12px;opacity:.6;margin:8px 0;";
 
-      legal.addEventListener("click", (e) => {
+      legal.onclick = (e) => {
         e.preventDefault();
-        alert("MarketShield dient ausschließlich der Information. Keine Beratung. Angaben ohne Gewähr.");
-      });
+        alert(
+          "MarketShield dient ausschließlich der Information. " +
+          "Keine Beratung. Angaben ohne Gewähr."
+        );
+      };
 
       const target =
         document.getElementById("shareBox") ||
@@ -98,13 +102,6 @@
 
       if (target) target.appendChild(legal);
     }
-const backHome = document.getElementById("backHome");
-if (backHome) {
-  backHome.style.cursor = "pointer";
-  backHome.onclick = () => {
-    window.location.href = window.location.pathname;
-  };
-}
 
   });
 })();
