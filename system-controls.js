@@ -1,63 +1,51 @@
 console.log("system-controls.js aktiv");
 
+// 🔑 Supabase ANON Key
+const SUPABASE_ANON_KEY = "DEIN_NEUER_ANON_KEY";
+
 document.addEventListener("DOMContentLoaded", () => {
+
   const reportBtn   = document.getElementById("reportBtn");
   const reportModal = document.getElementById("reportModal");
   const closeBtn    = document.getElementById("closeReportModal");
   const reportBox   = document.querySelector(".report-modal-box");
-
-  const openModal = () => {
-    reportModal.style.display = "block";
-    document.body.style.overflow = "hidden"; // Body fixieren (Mobile!)
-  };
-  const closeModal = () => {
-    reportModal.style.display = "none";
-    document.body.style.overflow = ""; // Body wieder frei
-  };
-
-  if (reportBtn && reportModal) {
-    reportBtn.addEventListener("click", openModal);
-    reportBtn.addEventListener("touchstart", (e) => { e.preventDefault(); openModal(); }, { passive:false });
-  }
-
-  // Schließen per Button (Click + Touch)
-  if (closeBtn) {
-    closeBtn.addEventListener("click", closeModal);
-    closeBtn.addEventListener("touchstart", (e) => { e.preventDefault(); closeModal(); }, { passive:false });
-  }
-
-  // Klick/Tap auf Overlay schließt
-  if (reportModal && reportBox) {
-    reportModal.addEventListener("click", closeModal);
-    reportModal.addEventListener("touchstart", closeModal, { passive:true });
-    reportBox.addEventListener("click", (e) => e.stopPropagation());
-    reportBox.addEventListener("touchstart", (e) => e.stopPropagation(), { passive:true });
-  }
-
-  // ESC (Laptop/Tablet mit Tastatur)
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && reportModal.style.display === "block") closeModal();
-  });
-});
-
-  /* ===== REPORT MODAL ===== */
-  const reportBtn   = document.getElementById("reportBtn");
-  const reportModal = document.getElementById("reportModal");
-  const closeBtn    = document.getElementById("closeReportModal");
   const reportForm  = document.getElementById("reportForm");
 
-  if (reportBtn && reportModal) {
-    reportBtn.addEventListener("click", () => {
-      reportModal.style.display = "block";
-    });
+  if (!reportBtn || !reportModal) return;
+
+  /* ===== Öffnen / Schließen ===== */
+  const openModal = () => {
+    reportModal.style.display = "block";
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeModal = () => {
+    reportModal.style.display = "none";
+    document.body.style.overflow = "";
+  };
+
+  // 🔹 Öffnen – NUR click (wichtig!)
+  reportBtn.addEventListener("click", openModal);
+
+  // 🔹 Schließen – Button
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeModal);
   }
 
-  if (closeBtn && reportModal) {
-    closeBtn.addEventListener("click", () => {
-      reportModal.style.display = "none";
-    });
+  // 🔹 Schließen – Klick auf Overlay
+  if (reportBox) {
+    reportModal.addEventListener("click", closeModal);
+    reportBox.addEventListener("click", (e) => e.stopPropagation());
   }
 
+  // 🔹 ESC (Desktop)
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && reportModal.style.display === "block") {
+      closeModal();
+    }
+  });
+
+  /* ===== REPORT SENDEN ===== */
   if (reportForm) {
     reportForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -84,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       reportForm.reset();
-      reportModal.style.display = "none";
+      closeModal();
       alert("Danke! Meldung gespeichert.");
     });
   }
