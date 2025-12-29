@@ -169,8 +169,12 @@ async function loadEntry(id) {
     <div id="legalHintAnchor"></div>
     ${renderScoreBlock(e.score, e.processing_score)}
 <div style="line-height:1.6;">
-  ${escapeHtml(e.summary).replace(/\n\s*\n/g, "</p><p>").replace(/^/, "<p>").replace(/$/, "</p>")}
+  ${escapeHtml(e.summary)
+    .split(/\n\s*\n/)
+    .map(p => `<p>${p}</p>`)
+    .join("")}
 </div>
+
   `;
 }
 
