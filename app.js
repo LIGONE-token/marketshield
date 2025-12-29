@@ -73,7 +73,14 @@ function mdTableToHtml(block) {
   if (lines.length < 2 || !lines[0].includes("|")) return null;
 
   const sep = lines[1].replace(/\s+/g, "");
-  if (!sep.includes("|") || !/^[-:|]+$/.test(sep)) return null;
+
+// akzeptiert auch reine Trennlinien ohne |
+const isSeparator =
+  /^[-:|]+$/.test(sep) ||
+  (/^-+$/.test(sep) && lines[0].includes("|"));
+
+if (!isSeparator) return null;
+
 
   const parseRow = (line) => {
     let s = line;
