@@ -1717,3 +1717,15 @@ body:not(.has-detail) #backhome,
 body:not(.has-detail) #backHome {
   display: none !important;
 }
+/* ===== Social Buttons immer UNTER dem Inhalt ===== */
+#systemSocialBar {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: 0;
+  justify-content: center;
+
+  /* WICHTIG: NICHT fixed / absolute */
+  position: static !important;
+  width: auto;
+}
