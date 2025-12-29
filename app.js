@@ -7,7 +7,7 @@ let currentEntryId = null;
 
 /* ================= SUPABASE ================= */
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
-const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
+const SUPABASE_KEY = "";
 
 async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
