@@ -43,32 +43,34 @@ function makePreview(text, max = 170) {
   return t.length <= max ? t : t.slice(0, max).trim() + " …";
 }
 function sanitizeBlock(block) {
-  let s = block.trim();
+  let s = String(block || "").trim();
 
-  // Leere oder reine Trennlinien entfernen
+  // 1) Escape-Sequenzen entfernen
+  s = s.replace(/\\n+/g, "\n");
+
+  // 2) Reine Trennlinien / Leerblöcke entfernen
   if (!s || /^-+$/.test(s)) return "";
 
-  // KI-/Markdown-Artefakte entfernen
+  // 3) KI-/Generator-Artefakte entfernen
   s = s.replace(/:contentReference\[[^\]]*\]\{[^}]*\}/gi, "");
   s = s.replace(/\{index=\d+\}/gi, "");
   s = s.replace(/\boaicite\b/gi, "");
 
-  // Übrig gebliebene Leerzeilen säubern
-  s = s.replace(/\n{3,}/g, "\n\n").trim();
+  // 4) Abgebrochene GROSSBUCHSTABEN-Fragmente entfernen
+  // z.B. "NICHT DEKLARIERTE," / "DEKLARIERTE" / "NICHT DEKLARIERT"
+  if (/^[A-ZÄÖÜß ,.-]{5,}$/.test(s)) return "";
 
-   // Kaputte Vergleichssätze reparieren
-  s = s.replace(
-  /\b(neue|moderne)?\s*Krypto-Modelle\s+wie\s+(verfolgen|setzen|zielen)\b/gi,
-  "Neue Krypto-Modelle verfolgen"
-);
-   // Mehrfache Leerzeichen & leere Konstruktionen
-s = s.replace(/\s{2,}/g, " ");
-s = s.replace(/\s+([.,;:])/g, "$1");
+  // 5) Abgebrochene Satzenden entfernen (endet auf Komma/Doppelpunkt)
+  if (/[,:;]$/.test(s)) return "";
 
-   // Zu kurze oder kaputte Sätze entfernen
-if (s.split(" ").length < 4) return "";
+  // 6) Mehrfache Leerzeichen & kaputte Interpunktion säubern
+  s = s.replace(/\s{2,}/g, " ");
+  s = s.replace(/\s+([.,;:])/g, "$1");
 
-  return s;
+  // 7) Zu kurze, nichtssagende Fragmente entfernen
+  if (s.split(" ").length < 4) return "";
+
+  return s.trim();
 }
 
 /* ===== keep #shareBox, render only into .ms-content ===== */
@@ -147,18 +149,19 @@ function renderSummaryHtml(raw) {
   const blocks = text.split(/\n\s*\n/);
 
   return blocks
-    .map(b => sanitizeBlock(b))   // 🔒 Müll raus
-    .filter(Boolean)              // 🔒 leere Blöcke weg
+    .map(b => sanitizeBlock(b))
+    .filter(Boolean)
     .map(block => {
       const table = mdTableToHtml(block);
       if (table) return table;
 
-      return `<p style="margin:0 0 8px 0;line-height:1.6;">
+      return `<p style="margin:0 0 4px 0;line-height:1.6;">
         ${escapeHtml(block)}
       </p>`;
     })
     .join("");
 }
+
 
 
 /* ================= SCORES ================= */
