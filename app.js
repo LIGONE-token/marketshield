@@ -306,31 +306,50 @@ ${renderScoreBlock(e.score, e.processing_score)}
 }
 
 /* ================= DETAIL ================= */
-async function loadEntry(id) {
-  const box = ensureResultsScaffold();
-  if (!box) return;
+async function loadEntries() {
+  const results = document.getElementById("results");
+  if (!results) {
+    console.error("❌ results-Container fehlt");
+    return;
+  }
 
-  const d = await supa(`entries?select=*&id=eq.${id}`);
-  const e = d[0];
-  if (!e) return;
+  results.innerHTML = "Lade Einträge…";
 
-  currentEntryId = id;
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/entries?select=*`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      }
+    );
 
- box.innerHTML = `
-  <h2>${escapeHtml(e.title)}</h2>
+    const data = await r.json();
+    if (!Array.isArray(data)) throw data;
 
-${renderRatingDisplay()}
+    results.innerHTML = "";
 
-${renderScoreBlock(e.score, e.processing_score)}
+    data.forEach(e => {
+      const div = document.createElement("div");
+      div.className = "entry";
+      div.innerHTML = `
+        <h3>${e.title}</h3>
+        <p>${e.summary || ""}</p>
+      `;
+      results.appendChild(div);
+    });
 
-  <div class="entry-text">
-    ${renderSummaryHtml(e.summary)}
-  </div>
-`;
+    console.log(`✅ ${data.length} Einträge geladen`);
 
-
-  window.dispatchEvent(new Event("ms:state"));
+  } catch (err) {
+    console.error("❌ Einträge Fehler:", err);
+    results.innerHTML = "Fehler beim Laden der Einträge.";
+  }
 }
+
+document.addEventListener("DOMContentLoaded", loadEntries);
 
 /* ================= SEARCH ================= */
 function initSearch() {
