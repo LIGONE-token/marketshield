@@ -203,7 +203,7 @@ function renderScoreBlock(score, processing) {
       ${health ? `
         <div style="display:grid;grid-template-columns:${ICON_COL}px auto;align-items:center;">
           <div style="font-size:${FONT}px;line-height:1;">${health}</div>
-          <div style="font-size:${FONT}px;opacity:.75;">Gesundheit</div>
+          <div style="font-size:${FONT}px;opacity:.75;">Gesundheitsscore</div>
         </div>` : ""}
       ${hasIndustry ? `
         <div style="display:grid;grid-template-columns:${ICON_COL}px auto;align-items:center;">
