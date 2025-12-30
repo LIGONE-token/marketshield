@@ -1887,3 +1887,29 @@ body:not(.has-detail) #backHome {
   z-index: 100000 !important;
   pointer-events: auto !important;
 }
+/* ===== DETAILANSICHT: Abstände harmonisieren ===== */
+
+/* Überschrift näher an den Inhalt */
+#results h2 {
+  margin-bottom: 10px;
+}
+
+/* Haupttextblock enger */
+.entry-text {
+  margin-top: 0;
+}
+
+/* Absätze: weniger Luft nach unten */
+.entry-text p {
+  margin: 0 0 6px 0;
+}
+
+/* Tabellen näher an den Text bringen */
+.md-table-wrap {
+  margin: 8px 0;
+}
+
+/* Abstand nach Tabellen ebenfalls reduzieren */
+.md-table-wrap + p {
+  margin-top: 6px;
+}
