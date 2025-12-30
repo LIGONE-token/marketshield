@@ -319,29 +319,40 @@ async function loadEntries() {
   box.innerHTML = "Lade Einträge…";
 
   try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/entries`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`
-        }
-      }
-    );
+    // ✅ PostgREST braucht select=... (mindestens select=*)
+    const url =
+      `${SUPABASE_URL}/rest/v1/entries` +
+      `?select=id,title,summary,score,processing_score` +
+      `&order=title.asc` +
+      `&limit=200`;
 
-    const data = await r.json();
-    if (!Array.isArray(data)) {
-      console.error("Supabase Antwort:", data);
-      throw new Error("Keine Daten");
+    const r = await fetch(url, {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      }
+    });
+
+    const txt = await r.text();
+    if (!r.ok) {
+      // 🔥 zeig den echten Grund (400/401/403 etc.)
+      throw new Error(`HTTP ${r.status} – ${txt}`);
     }
 
-    renderList(data);
+    const data = JSON.parse(txt || "[]");
+    if (!Array.isArray(data)) throw new Error("Unerwartetes JSON: " + txt);
 
+    renderList(data);
     console.log("✅ Startseite geladen:", data.length);
 
   } catch (e) {
     console.error("❌ loadEntries:", e);
-    box.innerHTML = "Fehler beim Laden der Einträge.";
+    box.innerHTML = `
+      <div style="padding:10px;border:1px solid #e0e0e0;border-radius:10px;">
+        <b>Fehler beim Laden der Einträge</b><br>
+        <span style="font-size:12px;opacity:.8;">${escapeHtml(String(e.message || e))}</span>
+      </div>
+    `;
   }
 }
 
