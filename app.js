@@ -315,45 +315,16 @@ ${renderScoreBlock(e.score, e.processing_score)}
 
 /* ================= DETAIL ================= */
 async function loadEntries() {
-  const results = document.getElementById("results");
-  if (!results) {
-    console.error("❌ results-Container fehlt");
-    return;
-  }
-
-  results.innerHTML = "Lade Einträge…";
-
   try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/entries?select=*`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`
-        }
-      }
+    const data = await supa(
+      "entries?select=id,title,summary,score,processing_score"
     );
-
-    const data = await r.json();
-    if (!Array.isArray(data)) throw data;
-
-    results.innerHTML = "";
-
-    data.forEach(e => {
-      const div = document.createElement("div");
-      div.className = "entry";
-      div.innerHTML = `
-        <h3>${e.title}</h3>
-        <p>${e.summary || ""}</p>
-      `;
-      results.appendChild(div);
-    });
-
-    console.log(`✅ ${data.length} Einträge geladen`);
-
+    renderList(data);
+    console.log(`✅ ${data.length} Einträge geladen (Kurzansicht korrekt)`);
   } catch (err) {
     console.error("❌ Einträge Fehler:", err);
-    results.innerHTML = "Fehler beim Laden der Einträge.";
+    const box = ensureResultsScaffold();
+    if (box) box.innerHTML = "Fehler beim Laden der Einträge.";
   }
 }
 
