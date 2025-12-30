@@ -313,18 +313,38 @@ ${renderScoreBlock(e.score, e.processing_score)}
 
 /* ================= DETAIL ================= */
 async function loadEntries() {
+  const box = ensureResultsScaffold();
+  if (!box) return;
+
+  box.innerHTML = "Lade Einträge…";
+
   try {
-    const data = await supa(
-      "entries?select=id,title,summary,score,processing_score"
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/entries`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      }
     );
+
+    const data = await r.json();
+    if (!Array.isArray(data)) {
+      console.error("Supabase Antwort:", data);
+      throw new Error("Keine Daten");
+    }
+
     renderList(data);
-    console.log(`✅ ${data.length} Einträge geladen (Kurzansicht korrekt)`);
-  } catch (err) {
-    console.error("❌ Einträge Fehler:", err);
-    const box = ensureResultsScaffold();
-    if (box) box.innerHTML = "Fehler beim Laden der Einträge.";
+
+    console.log("✅ Startseite geladen:", data.length);
+
+  } catch (e) {
+    console.error("❌ loadEntries:", e);
+    box.innerHTML = "Fehler beim Laden der Einträge.";
   }
 }
+
 
 document.addEventListener("DOMContentLoaded", loadEntries);
 
