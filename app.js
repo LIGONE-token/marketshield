@@ -99,6 +99,14 @@ function ensureResultsScaffold() {
 
   return content;
 }
+function shortText(text, max = 160) {
+  if (!text) return "";
+  const clean = text.replace(/\s+/g, " ").trim();
+  return clean.length > max
+    ? clean.slice(0, max) + " …"
+    : clean;
+}
+
 
 /* ================= TABLE RENDER ================= */
 function mdTableToHtml(block) {
