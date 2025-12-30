@@ -41,49 +41,32 @@ function normalizeText(text) {
 function makePreview(text, max = 170) {
   const t = normalizeText(text).replace(/\n+/g, " ").trim();
   return t.length <= max ? t : t.slice(0, max).trim() + " …";
-}function sanitizeBlock(block) {
-  let s = String(block || "").trim();
+}
+function sanitizeBlock(block) {
+  let s = String(block || "");
 
-  // Überschriften abtrennen
-  s = s.replace(
-    /([.!?])\s*([A-ZÄÖÜ][A-ZÄÖÜ\s]{5,}):/g,
-    "$1\n\n$2:"
-  );
+  // echte \n-Sequenzen aus Generatoren
+  s = s.replace(/\\n/g, "\n");
 
-  // Escape-Sequenzen entfernen
-  s = s.replace(/\\n+/g, "\n");
-
-  // Leere / Trennlinien entfernen
-  if (!s || /^-+$/.test(s)) return "";
-
-  // KI-Artefakte
+  // bekannte KI-Artefakte hart entfernen
   s = s.replace(/:contentReference\[[^\]]*\]\{[^}]*\}/gi, "");
   s = s.replace(/\{index=\d+\}/gi, "");
   s = s.replace(/\boaicite\b/gi, "");
 
-  // GROSSBUCHSTABEN-Fragmente
-  if (/^[A-ZÄÖÜß ,.-]{5,}$/.test(s)) return "";
+  // Trennlinien als eigene Blöcke entfernen
+  if (/^\s*-{5,}\s*$/.test(s.trim())) return "";
 
-  // Abgebrochene Satzenden
-  if (/[,:;]$/.test(s)) return "";
+  // Abriss nach Punkt: ".... NICHT DEKLARIERTE," -> alles NACH dem Punkt abschneiden
+  s = s.replace(/([.!?])\s*[A-ZÄÖÜ]{5,}[A-ZÄÖÜ\s,-]*$/g, "$1");
 
-  // Mehrfache Leerzeichen
-  s = s.replace(/\s{2,}/g, " ");
-  s = s.replace(/\s+([.,;:])/g, "$1");
+  // Abriss am Ende: endet mit Komma/Doppelpunkt/halbes Wort -> letzte „defekte“ Endung entfernen
+  s = s.replace(/[,:;]\s*$/g, "");
+  s = s.replace(/\b[A-ZÄÖÜ]{2,}\s*$/g, ""); // REA, DEKLA, etc.
 
-  // Zu kurze Fragmente
-  if (s.split(" ").length < 4) return "";
+  // Whitespace normalisieren
+  s = s.replace(/\r\n|\r/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 
-  // Abgebrochene Wörter (REA, DEKLARIERTEN, ABER REA)
-  if (/\b[A-ZÄÖÜ]{2,}\s*$/.test(s)) return "";
-
-  // Großbuchstaben nach Punkt ohne Satz
-  if (/[.!?]\s*[A-ZÄÖÜ]{5,}[ ,]*$/.test(s)) return "";
-
-  // Abriss mitten im Wort
-  if (!/[a-zäöüß.!?)]$/.test(s)) return "";
-
-  return s.trim();
+  return s;
 }
 
 /* ===== keep #shareBox, render only into .ms-content ===== */
