@@ -1872,3 +1872,18 @@ body:not(.has-detail) #backHome {
 .entry-card {
   pointer-events: auto;
 }
+/* ===== ABSOLUTER FIX: nichts darf über dem Report-Button liegen ===== */
+#results {
+  position: static !important;
+}
+
+.community-report {
+  position: relative !important;
+  z-index: 99999 !important;
+}
+
+#reportBtn {
+  position: relative !important;
+  z-index: 100000 !important;
+  pointer-events: auto !important;
+}
