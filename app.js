@@ -41,53 +41,50 @@ function normalizeText(text) {
 function makePreview(text, max = 170) {
   const t = normalizeText(text).replace(/\n+/g, " ").trim();
   return t.length <= max ? t : t.slice(0, max).trim() + " …";
-}
-function sanitizeBlock(block) {
+}function sanitizeBlock(block) {
   let s = String(block || "").trim();
-     // GROSSBUCHSTABEN-Überschriften abtrennen
+
+  // Überschriften abtrennen
   s = s.replace(
     /([.!?])\s*([A-ZÄÖÜ][A-ZÄÖÜ\s]{5,}):/g,
     "$1\n\n$2:"
   );
 
-
-  // 1) Escape-Sequenzen entfernen
+  // Escape-Sequenzen entfernen
   s = s.replace(/\\n+/g, "\n");
 
-  // 2) Reine Trennlinien / Leerblöcke entfernen
+  // Leere / Trennlinien entfernen
   if (!s || /^-+$/.test(s)) return "";
 
-  // 3) KI-/Generator-Artefakte entfernen
+  // KI-Artefakte
   s = s.replace(/:contentReference\[[^\]]*\]\{[^}]*\}/gi, "");
   s = s.replace(/\{index=\d+\}/gi, "");
   s = s.replace(/\boaicite\b/gi, "");
 
-  // 4) Abgebrochene GROSSBUCHSTABEN-Fragmente entfernen
-  // z.B. "NICHT DEKLARIERTE," / "DEKLARIERTE" / "NICHT DEKLARIERT"
+  // GROSSBUCHSTABEN-Fragmente
   if (/^[A-ZÄÖÜß ,.-]{5,}$/.test(s)) return "";
 
-  // 5) Abgebrochene Satzenden entfernen (endet auf Komma/Doppelpunkt)
+  // Abgebrochene Satzenden
   if (/[,:;]$/.test(s)) return "";
 
-  // 6) Mehrfache Leerzeichen & kaputte Interpunktion säubern
+  // Mehrfache Leerzeichen
   s = s.replace(/\s{2,}/g, " ");
   s = s.replace(/\s+([.,;:])/g, "$1");
 
-  // 7) Zu kurze, nichtssagende Fragmente entfernen
+  // Zu kurze Fragmente
   if (s.split(" ").length < 4) return "";
+
+  // Abgebrochene Wörter (REA, DEKLARIERTEN, ABER REA)
+  if (/\b[A-ZÄÖÜ]{2,}\s*$/.test(s)) return "";
+
+  // Großbuchstaben nach Punkt ohne Satz
+  if (/[.!?]\s*[A-ZÄÖÜ]{5,}[ ,]*$/.test(s)) return "";
+
+  // Abriss mitten im Wort
+  if (!/[a-zäöüß.!?)]$/.test(s)) return "";
 
   return s.trim();
 }
-  // 8) Abgebrochene Wörter (z. B. "REA", "DEKLARIERTEN, ABER REA")
-  if (/\b[A-ZÄÖÜ]{2,}\s*$/.test(s)) return "";
-
-  // 9) GROSSBUCHSTABEN-Fortsetzung nach Punkt ohne Satz
-  // z. B. "Haltbarkeitsunterstützung. NICHT DEKLARIERTE,"
-  if (/[.!?]\s*[A-ZÄÖÜ]{5,}[ ,]*$/.test(s)) return "";
-
-  // 10) Abbruch mitten im Wort (endet nicht auf Buchstabe)
-  if (!/[a-zäöüß.!?)]$/.test(s)) return "";
-
 
 /* ===== keep #shareBox, render only into .ms-content ===== */
 function ensureResultsScaffold() {
