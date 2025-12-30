@@ -195,3 +195,16 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display = "block";
   };
 });
+// ===== REPORT BUTTON: DIREKTER NOTFALL-HANDLER =====
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("reportBtn");
+  const modal = document.getElementById("reportModal");
+
+  if (!btn || !modal) return;
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    modal.style.display = "block";
+    console.log("REPORT BUTTON CLICKED");
+  });
+});
