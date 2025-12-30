@@ -275,9 +275,11 @@ async function renderRating(entryId) {
 /* ================= START ================= */
 function showStart() {
   currentEntryId = null;
-  loadEntries(); // 🔥 Startseite = IMMER Kurzansicht
+  const box = ensureResultsScaffold();
+  if (box) box.innerHTML = "";
   window.dispatchEvent(new Event("ms:state"));
 }
+
 function renderRatingDisplay() {
   return "";
 }
