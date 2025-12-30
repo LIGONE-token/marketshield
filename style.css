@@ -1944,3 +1944,23 @@ body:not(.has-detail) #backHome {
   position: relative !important;
   z-index: 2147483647 !important; /* maximaler z-index */
 }
+/* ===== REPORT BUTTON: FINALER FIX ===== */
+#reportBtn,
+#reportBtn * {
+  pointer-events: auto !important;
+}
+
+#reportBtn {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-flex !important;
+  position: relative !important;
+  z-index: 2147483647 !important;
+}
+
+/* Schutz vor pseudo-elementen */
+#reportBtn::before,
+#reportBtn::after {
+  pointer-events: none !important;
+  content: none !important;
+}
