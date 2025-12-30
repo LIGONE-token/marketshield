@@ -78,6 +78,15 @@ function sanitizeBlock(block) {
 
   return s.trim();
 }
+  // 8) Abgebrochene Wörter (z. B. "REA", "DEKLARIERTEN, ABER REA")
+  if (/\b[A-ZÄÖÜ]{2,}\s*$/.test(s)) return "";
+
+  // 9) GROSSBUCHSTABEN-Fortsetzung nach Punkt ohne Satz
+  // z. B. "Haltbarkeitsunterstützung. NICHT DEKLARIERTE,"
+  if (/[.!?]\s*[A-ZÄÖÜ]{5,}[ ,]*$/.test(s)) return "";
+
+  // 10) Abbruch mitten im Wort (endet nicht auf Buchstabe)
+  if (!/[a-zäöüß.!?)]$/.test(s)) return "";
 
 
 /* ===== keep #shareBox, render only into .ms-content ===== */
