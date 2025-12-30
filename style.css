@@ -1854,3 +1854,21 @@ body:not(.has-detail) #backHome {
 .entry-card {
   pointer-events: auto;
 }
+/* ===== Report-Button immer klickbar ===== */
+.community-report {
+  position: relative;
+  z-index: 2000;
+}
+
+#reportBtn {
+  position: relative;
+  z-index: 2001;
+  pointer-events: auto !important;
+}
+
+/* Inhalte dürfen Klicks nicht abfangen */
+.ms-content,
+.entry-text,
+.entry-card {
+  pointer-events: auto;
+}
