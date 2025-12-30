@@ -1,52 +1,45 @@
 /* =====================================================
-   MarketShield – REPORT MODAL FINAL (OPEN + CLOSE)
+   MarketShield – REPORT BUTTON FINAL (STABIL)
 ===================================================== */
 (function () {
   "use strict";
 
-  function getModal() {
+  function modal() {
     return document.getElementById("reportModal");
   }
 
-  function openModal() {
-    const modal = getModal();
-    if (modal) modal.classList.add("open");
-  }
-
-  function closeModal() {
-    const modal = getModal();
-    if (modal) modal.classList.remove("open");
-  }
-
-  // ===== Öffnen =====
+  // EIN globaler Click-Handler
   document.addEventListener("click", function (e) {
-    const btn = e.target.closest("#reportBtn");
-    if (!btn) return;
 
-    e.preventDefault();
-    openModal();
-  });
+    // ===== ÖFFNEN =====
+    if (e.target.closest("#reportBtn")) {
+      e.preventDefault();
+      const m = modal();
+      if (m) m.classList.add("open");
+      return;
+    }
 
-  // ===== Schließen (Button + Overlay) =====
-  document.addEventListener("click", function (e) {
+    // ===== SCHLIESSEN (Button oder Overlay) =====
     if (
       e.target.id === "closeReportModal" ||
       e.target.id === "reportModal"
     ) {
       e.preventDefault();
-      closeModal();
+      const m = modal();
+      if (m) m.classList.remove("open");
+      return;
     }
+
   });
 
-  // ===== Submit =====
+  // ===== FORM SUBMIT =====
   document.addEventListener("submit", function (e) {
     if (e.target.id === "reportForm") {
       e.preventDefault();
-      closeModal();
+      const m = modal();
+      if (m) m.classList.remove("open");
       alert("Danke! Dein Hinweis wurde gespeichert.");
     }
   });
 
-  // ===== Sicherheit: bei Navigation schließen =====
-  window.addEventListener("popstate", closeModal);
 })();
