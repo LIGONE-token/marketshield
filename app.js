@@ -214,13 +214,40 @@ function renderScoreBlock(score, processing) {
   `;
 }
 /* ================= RATING (DISPLAY ONLY) ================= */
-function renderRatingDisplay() {
+/* ================= RATING (LIVE DATA) ================= */
+async function renderRating(entryId) {
+  // Aggregierte Bewertung laden
+  const data = await supa(
+    `entry_ratings?select=rating&entry_id=eq.${entryId}`
+  );
+
+  if (!data.length) {
+    return `
+      <div class="rating-box" style="margin:8px 0 14px;">
+        <div style="font-size:13px;color:#777;">
+          Noch keine Bewertungen
+        </div>
+        <div style="font-size:13px;color:#777;">
+          Wie hilfreich war dieser Eintrag?
+        </div>
+      </div>
+    `;
+  }
+
+  const count = data.length;
+  const avg = data.reduce((s, r) => s + r.rating, 0) / count;
+  const rounded = Math.round(avg * 10) / 10;
+
+  const stars =
+    "★★★★★".slice(0, Math.round(avg)) +
+    "☆☆☆☆☆".slice(0, 5 - Math.round(avg));
+
   return `
     <div class="rating-box" style="margin:8px 0 14px;">
       <div style="font-size:18px;color:#f5b301;">
-        ★★★★☆
+        ${stars}
         <span style="font-size:14px;color:#555;margin-left:6px;">
-          4,6 (183)
+          ${rounded} (${count})
         </span>
       </div>
       <div style="font-size:13px;color:#777;">
