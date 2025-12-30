@@ -1970,3 +1970,26 @@ body:not(.has-detail) #backHome {
   touch-action: manipulation !important;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
+/* ================= CONTENT HARD RESET ================= */
+
+/* Ergebnisbereich MUSS sichtbar sein */
+#results {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: static !important;
+  height: auto !important;
+  min-height: 1px !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+}
+
+/* interner Content */
+.ms-content,
+.entry-text,
+.entry-card {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
