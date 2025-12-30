@@ -284,7 +284,11 @@ async function loadEntry(id) {
 
  box.innerHTML = `
   <h2>${escapeHtml(e.title)}</h2>
-  ${renderScoreBlock(e.score, e.processing_score)}
+
+${renderRatingDisplay()}
+
+${renderScoreBlock(e.score, e.processing_score)}
+
   <div class="entry-text">
     ${renderSummaryHtml(e.summary)}
   </div>
