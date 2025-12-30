@@ -1938,3 +1938,9 @@ body:not(.has-detail) #backHome {
   z-index: 1001;
   pointer-events: auto;
 }
+/* ===== absolute Klick-Garantie ===== */
+#reportBtn {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 2147483647 !important; /* maximaler z-index */
+}
