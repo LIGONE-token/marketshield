@@ -52,21 +52,63 @@
 
   /* ================= LEGAL HINT ================= */
   function ensureLegalHint() {
-    if ($("legalHintLink")) return;
-    const target = document.querySelector(".entry-text");
-    if (!target) return;
+  if (document.getElementById("legalHintLink")) return;
 
-    const a = document.createElement("a");
-    a.id = "legalHintLink";
-    a.href = "#";
-    a.textContent = "Rechtlicher Hinweis";
-    a.style.cssText = "display:block;font-size:12px;opacity:.6;margin:10px 0;";
-    a.onclick = (e) => {
-      e.preventDefault();
-      alert("MarketShield dient ausschließlich der Information. Keine Beratung.");
-    };
-    target.appendChild(a);
-  }
+  const target = document.querySelector(".entry-text");
+  if (!target) return;
+
+  const wrap = document.createElement("span");
+  wrap.style.position = "relative";
+  wrap.style.display = "inline-block";
+
+  const link = document.createElement("a");
+  link.id = "legalHintLink";
+  link.href = "#";
+  link.textContent = "Rechtlicher Hinweis";
+  link.style.cssText = "font-size:12px;opacity:.6;cursor:pointer;";
+
+  const box = document.createElement("div");
+  box.style.cssText = `
+    display:none;
+    position:absolute;
+    top:20px;
+    left:0;
+    max-width:260px;
+    padding:10px 12px;
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:6px;
+    box-shadow:0 6px 18px rgba(0,0,0,.12);
+    font-size:12px;
+    line-height:1.4;
+    z-index:9999;
+  `;
+
+  box.innerHTML = `
+    <strong>Warum kein Anspruch auf „die Wahrheit“?</strong><br>
+    MarketShield wertet öffentlich verfügbare Informationen aus
+    und bereitet sie verständlich auf. Rechtliche Vorgaben,
+    Haftungsgrenzen und fehlende Einblicke in interne Rezepturen
+    machen eine vollständige oder verbindliche Wahrheit unmöglich.
+  `;
+
+  link.onclick = (e) => {
+    e.preventDefault();
+    box.style.display = box.style.display === "none" ? "block" : "none";
+  };
+
+  // Klick außerhalb schließt das Fenster
+  document.addEventListener("click", (e) => {
+    if (!wrap.contains(e.target)) {
+      box.style.display = "none";
+    }
+  });
+
+  wrap.appendChild(link);
+  wrap.appendChild(box);
+  target.appendChild(wrap);
+}
+
 
   /* ================= UI STATE ================= */
   function syncUI() {
