@@ -1,3 +1,10 @@
+console.log("MarketShield app.js – SINGLE SOURCE ACTIVE");
+
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM ready – app.js übernimmt vollständig");
+});
+
+
 /* =====================================================
    MarketShield – app.js
    FINAL / CONTENT ONLY / STABIL (preserves shareBox)
