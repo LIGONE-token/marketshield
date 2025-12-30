@@ -1836,3 +1836,21 @@ body:not(.has-detail) #backHome {
   gap: 8px;
   flex-wrap: wrap;
 }
+/* ===== Report Button MUSS klickbar sein ===== */
+#reportBtn {
+  position: relative;
+  z-index: 1000;
+  pointer-events: auto !important;
+}
+
+.community-report {
+  position: relative;
+  z-index: 1000;
+}
+
+/* Sicherheitsnetz: Inhalte dürfen Klicks nicht blockieren */
+.ms-content,
+.entry-text,
+.entry-card {
+  pointer-events: auto;
+}
