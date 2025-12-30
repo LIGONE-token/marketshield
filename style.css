@@ -1796,3 +1796,14 @@ body:not(.has-detail) #backHome {
 
   z-index: 2147483647 !important;
 }
+#reportModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+}
+
+#reportModal.open {
+  display: block;
+}
