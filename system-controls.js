@@ -188,15 +188,3 @@
   });
 
 })();
-// ===== Zur Startseite Sichtbarkeit erzwingen =====
-function syncBackHome() {
-  const back = document.getElementById("backHome");
-  if (!back) return;
-
-  const hasId = new URLSearchParams(location.search).has("id");
-  back.style.display = hasId ? "inline-block" : "none";
-}
-
-window.addEventListener("ms:state", syncBackHome);
-window.addEventListener("popstate", syncBackHome);
-document.addEventListener("DOMContentLoaded", syncBackHome);
