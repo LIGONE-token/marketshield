@@ -1,6 +1,9 @@
 /* =====================================================
    MarketShield – system-controls.js
-   FINAL / STABLE / CLEAN
+   FINAL / STABLE / CLEAN / SIMPLIFIED
+   - Fixierter Melde-Link am oberen Seitenrand
+   - Alter großer Report-Button komplett deaktiviert
+   - Keine blockierenden Overlays
 ===================================================== */
 (function () {
   "use strict";
@@ -17,6 +20,48 @@
   function closeReport() {
     const m = $("reportModal");
     if (m) m.style.display = "none";
+  }
+
+  /* ================= ALTER REPORT-BUTTON: DEAKTIVIEREN ================= */
+  function disableOldReportButton() {
+    const section = document.querySelector(".community-report");
+    if (!section) return;
+
+    // komplett unsichtbar + inert
+    section.style.display = "none";
+    section.style.pointerEvents = "none";
+  }
+
+  /* ================= FIXIERTER MELDE-LINK (NEU) ================= */
+  function ensureEdgeReportLink() {
+    if ($("edgeReportLink")) return;
+
+    const link = document.createElement("div");
+    link.id = "edgeReportLink";
+    link.textContent = "⚠️ Problem melden";
+    link.title = "Hinweis oder Problem melden";
+
+    link.style.cssText = `
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 99999;
+      background: #ffffff;
+      color: #111;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: 0 3px 10px rgba(0,0,0,.18);
+      cursor: pointer;
+      user-select: none;
+    `;
+
+    link.addEventListener("click", () => {
+      openReport();
+    });
+
+    document.body.appendChild(link);
   }
 
   /* ================= SOCIAL BAR ================= */
@@ -52,63 +97,59 @@
 
   /* ================= LEGAL HINT ================= */
   function ensureLegalHint() {
-  if (document.getElementById("legalHintLink")) return;
+    if ($("legalHintLink")) return;
 
-  const target = document.querySelector(".entry-text");
-  if (!target) return;
+    const target = document.querySelector(".entry-text");
+    if (!target) return;
 
-  const wrap = document.createElement("span");
-  wrap.style.position = "relative";
-  wrap.style.display = "inline-block";
+    const wrap = document.createElement("span");
+    wrap.style.position = "relative";
+    wrap.style.display = "inline-block";
 
-  const link = document.createElement("a");
-  link.id = "legalHintLink";
-  link.href = "#";
-  link.textContent = "Rechtlicher Hinweis";
-  link.style.cssText = "font-size:12px;opacity:.6;cursor:pointer;";
+    const link = document.createElement("a");
+    link.id = "legalHintLink";
+    link.href = "#";
+    link.textContent = "Rechtlicher Hinweis";
+    link.style.cssText = "font-size:12px;opacity:.6;cursor:pointer;";
 
-  const box = document.createElement("div");
-  box.style.cssText = `
-    display:none;
-    position:absolute;
-    top:20px;
-    left:0;
-    max-width:260px;
-    padding:10px 12px;
-    background:#fff;
-    border:1px solid #ddd;
-    border-radius:6px;
-    box-shadow:0 6px 18px rgba(0,0,0,.12);
-    font-size:12px;
-    line-height:1.4;
-    z-index:9999;
-  `;
+    const box = document.createElement("div");
+    box.style.cssText = `
+      display:none;
+      position:absolute;
+      top:20px;
+      left:0;
+      max-width:260px;
+      padding:10px 12px;
+      background:#fff;
+      border:1px solid #ddd;
+      border-radius:6px;
+      box-shadow:0 6px 18px rgba(0,0,0,.12);
+      font-size:12px;
+      line-height:1.4;
+      z-index:9999;
+    `;
 
-  box.innerHTML = `
-    <strong>Warum kein Anspruch auf „die Wahrheit“?</strong><br>
-    MarketShield wertet öffentlich verfügbare Informationen aus
-    und bereitet sie verständlich auf. Rechtliche Vorgaben,
-    Haftungsgrenzen und fehlende Einblicke in interne Rezepturen
-    machen eine vollständige oder verbindliche Wahrheit unmöglich.
-  `;
+    box.innerHTML = `
+      <strong>Warum kein Anspruch auf „die Wahrheit“?</strong><br>
+      MarketShield wertet öffentlich verfügbare Informationen aus
+      und bereitet sie verständlich auf. Rechtliche Vorgaben,
+      Haftungsgrenzen und fehlende Einblicke in interne Rezepturen
+      machen eine vollständige oder verbindliche Wahrheit unmöglich.
+    `;
 
-  link.onclick = (e) => {
-    e.preventDefault();
-    box.style.display = box.style.display === "none" ? "block" : "none";
-  };
+    link.onclick = (e) => {
+      e.preventDefault();
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    };
 
-  // Klick außerhalb schließt das Fenster
-  document.addEventListener("click", (e) => {
-    if (!wrap.contains(e.target)) {
-      box.style.display = "none";
-    }
-  });
+    document.addEventListener("click", (e) => {
+      if (!wrap.contains(e.target)) box.style.display = "none";
+    });
 
-  wrap.appendChild(link);
-  wrap.appendChild(box);
-  target.appendChild(wrap);
-}
-
+    wrap.appendChild(link);
+    wrap.appendChild(box);
+    target.appendChild(wrap);
+  }
 
   /* ================= UI STATE ================= */
   function syncUI() {
@@ -132,26 +173,11 @@
 
   /* ================= GLOBAL HANDLERS ================= */
   document.addEventListener("click", (e) => {
-
     // Zur Startseite
     if (e.target?.id === "backHome") {
       e.preventDefault();
       history.pushState({}, "", location.pathname);
       window.dispatchEvent(new Event("ms:state"));
-      return;
-    }
-
-    // Report öffnen
-    if (e.target.closest("#reportBtn")) {
-      e.preventDefault();
-      openReport();
-      return;
-    }
-
-    // Report schließen
-    if (e.target.id === "closeReportModal" || e.target.id === "reportModal") {
-      e.preventDefault();
-      closeReport();
       return;
     }
 
@@ -161,11 +187,17 @@
       e.preventDefault();
       share(s.dataset.share);
     }
+
+    // Modal schließen
+    if (e.target?.id === "closeReportModal" || e.target?.id === "reportModal") {
+      e.preventDefault();
+      closeReport();
+    }
   }, true);
 
   // Formular absenden
   document.addEventListener("submit", (e) => {
-    if (e.target.id === "reportForm") {
+    if (e.target?.id === "reportForm") {
       e.preventDefault();
       closeReport();
       alert("Danke! Dein Hinweis wurde gespeichert.");
@@ -176,35 +208,10 @@
   window.addEventListener("ms:state", syncUI);
 
   document.addEventListener("DOMContentLoaded", () => {
+    disableOldReportButton();   // ⛔ alter Button weg
+    ensureEdgeReportLink();     // ✅ neuer fixer Link
     ensureSocialBar();
     syncUI();
   });
 
 })();
-// ===== ABSOLUTER REPORT-BUTTON-FIX =====
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("reportBtn");
-  const modal = document.getElementById("reportModal");
-
-  if (!btn || !modal) return;
-
-  // DIREKTER Klick – unabhängig von Overlays / Capture / Bubbling
-  btn.onclick = function (e) {
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    modal.style.display = "block";
-  };
-});
-// ===== REPORT BUTTON: DIREKTER NOTFALL-HANDLER =====
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("reportBtn");
-  const modal = document.getElementById("reportModal");
-
-  if (!btn || !modal) return;
-
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    modal.style.display = "block";
-    console.log("REPORT BUTTON CLICKED");
-  });
-});
