@@ -275,12 +275,10 @@ async function renderRating(entryId) {
 /* ================= START ================= */
 function showStart() {
   currentEntryId = null;
-  const box = ensureResultsScaffold();
-  if (box) box.innerHTML = "";
-
-  // system-controls reagiert darauf (Social/Home verstecken)
+  loadEntries(); // 🔥 Startseite = IMMER Kurzansicht
   window.dispatchEvent(new Event("ms:state"));
 }
+
 
 /* ================= LIST ================= */
 function renderList(data = []) {
