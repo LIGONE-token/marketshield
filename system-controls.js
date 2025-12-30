@@ -181,3 +181,17 @@
   });
 
 })();
+// ===== ABSOLUTER REPORT-BUTTON-FIX =====
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("reportBtn");
+  const modal = document.getElementById("reportModal");
+
+  if (!btn || !modal) return;
+
+  // DIREKTER Klick – unabhängig von Overlays / Capture / Bubbling
+  btn.onclick = function (e) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    modal.style.display = "block";
+  };
+});
