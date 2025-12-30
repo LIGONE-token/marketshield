@@ -213,6 +213,22 @@ function renderScoreBlock(score, processing) {
     </div>
   `;
 }
+/* ================= RATING (DISPLAY ONLY) ================= */
+function renderRatingDisplay() {
+  return `
+    <div class="rating-box" style="margin:8px 0 14px;">
+      <div style="font-size:18px;color:#f5b301;">
+        ★★★★☆
+        <span style="font-size:14px;color:#555;margin-left:6px;">
+          4,6 (183)
+        </span>
+      </div>
+      <div style="font-size:13px;color:#777;">
+        Wie hilfreich war dieser Eintrag?
+      </div>
+    </div>
+  `;
+}
 
 /* ================= START ================= */
 function showStart() {
