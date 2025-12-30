@@ -291,7 +291,7 @@ function renderList(data = []) {
   ${escapeHtml(e.title)}
 </div>
 
-${renderRatingDisplay()}
+${typeof renderRatingDisplay === "function" ? renderRatingDisplay() : ""}
 
 ${renderScoreBlock(e.score, e.processing_score)}
 
