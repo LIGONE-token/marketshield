@@ -278,6 +278,9 @@ function showStart() {
   loadEntries(); // 🔥 Startseite = IMMER Kurzansicht
   window.dispatchEvent(new Event("ms:state"));
 }
+function renderRatingDisplay() {
+  return "";
+}
 
 
 /* ================= LIST ================= */
@@ -356,8 +359,6 @@ async function loadEntries() {
   }
 }
 
-
-document.addEventListener("DOMContentLoaded", loadEntries);
 
 /* ================= SEARCH ================= */
 function initSearch() {
