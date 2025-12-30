@@ -1,122 +1,188 @@
 /* =====================================================
-   MarketShield – SYSTEM CONTROLS (FINAL & STABLE)
-   - Report Modal
-   - Social Links
-   - Zur Startseite
+   MarketShield – system-controls.js
+   FINAL / STABLE / HTML-UNTOUCHED
+   - Report Modal (style.display, no CSS dependency)
+   - BackHome show/hide + click -> home
+   - Social bar (incl. Facebook) show/hide -> only on detail
 ===================================================== */
 (function () {
   "use strict";
 
-  /* ---------- Helpers ---------- */
-  const qs = (id) => document.getElementById(id);
-  const hasEntry = () => new URLSearchParams(location.search).has("id");
+  const $ = (id) => document.getElementById(id);
 
-  /* ---------- Report Modal ---------- */
+  function hasEntry() {
+    return new URLSearchParams(location.search).has("id");
+  }
+
+  /* ---------- BackHome ---------- */
+  function ensureBackHomeStyle() {
+    const back = $("backHome");
+    if (!back) return;
+
+    // Nur Text, nicht breit
+    back.style.display = "none";
+    back.style.width = "auto";
+    back.style.maxWidth = "fit-content";
+    back.style.cursor = "pointer";
+    back.style.padding = "0";
+    back.style.margin = "10px 0 10px 0";
+    back.style.background = "transparent";
+  }
+
+  function goHome() {
+    // URL ohne ?id setzen und app.js "popstate" auslösen
+    history.pushState({}, "", location.pathname);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    // UI sync
+    syncUI();
+  }
+
+  /* ---------- Report Modal (no CSS required) ---------- */
   function openReport() {
-    const m = qs("reportModal");
-    if (m) m.classList.add("open");
+    const modal = $("reportModal");
+    if (!modal) return;
+    modal.style.display = "block";
   }
 
   function closeReport() {
-    const m = qs("reportModal");
-    if (m) m.classList.remove("open");
+    const modal = $("reportModal");
+    if (!modal) return;
+    modal.style.display = "none";
   }
-
-  /* ---------- Global Click Handling ---------- */
-  document.addEventListener("click", (e) => {
-
-    // REPORT: öffnen
-    if (e.target.closest("#reportBtn")) {
-      e.preventDefault();
-      openReport();
-      return;
-    }
-
-    // REPORT: schließen (Button oder Overlay)
-    if (
-      e.target.id === "closeReportModal" ||
-      e.target.id === "reportModal"
-    ) {
-      e.preventDefault();
-      closeReport();
-      return;
-    }
-
-    // ZUR STARTSEITE
-    if (e.target.id === "backHome") {
-      e.preventDefault();
-      history.pushState({}, "", location.pathname);
-      window.dispatchEvent(new Event("ms:state"));
-      return;
-    }
-
-  });
-
-  // REPORT: Submit abfangen
-  document.addEventListener("submit", (e) => {
-    if (e.target.id === "reportForm") {
-      e.preventDefault();
-      closeReport();
-      alert("Danke! Dein Hinweis wurde gespeichert.");
-    }
-  });
 
   /* ---------- Social Bar ---------- */
   function ensureSocialBar() {
-    let bar = qs("systemSocialBar");
+    let bar = $("systemSocialBar");
     if (!bar) {
       bar = document.createElement("div");
       bar.id = "systemSocialBar";
       bar.className = "system-social-bar";
-
-      const anchor = qs("results");
-      if (anchor) anchor.appendChild(bar);
     }
 
+    // Immer unten: an #results ans Ende (unter ms-content)
+    const results = $("results");
+    if (results && bar.parentNode !== results) results.appendChild(bar);
+
+    // Basic inline layout, falls CSS fehlt
+    bar.style.display = "none";
+    bar.style.margin = "18px 0 0 0";
+    bar.style.gap = "8px";
+    bar.style.flexWrap = "wrap";
+    bar.style.alignItems = "center";
+
     bar.innerHTML = `
-      <button data-share="copy">Kopieren</button>
-      <button data-share="print">Drucken</button>
-      <button data-share="wa">WhatsApp</button>
-      <button data-share="tg">Telegram</button>
-      <button data-share="x">X</button>
+      <button data-share="copy"  type="button">Kopieren</button>
+      <button data-share="print" type="button">Drucken</button>
+      <button data-share="fb"    type="button">Facebook</button>
+      <button data-share="wa"    type="button">WhatsApp</button>
+      <button data-share="tg"    type="button">Telegram</button>
+      <button data-share="x"     type="button">X</button>
     `;
   }
 
-  document.addEventListener("click", (e) => {
-    const b = e.target.closest("[data-share]");
-    if (!b) return;
-
+  function shareAction(kind) {
     const url = location.href;
     const title = document.title;
 
-    if (b.dataset.share === "copy") navigator.clipboard.writeText(url);
-    if (b.dataset.share === "print") window.print();
-    if (b.dataset.share === "wa")
+    if (kind === "copy") {
+      navigator.clipboard?.writeText(url);
+      return;
+    }
+    if (kind === "print") {
+      window.print();
+      return;
+    }
+    if (kind === "fb") {
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+      return;
+    }
+    if (kind === "wa") {
       window.open(`https://wa.me/?text=${encodeURIComponent(title + " " + url)}`);
-    if (b.dataset.share === "tg")
+      return;
+    }
+    if (kind === "tg") {
       window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`);
-    if (b.dataset.share === "x")
+      return;
+    }
+    if (kind === "x") {
       window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`);
-  });
+      return;
+    }
+  }
 
-  /* ---------- State Sync (wichtig!) ---------- */
+  /* ---------- UI State ---------- */
   function syncUI() {
     const show = hasEntry();
 
-    // Zur Startseite
-    const back = qs("backHome");
-    if (back) back.style.display = show ? "block" : "none";
+    const back = $("backHome");
+    if (back) back.style.display = show ? "inline-block" : "none";
 
-    // Social Bar
-    const bar = qs("systemSocialBar");
+    const bar = $("systemSocialBar");
     if (bar) bar.style.display = show ? "flex" : "none";
+
+    // Wenn wir Startseite sind: Reportmodal sicher schließen
+    if (!show) closeReport();
   }
 
-  window.addEventListener("ms:state", syncUI);
-  window.addEventListener("popstate", syncUI);
+  /* ---------- One global handler (no conflicts) ---------- */
+  document.addEventListener("click", (e) => {
+    // BackHome
+    if (e.target && e.target.id === "backHome") {
+      e.preventDefault();
+      e.stopPropagation();
+      goHome();
+      return;
+    }
 
-  /* ---------- Init ---------- */
+    // Report open
+    if (e.target.closest && e.target.closest("#reportBtn")) {
+      e.preventDefault();
+      e.stopPropagation();
+      openReport();
+      return;
+    }
+
+    // Report close (button)
+    if (e.target && e.target.id === "closeReportModal") {
+      e.preventDefault();
+      e.stopPropagation();
+      closeReport();
+      return;
+    }
+
+    // Report close (overlay click)
+    if (e.target && e.target.id === "reportModal") {
+      e.preventDefault();
+      e.stopPropagation();
+      closeReport();
+      return;
+    }
+
+    // Social actions
+    const sbtn = e.target.closest && e.target.closest("[data-share]");
+    if (sbtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      shareAction(sbtn.dataset.share);
+      return;
+    }
+  }, true);
+
+  // Submit abfangen -> schließen (ohne echten Versand, damit nichts blockiert)
+  document.addEventListener("submit", (e) => {
+    if (e.target && e.target.id === "reportForm") {
+      e.preventDefault();
+      closeReport();
+      alert("Danke! Dein Hinweis wurde gespeichert.");
+    }
+  }, true);
+
+  // Sync bei Navigation & bei app.js Zustandswechsel
+  window.addEventListener("popstate", syncUI);
+  window.addEventListener("ms:state", syncUI);
+
   document.addEventListener("DOMContentLoaded", () => {
+    ensureBackHomeStyle();
     ensureSocialBar();
     syncUI();
   });
