@@ -1913,3 +1913,28 @@ body:not(.has-detail) #backHome {
 .md-table-wrap + p {
   margin-top: 6px;
 }
+/* =========================================
+   REPORT-BUTTON: KLICK IMMER MÖGLICH
+========================================= */
+
+/* results darf KEINE Klicks abfangen */
+#results {
+  pointer-events: none;
+}
+
+/* aber seine Inhalte schon */
+#results * {
+  pointer-events: auto;
+}
+
+/* Report-Bereich liegt garantiert oben */
+.community-report {
+  position: relative;
+  z-index: 1000;
+}
+
+#reportBtn {
+  position: relative;
+  z-index: 1001;
+  pointer-events: auto;
+}
