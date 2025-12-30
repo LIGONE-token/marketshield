@@ -59,9 +59,16 @@
     user-select: none;
   `;
 
-  link.addEventListener("click", () => {
-    openReport();
-  });
+  link.addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  openReport();
+}, { passive: false });
+
+link.addEventListener("click", (e) => {
+  e.preventDefault();
+  openReport();
+});
+
 
   document.body.appendChild(link);
 }
