@@ -282,9 +282,10 @@ function initSearch() {
     if (q.length < 2) return showStart();
 
     const enc = encodeURIComponent(q);
-    renderList(await supa(
-      `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
-    ));
+renderList(await supa(
+  `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+));
+
   });
 }
 
