@@ -247,8 +247,14 @@ function renderList(data = []) {
 
   box.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
-      ${renderScoreBlock(e.score, e.processing_score)}
+      <div style="font-size:20px;font-weight:800;">
+  ${escapeHtml(e.title)}
+</div>
+
+${renderRatingDisplay()}
+
+${renderScoreBlock(e.score, e.processing_score)}
+
       <div style="font-size:15px;opacity:.9;">
         ${escapeHtml(makePreview(e.summary))}
       </div>
