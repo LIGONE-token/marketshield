@@ -72,6 +72,11 @@ function sanitizeBlock(block) {
 
   return s.trim();
 }
+// GROSSBUCHSTABEN-Überschriften abtrennen
+s = s.replace(
+  /([.!?])\s*([A-ZÄÖÜ][A-ZÄÖÜ\s]{5,}):/g,
+  "$1\n\n$2:"
+);
 
 /* ===== keep #shareBox, render only into .ms-content ===== */
 function ensureResultsScaffold() {
