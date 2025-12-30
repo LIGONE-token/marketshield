@@ -1807,3 +1807,23 @@ body:not(.has-detail) #backHome {
 #reportModal.open {
   display: block;
 }
+/* ===== Report Modal – steuerbar ===== */
+#reportModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+}
+
+#reportModal.open {
+  display: block;
+}
+
+#reportModal .report-modal-box {
+  margin: 10vh auto;
+  max-width: 520px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 6px;
+}
