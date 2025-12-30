@@ -34,35 +34,37 @@
 
   /* ================= FIXIERTER MELDE-LINK (NEU) ================= */
   function ensureEdgeReportLink() {
-    if ($("edgeReportLink")) return;
+  if ($("edgeReportLink")) return;
 
-    const link = document.createElement("div");
-    link.id = "edgeReportLink";
-    link.textContent = "⚠️ Problem melden";
-    link.title = "Hinweis oder Problem melden";
+  const link = document.createElement("div");
+  link.id = "edgeReportLink";
+  link.textContent = "⚠️ Problem melden";
+  link.title = "Hinweis oder Problem melden";
 
-    link.style.cssText = `
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      z-index: 99999;
-      background: #ffffff;
-      color: #111;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 6px 10px;
-      border-radius: 6px;
-      box-shadow: 0 3px 10px rgba(0,0,0,.18);
-      cursor: pointer;
-      user-select: none;
-    `;
+  const isMobile = window.matchMedia("(max-width: 600px)").matches;
 
-    link.addEventListener("click", () => {
-      openReport();
-    });
+  link.style.cssText = `
+    position: fixed;
+    top: ${isMobile ? "54px" : "12px"};
+    right: ${isMobile ? "8px" : "12px"};
+    z-index: 99999;
+    background: #ffffff;
+    color: #111;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0,0,0,.18);
+    cursor: pointer;
+    user-select: none;
+  `;
 
-    document.body.appendChild(link);
-  }
+  link.addEventListener("click", () => {
+    openReport();
+  });
+
+  document.body.appendChild(link);
+}
 
   /* ================= SOCIAL BAR ================= */
   function ensureSocialBar() {
