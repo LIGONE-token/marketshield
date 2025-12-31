@@ -90,7 +90,10 @@ function shortText(t, max = 160) {
 function getUserHash() {
   let h = localStorage.getItem("ms_user_hash");
   if (!h) {
-    h = crypto.randomUUID();
+    h =
+      (window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : "ms-" + Math.random().toString(36).slice(2) + Date.now();
     localStorage.setItem("ms_user_hash", h);
   }
   return h;
