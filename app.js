@@ -203,13 +203,18 @@ async function loadCategory(cat) {
   ));
 }
 
-/* ================= NAV ================= */
-document.addEventListener("click", (e) => {
+/* ================= NAV (FIXED) ================= */
+document.getElementById("results")?.addEventListener("click", (e) => {
   const c = e.target.closest(".entry-card");
   if (!c) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
   history.pushState(null, "", "?id=" + c.dataset.id);
   loadEntry(c.dataset.id);
 });
+
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
