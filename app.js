@@ -92,6 +92,19 @@ function renderScoreBlock(score, processing, size = 13) {
         </div>` : ""}
     </div>`;
 }
+/* ================= USER RATING ================= */
+function renderUserRating(rating) {
+  const n = Number(rating);
+  if (!Number.isFinite(n) || n <= 0) return "";
+
+  const full = Math.round(n);
+  return `
+    <div style="margin:6px 0;font-size:16px;">
+      ${"⭐".repeat(full)}
+      <span style="font-size:13px;opacity:.7;">(${n.toFixed(1)})</span>
+    </div>
+  `;
+}
 
 /* ================= LISTE ================= */
 function renderList(data) {
