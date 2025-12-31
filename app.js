@@ -102,9 +102,16 @@ function renderList(data) {
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary))}
-      </div>
+      <div style="
+  font-size:15px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+">
+  ${escapeHtml(shortText(e.summary, 140))}
+</div>
+
     </div>
   `).join("");
 }
