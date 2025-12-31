@@ -20,6 +20,7 @@ async function supa(query) {
   return JSON.parse(t || "[]");
 }
 
+
 /* ================= HELPERS ================= */
 const $ = (id) => document.getElementById(id);
 
