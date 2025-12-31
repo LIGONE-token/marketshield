@@ -45,6 +45,7 @@ function normalizeText(text) {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
+
 function renderMarkdownTable(text) {
   if (!text.includes("|") || !text.includes("---")) return text;
 
@@ -69,29 +70,15 @@ function renderMarkdownTable(text) {
   html += `</tbody></table>`;
   return html;
 }
-function renderMarkdownTable(text) {
-  if (!text.includes("|") || !text.includes("---")) return text;
-
-  const lines = text.trim().split("\n").filter(l => l.trim());
-  if (lines.length < 3) return text;
-
-  const header = lines[0].split("|").map(c => c.trim()).filter(Boolean);
-  const rows = lines.slice(2).map(line =>
-    line.split("|").map(c => c.trim()).filter(Boolean)
-  );
-
-  let html = `<table class="ms-table"><thead><tr>`;
-  header.forEach(h => html += `<th>${h}</th>`);
-  html += `</tr></thead><tbody>`;
-
-  rows.forEach(r => {
-    html += `<tr>`;
-    r.forEach(c => html += `<td>${c}</td>`);
-    html += `</tr>`;
-  });
-
-  html += `</tbody></table>`;
-  return html;
+function renderContent(text) {
+  if (!text) return "";
+  if (text.includes("|") && text.includes("---")) {
+    return renderMarkdownTable(text);
+  }
+  return text
+    .split("\n\n")
+    .map(p => `<p>${p}</p>`)
+    .join("");
 }
 
 function shortText(t, max = 160) {
