@@ -416,10 +416,13 @@ window.addEventListener("popstate", () => {
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   ensureResultsScaffold();
-  loadCategories();
+  loadCategories();   // ← DAS IST PFLICHT
   initSearch();
 
   const id = new URLSearchParams(location.search).get("id");
-  if (id) loadEntry(id);
-  else showStart();
+  if (id) {
+    loadEntry(id);
+  } else {
+    showStart();
+  }
 });
