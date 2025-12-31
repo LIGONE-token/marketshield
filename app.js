@@ -260,14 +260,13 @@ document.addEventListener("click", (e) => {
   document.getElementById("results").innerHTML = "";
   loadCategories();
 });
-/* ================= REPORT BUTTON (CUSTOM POPUP – NO BROWSER TEXT) ================= */
+/* ================= REPORT BUTTON – WITH PAGE ================= */
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("#reportBtn, .report-btn, [data-report]");
   if (!btn) return;
 
   e.preventDefault();
 
-  // Overlay
   const overlay = document.createElement("div");
   overlay.style = `
     position:fixed;
@@ -281,49 +280,79 @@ document.addEventListener("click", (e) => {
 
   overlay.innerHTML = `
     <div style="
-      background:#ffffff;
+      background:#fff;
       padding:22px;
       border-radius:14px;
       max-width:440px;
       width:90%;
       box-shadow:0 12px 30px rgba(0,0,0,0.25);
-      font-family:inherit;
     ">
-      <h3 style="margin:0 0 10px 0;">
-        Problem oder Anregung melden
-      </h3>
-
-      <p style="margin:0 0 10px 0;font-size:13px;opacity:.7;">
-        Bitte beschreibe kurz, was dir aufgefallen ist.
-      </p>
+      <h3>Problem oder Anregung melden</h3>
 
       <textarea id="reportText"
-        placeholder="Deine Nachricht …"
+        placeholder="Beschreibe dein Anliegen …"
         style="
           width:100%;
           height:120px;
           padding:10px;
           border-radius:8px;
           border:1px solid #ccc;
-          resize:vertical;
           font-family:inherit;
-          font-size:14px;
         "></textarea>
 
-      <div style="
-        display:flex;
-        gap:10px;
-        justify-content:flex-end;
-        margin-top:14px;
-      ">
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
         <button id="cancelReport">Abbrechen</button>
-        <button id="sendReport"
-          style="background:#2e7d32;color:#fff;">
+        <button id="sendReport" style="background:#2e7d32;color:#fff;">
           Senden
         </button>
       </div>
     </div>
   `;
+
+  document.body.appendChild(overlay);
+
+  overlay.querySelector("#cancelReport").onclick = () => overlay.remove();
+
+  overlay.querySelector("#sendReport").onclick = async () => {
+    const text = overlay.querySelector("#reportText").value.trim();
+    if (!text) return;
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        description: text,                 // ✔️ Pflichtfeld
+        page: location.href,               // ✔️ JETZT gespeichert
+        source: "community",
+        status: "new",
+        entry_id: currentEntryId || null
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error("REPORT FAILED:", err);
+      overlay.remove();
+      alert("Report konnte nicht gespeichert werden.");
+      return;
+    }
+
+    overlay.innerHTML = `
+      <div style="background:#fff;padding:26px;border-radius:14px;text-align:center;">
+        <h3>Danke!</h3>
+        <p>Dein Hinweis wurde gespeichert.</p>
+        <button id="closeReport">Schließen</button>
+      </div>
+    `;
+
+    overlay.querySelector("#closeReport").onclick = () => overlay.remove();
+  };
+});
 
   document.body.appendChild(overlay);
 
