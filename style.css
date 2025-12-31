@@ -49,21 +49,45 @@ header {
   border-radius: 8px;
 }
 
-/* Kategorien */
+/* ===== KATEGORIEN – FIX 6 BUTTONS AM PC ===== */
+
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px;
+  gap: 12px;
   padding: 16px;
 }
 
+/* Desktop: exakt 6 Buttons pro Reihe */
+@media (min-width: 1200px) {
+  .category-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* Tablet: 3–4 Buttons */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .category-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Mobil: 2 Buttons */
+@media (max-width: 767px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .category-grid button {
+  width: 100%;
   padding: 12px;
-  border: 1px solid #ccc;
+  font-size: 15px;
   border-radius: 10px;
-  background: #fff;
+  border: 1px solid #ccc;
+  background: #ffffff;
   cursor: pointer;
 }
+
 
 /* Ergebnisse */
 #results {
