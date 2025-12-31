@@ -310,6 +310,41 @@ document.addEventListener("click", (e) => {
     </div>
   `;
 
+  document.body.appendChild(overlay);
+
+  overlay.querySelector("#cancelReport").onclick = () => overlay.remove();
+
+  overlay.querySelector("#sendReport").onclick = async () => {
+    const text = overlay.querySelector("#reportText").value.trim();
+    if (!text) return;
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        description: text,
+        page: location.href,
+        source: "community",
+        status: "new",
+        entry_id: currentEntryId || null
+      })
+    });
+
+    if (!res.ok) {
+      console.error("REPORT FAILED", await res.text());
+      return;
+    }
+
+    overlay.remove();
+  };
+});
+
+
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
