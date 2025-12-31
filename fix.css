@@ -1,46 +1,33 @@
-/* ================= MARKETSHIELD HARD FIX ================= */
-/* Diese Datei wird ALS LETZTES geladen */
+/* EMERGENCY CLICK FIX – NICHT SCHÖN, ABER LEBEND */
 
-/* Grundregel: nichts darf Klicks blockieren */
 * {
   pointer-events: auto !important;
 }
 
-/* Kategorie-Bereich MUSS klickbar sein */
+body {
+  position: static !important;
+}
+
 .category-grid,
 .category-grid * {
   position: relative !important;
-  z-index: 9999 !important;
+  z-index: 99999 !important;
   pointer-events: auto !important;
 }
 
-/* Ergebnisse dürfen nichts überdecken */
 #results {
   position: relative !important;
   z-index: 1 !important;
-  pointer-events: auto !important;
 }
 
-/* Suchfeld erzwingen */
-#searchInput {
-  position: relative !important;
-  z-index: 10000 !important;
-  pointer-events: auto !important;
-}
-
-/* Reportbutton erzwingen */
-#reportButton,
-.report-button {
-  position: relative !important;
-  z-index: 10000 !important;
+input, button, a {
   pointer-events: auto !important;
   cursor: pointer !important;
 }
 
-/* Notbremse gegen Overlays */
 .overlay,
 .modal,
 .popup,
 .backdrop {
-  pointer-events: none !important;
+  display: none !important;
 }
