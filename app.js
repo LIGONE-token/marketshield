@@ -98,7 +98,7 @@ function getUserHash() {
 /* ================= SCORES (LOCKED) ================= */
 function renderHealth(score) {
   const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
+  if (!Number.isFinite(n) || n === 0) return "";
   if (n >= 80) return "💚💚💚";
   if (n >= 60) return "💚💚";
   if (n >= 40) return "💚";
@@ -106,9 +106,10 @@ function renderHealth(score) {
   return "⚠️❗⚠️";
 }
 
+
 function renderIndustry(score) {
   const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
+  if (!Number.isFinite(n) || n === 0) return "";
 
   const clamped = Math.min(Math.max(n, 0), 10);
   const w = Math.round((clamped / 10) * 80);
