@@ -129,7 +129,7 @@ function renderList(data) {
   box.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
-      ${renderUserRating(e.rating)}
+      ${renderUserRating(e.rating_avg, e.rating_count)}
       ${renderScoreBlock(e.score, e.processing_score)}
       <div style="font-size:15px;line-height:1.4;">
         ${escapeHtml(shortText(e.summary))}
