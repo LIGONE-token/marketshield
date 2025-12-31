@@ -310,57 +310,6 @@ document.addEventListener("click", (e) => {
     </div>
   `;
 
-  
-  document.body.appendChild(overlay);
-
-  // Abbrechen
-  overlay.querySelector("#cancelReport").onclick = () => overlay.remove();
-
-  // Senden
-  overlay.querySelector("#sendReport").onclick = async () => {
-    const msg = overlay.querySelector("#reportText").value.trim();
-    if (!msg) return;
-
-    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        message: msg,
-        page: location.href,
-        created_at: new Date().toISOString()
-      })
-    });
-
-    // Erfolgsanzeige – KEIN alert()
-    overlay.innerHTML = `
-      <div style="
-        background:#ffffff;
-        padding:26px;
-        border-radius:14px;
-        max-width:420px;
-        width:90%;
-        text-align:center;
-        box-shadow:0 12px 30px rgba(0,0,0,0.25);
-      ">
-        <h3>Danke!</h3>
-        <p style="opacity:.8;">
-          Dein Hinweis wurde gespeichert.
-        </p>
-        <button id="closeReport" style="margin-top:12px;">
-          Schließen
-        </button>
-      </div>
-    `;
-
-    overlay.querySelector("#closeReport").onclick = () => overlay.remove();
-  };
-});
-
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
