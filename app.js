@@ -196,24 +196,22 @@ async function loadEntry(id) {
   currentEntryId = id;
 
   box.innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
+  <h2>${escapeHtml(e.title)}</h2>
 
-${renderUserRating(e.rating_avg, e.rating_count).replace(
-  '<div',
-  '<div style="background:#ffe5e5;border:2px solid red;padding:8px;margin:8px 0;"'
-)}
+  <div id="entryRating">
+    ${renderUserRating(e.rating_avg, e.rating_count)}
+  </div>
 
-${renderScoreBlock(e.score, e.processing_score)}
+  ${renderScoreBlock(e.score, e.processing_score)}
 
+  <h3>Zusammenfassung</h3>
+  <div id="entryContent" style="line-height:1.6;">
+    ${renderContent(normalizeText(e.summary))}
+  </div>
 
-    <h3>Zusammenfassung</h3>
-    <div style="line-height:1.6;">
-  ${renderContent(normalizeText(e.summary))}
-</div>
+  <div id="entryActions"></div>
+`;
 
-
-    <div id="entryActions"></div>
-  `;
 
   renderEntryActions(e.title);
 }
