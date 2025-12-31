@@ -318,3 +318,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+// 🚨 Emergency click recovery (global)
+document.addEventListener(
+  "click",
+  (e) => {
+    const btn = e.target.closest("button");
+    if (btn) {
+      btn.style.pointerEvents = "auto";
+    }
+  },
+  true // CAPTURE-Phase – vor allem anderen
+);
