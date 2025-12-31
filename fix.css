@@ -1,33 +1,33 @@
-/* EMERGENCY CLICK FIX – NICHT SCHÖN, ABER LEBEND */
+/* MARKETSHIELD – CLICK UNBLOCK (SAFE) */
 
-* {
-  pointer-events: auto !important;
-}
-
-body {
-  position: static !important;
-}
-
+/* Hauptbereiche müssen klickbar sein */
 .category-grid,
-.category-grid * {
-  position: relative !important;
-  z-index: 99999 !important;
+.category-grid * ,
+#results,
+#results * ,
+header,
+header * {
   pointer-events: auto !important;
 }
 
-#results {
-  position: relative !important;
-  z-index: 1 !important;
-}
-
-input, button, a {
+/* Suchfeld & Buttons erzwingen */
+input,
+button,
+a {
   pointer-events: auto !important;
   cursor: pointer !important;
 }
 
+/* Nichts darf unsichtbar drüberliegen */
+body::before,
+body::after {
+  pointer-events: none !important;
+}
+
+/* Typische Overlay-Killer */
 .overlay,
 .modal,
 .popup,
 .backdrop {
-  display: none !important;
+  pointer-events: none !important;
 }
