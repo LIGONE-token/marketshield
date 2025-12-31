@@ -12,7 +12,7 @@ async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
     headers: {
       apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
+      Authorization: `Bearer ${SUPABASE_KEY}`,
        "Cache-Control": "no-store"
     }
   });
