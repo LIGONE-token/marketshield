@@ -50,6 +50,15 @@ function shortText(t, max = 160) {
   t = normalizeText(t);
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
+/* ================= USER HASH ================= */
+function getUserHash() {
+  let h = localStorage.getItem("ms_user_hash");
+  if (!h) {
+    h = crypto.randomUUID();
+    localStorage.setItem("ms_user_hash", h);
+  }
+  return h;
+}
 
 /* ================= SCORES (LOCKED) ================= */
 function renderHealth(score) {
