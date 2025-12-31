@@ -423,7 +423,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (id) {
   loadEntry(id);
 } else {
-  loadEntries(); // ✅ Startseite lädt wieder Einträge
+  showStart(); // ✅ Start = nur Kategorien
 }
+
 
 });
