@@ -479,23 +479,26 @@ function openRatingPopup() {
     star.onclick = async () => {
       const rating = Number(star.dataset.v);
 
-      await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal"
-        },
-        body: JSON.stringify({
-          entry_id: currentEntryId,
-          rating,
-          user_hash: getUserHash()
-        })
-      });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+  method: "POST",
+  headers: {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json",
+    Prefer: "resolution=merge-duplicates"
+  },
+  body: JSON.stringify({
+    entry_id: currentEntryId,
+    rating,
+    user_hash: getUserHash()
+  })
+});
 
-      overlay.remove();
-      await loadEntry(currentEntryId); // bewusst: SEO & Konsistenz
-    };
-  });
+if (!res.ok) {
+  const err = await res.text();
+  alert("Bewertung konnte nicht gespeichert werden:\n" + err);
+  return;
 }
+
+overlay.remove();
+await loadEntry(currentEntryId);
