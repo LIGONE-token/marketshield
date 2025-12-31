@@ -215,6 +215,46 @@ document.getElementById("results")?.addEventListener("click", (e) => {
   loadEntry(c.dataset.id);
 });
 
+/* ================= BACK TO HOME ================= */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#backHome, .back-home, [data-home]");
+  if (!btn) return;
+
+  e.preventDefault();
+  history.pushState({}, "", location.pathname);
+  currentEntryId = null;
+
+  document.getElementById("results").innerHTML = "";
+  loadCategories();
+});
+/* ================= REPORT BUTTON ================= */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#reportBtn, .report-btn, [data-report]");
+  if (!btn) return;
+
+  e.preventDefault();
+
+  const msg = prompt("Problem oder Anregung zu MarketShield melden:");
+  if (!msg) return;
+
+  fetch("https://thrdlycfwlsegriduqvw.supabase.co/rest/v1/reports", {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify({
+      message: msg,
+      page: location.href,
+      created_at: new Date().toISOString()
+    })
+  });
+
+  alert("Danke! Dein Hinweis wurde gespeichert.");
+});
+
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
