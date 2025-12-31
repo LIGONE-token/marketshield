@@ -47,6 +47,7 @@ function normalizeText(text) {
     .trim();
 }
 
+
 function renderMarkdownTable(text) {
   if (!text.includes("|") || !text.includes("---")) return text;
 
@@ -301,13 +302,23 @@ async function smartSearch(q) {
   const term = q.trim();
   if (term.length < 2) return [];
 
-  const enc = encodeURIComponent(term);
+  // 🔹 HIER kommt das norm rein (genau hier!)
+  const norm = normalizeSearch(term);
 
-  // ✅ NUR Titel durchsuchen
+  const variants = new Set([
+    term,                      // original
+    norm,                      // normalisiert (fuss)
+    term.replace(/ss/g, "ß"),  // fuss -> fuß
+    term.replace(/ß/g, "ss")   // fuß -> fuss
+  ]);
+
+  const orFilter = [...variants]
+    .map(v => `title=ilike.%25${encodeURIComponent(v)}%25`)
+    .join(",");
+
   return await supa(
-  `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&title=ilike.%25${enc}%25`
-);
-
+    `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&or=(${orFilter})`
+  );
 }
 
 
@@ -321,6 +332,15 @@ function initSearch() {
     if (q.length < 2) return box.innerHTML = "";
     renderList(await smartSearch(q));
   });
+}
+function normalizeSearch(text = "") {
+  return text
+    .toLowerCase()
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss")
+    .replace(/[^a-z0-9]/g, "");
 }
 
 /* ================= KATEGORIEN ================= */
