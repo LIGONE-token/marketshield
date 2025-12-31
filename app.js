@@ -306,14 +306,17 @@ ${renderScoreBlock(e.score, e.processing_score)}
     </div>
   `).join("");
 
-  document.querySelectorAll(".entry-card").forEach(card => {
-  card.addEventListener("click", () => {
-    const id = card.dataset.id;
-    if (id) {
-      history.pushState({}, "", "?id=" + id);
-      loadEntry(id);
-    }
-  });
+ document.getElementById("results").addEventListener("click", (e) => {
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
+
+  const id = card.dataset.id;
+  if (!id) return;
+
+  history.pushState({}, "", "?id=" + id);
+  loadEntry(id);
+});
+
 });
 
 
