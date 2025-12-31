@@ -1,133 +1,1616 @@
-/* ===== GLOBAL LAYOUT FIX ===== */
-
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
-  background: #f4f4f4;
-  color: #111;
-}
-
-/* Alle Hauptbereiche zentrieren */
-header,
-.category-grid,
-#results,
-.entry-detail {
-  max-width: 1000px;
-  margin-left: auto;
-  margin-right: auto;
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #222;
 }
 
 
-/* ===== MARKETSHIELD EMERGENCY BASE ===== */
-/* Ziel: Ordnung + Lesbarkeit + Klickbarkeit */
+/* =====================================
+   GLOBAL – BASIS
+===================================== */
 
 * {
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
-  background: #f4f4f4;
-  color: #111;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  background: #fafafa;
+  color: #222;
 }
 
-/* Header */
+/* =====================================
+   HEADER
+===================================== */
+
 header {
+  text-align: center;
+  padding: 20px 10px;
   background: #ffffff;
-  padding: 12px 16px;
   border-bottom: 1px solid #ddd;
 }
 
-/* Suche */
-#searchInput {
-  width: 100%;
-  max-width: 600px;
-  padding: 10px 12px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+header h1 {
+  margin: 0;
+  font-size: 32px;
+  color: #2e7d32;
 }
 
-/* ===== KATEGORIEN – FIX 6 BUTTONS AM PC ===== */
+.subtitle {
+  margin: 4px 0 0;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+/* =====================================
+   SUCHFELD
+===================================== */
+
+.search-container {
+  text-align: center;
+  margin: 25px auto;
+}
+
+#searchInput {
+  width: 90%;
+  max-width: 420px;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* =====================================
+   ERGEBNISSE
+===================================== */
+
+#results {
+  width: 90%;
+  max-width: 900px;
+  margin: 20px auto;
+}
+
+/* =====================================
+   INFO / LINKS
+===================================== */
+
+.sub-info,
+.ligone-links,
+.bottom-link {
+  text-align: center;
+  font-size: 14px;
+  margin: 10px auto;
+  color: #555;
+}
+
+.ligone-links a,
+.bottom-link a,
+.footer-links a {
+  color: #2e7d32;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+
+.ligone-links a:hover,
+.bottom-link a:hover,
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+
+/* =====================================
+   KATEGORIEN – REFERENZ (6 NEBENEINANDER)
+===================================== */
 
 .category-grid {
+  width: 90%;
+  max-width: 900px;
+  margin: 30px auto;
   display: grid;
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
-  padding: 16px;
 }
 
-/* Desktop: exakt 6 Buttons pro Reihe */
-@media (min-width: 1200px) {
+.category-grid button {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  background: #ffffff;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.category-grid button:hover {
+  background: #f0f7f2;
+  border-color: #2e7d32;
+}
+
+/* =====================================
+   FOOTER
+===================================== */
+
+footer {
+  text-align: center;
+  font-size: 13px;
+  padding: 20px;
+  background: #ffffff;
+  border-top: 1px solid #ddd;
+  margin-top: 40px;
+}
+
+/* =====================================
+   RESPONSIVE – FEST DEFINIERT
+===================================== */
+
+@media (max-width: 900px) {
   .category-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* Tablet: 3–4 Buttons */
-@media (min-width: 768px) and (max-width: 1199px) {
-  .category-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* Mobil: 2 Buttons */
-@media (max-width: 767px) {
+@media (max-width: 480px) {
   .category-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-
-.category-grid button {
-  width: 100%;
-  padding: 12px;
-  font-size: 15px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  background: #ffffff;
-  cursor: pointer;
-}
-
-
-/* Ergebnisse */
+/* Suchergebnisse Container */
 #results {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-/* Einträge */
-.entry-card {
+/* Einzelnes Suchergebnis */
+.search-result {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-result:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+/* Titel */
+.search-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* Kurzbeschreibung */
+.search-short {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+/* Score-Zeile */
+.search-metrics {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Mini-Scores sauber einbetten */
+.health-mini,
+.process-bar-mini {
+  display: flex;
+  align-items: center;
+}
+/* =========================
+   SUCHERGEBNISSE
+========================= */
+
+#results {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.search-result {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-result:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.search-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.search-short {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+}
+
+
+/* =========================
+   VERGLEICH
+========================= */
+
+.compare-btn {
+  display: block;
+  margin: 16px auto 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 22px;
+  border: none;
+  cursor: pointer;
+  background: #222;
+  color: #fff;
+}
+
+.compare-btn:hover {
+  background: #000;
+}
+
+.compare-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+
+/* =========================
+   INDUSTRIESCORE
+========================= */
+
+.process-wrapper {
+  margin: 10px 0;
+}
+
+.process-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.process-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.process-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.process-bar-label {
+  font-size: 13px;
+  margin-top: 4px;
+  opacity: 0.75;
+}
+
+
+/* =========================
+   HEALTH SCORE
+========================= */
+
+.health-score-box {
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+.health-3 { color: #2ecc71; }
+.health-2 { color: #27ae60; }
+.health-1 { color: #f1c40f; }
+.health-mid { color: #e67e22; }
+.health-bad { color: #e74c3c; }
+/* =========================
+   MINI INDUSTRIESCORE (Suche)
+========================= */
+
+.process-mini .process-wrapper {
+  margin: 6px 0;
+}
+
+.process-mini .process-title,
+.process-mini .process-bar-label {
+  display: none; /* Kein Text in der Suche */
+}
+
+.process-mini .process-bar-bg {
+  max-width: 120px;   /* 🔑 begrenzte Breite */
+  height: 6px;
+}
+/* =========================
+   SUCHERGEBNIS – CTA
+========================= */
+
+.search-cta {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e74c3c;
+  opacity: 0.85;
+}
+/* =========================
+   KATEGORIE – KLAR KLICKBAR
+========================= */
+
+.entry-clickable {
+  cursor: pointer;
   background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  position: relative;
+}
+
+.entry-clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.14);
+  background: #fff8f6;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.entry-chevron {
+  font-size: 28px;
+  color: #ccc;
+  transition: transform .15s ease, color .15s ease;
+}
+
+.entry-clickable:hover .entry-chevron {
+  transform: translateX(4px);
+  color: #e74c3c;
+}
+
+.entry-action {
+  margin-top: 12px;
+}
+
+.entry-action-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: #e74c3c;
+}
+
+.entry-clickable:hover .entry-action-btn {
+  background: #c0392b;
+}
+
+.search-result:hover .search-cta {
+  text-decoration: underline;
+  opacity: 1;
+}
+/* =========================
+   CTA – EINDEUTIG KLICKBAR
+========================= */
+
+.search-cta,
+.entry-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-top: 10px;
+  padding: 8px 16px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #fff;
+  background: #e74c3c;
+
+  border-radius: 999px;          /* Button-Form */
+  width: fit-content;
+
+  cursor: pointer;               /* 🔑 Hand-Cursor */
+  user-select: none;
+
+  box-shadow: 0 4px 10px rgba(231, 76, 60, 0.35);
+  transition: 
+    background 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Pfeil im Button */
+.search-cta::after,
+.entry-cta::after {
+  content: "→";
+  font-size: 16px;
+  transition: transform 0.15s ease;
+}
+
+/* Hover = Aktion */
+.search-result:hover .search-cta,
+.entry-card:hover .entry-cta {
+  background: #c0392b;
+  box-shadow: 0 6px 16px rgba(192, 57, 43, 0.45);
+}
+
+.search-result:hover .search-cta::after,
+.entry-card:hover .entry-cta::after {
+  transform: translateX(4px);
+}
+
+/* Klick-Feedback */
+.search-cta:active,
+.entry-cta:active {
+  transform: scale(0.96);
+}
+/* =========================
+   SUCH- & KATEGORIE-VORSCHAU
+   IMMER 1 ZEILE
+========================= */
+
+.search-one-line,
+.search-short,
+.entry-short {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;   /* 🔑 NUR 1 ZEILE */
+  overflow: hidden;
+
+  white-space: normal;     /* wichtig für Clamp */
+  text-overflow: ellipsis;
+
+  font-size: 14px;
+  line-height: 1.4;
+  color: #444;
+}
+.ms-signature{
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+.ms-signature a{
+  font-weight: 600;
+  text-decoration: none;
+}
+.ms-signature a:hover{
+  text-decoration: underline;
+}
+/* =====================================
+   EINTRAG – VOLLTEXT / LESBARKEIT
+===================================== */
+
+.entry-summary {
+  white-space: pre-line;   /* 🔑 Absätze aus DB anzeigen */
+  line-height: 1.7;
+  font-size: 16px;
+  color: #222;
+}
+/* Score-Block sauber begrenzen */
+.score-block{
+  margin: 10px 0 14px;
+}
+
+.score-label{
+  font-size: 13px;
+  font-weight: 700;
+  opacity: .75;
+  margin-bottom: 6px;
+}
+
+/* Prozessbalken darf nie "full width page" sprengen */
+.process-wrapper{
+  width: 100%;
+  max-width: 420px;     /* <- hier begrenzen */
+}
+
+.process-bar-bg{
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.process-bar-fill{
+  height: 100%;
+  border-radius: 999px;
+}
+
+.process-bar-label{
+  font-size: 12px;
+  opacity: .8;
+  margin-top: 4px;
+}
+/* 🎄 Weihnachtsmodus sichtbar */
+body.christmas::before {
+  content: "🎄";
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  font-size: 28px;
+  z-index: 9999;
+}
+
+/* Ergebnislisten */
+.search-result {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
   cursor: pointer;
 }
 
-.entry-card:hover {
-  background: #f9f9f9;
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* Vorschau 1 Zeile */
-.entry-preview {
-  white-space: nowrap;
+.teaser {
+  color: #444;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+/* Detail */
+.entry-summary {
+  line-height: 1.7;
+  margin-top: 12px;
+}
+/* 🔒 ABSATZ-FIX – NICHT ENTFERNEN */
+.entry-summary p {
+  margin: 0 0 1em 0;
+  display: block;
+}
+/* 🔒 ABSÄTZE ENDGÜLTIG SICHTBAR */
+.entry-summary p {
+  display: block;
+  margin: 0 0 1.2em 0;
+  line-height: 1.7;
+}
+
+/* 🔒 LISTEN NUR KURZ (Suche & Kategorie) */
+.search-one-line,
+.search-short,
+.entry-short,
+.teaser {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px;
-  opacity: .85;
 }
 
-/* Details */
-.entry-detail {
+/* 🎄 WEIHNACHTSMODUS – WIE FRÜHER */
+body.christmas::before {
+  content: "❄ ❄ ❄ ❄ ❄ ❄ ❄ ❄ ❄";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  font-size: 20px;
+  text-align: center;
+  padding: 6px 0;
+  background: linear-gradient(to right, #c62828, #ffffff, #2e7d32);
+  color: #c62828;
+  z-index: 9999;
+}
+
+/* ===============================
+   🔧 REPARATUR: VOLLTEXT & ABSÄTZE
+   NICHT ENTFERNEN
+================================ */
+
+.entry-summary {
+  white-space: normal !important;
+}
+
+.entry-summary p {
+  display: block !important;
+  margin: 0 0 1.2em 0 !important;
+}
+
+/* Sicherheit: Listen im Volltext */
+.entry-summary ul,
+.entry-summary ol {
+  margin: 0 0 1.2em 1.2em;
+}
+/* TYPO */
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, Helvetica, Arial, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #222;
+}
+
+/* LISTE */
+.search-result {
+  padding: 14px 0;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+}
+
+.entry-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* SCORE */
+.entry-score {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 2px;
+}
+
+.entry-score.detail {
+  margin: 10px 0 16px 0;
+}
+
+/* SUMMARY */
+.entry-summary.preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;   /* 🔥 MAXIMAL 2 ZEILEN */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.entry-summary-full {
+  font-size: 18px;
+  line-height: 1.65;
+  margin-top: 10px;
+}
+.entry-section {
+  margin: 28px 0;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.entry-section h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #111;
+}
+
+.entry-text {
+  font-size: 18px;
+  line-height: 1.75;
+  white-space: pre-wrap;   /* echte Absätze */
+}
+
+.entry-section ul {
+  margin: 10px 0 0 20px;
+  padding: 0;
+}
+
+.entry-section ul li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+/* Risiken visuell klar abheben */
+.entry-section.risk {
+  background: #fff6f6;
+  border-left: 4px solid #c62828;
+  padding-left: 16px;
+}
+/* === FIX: ALLE KURZANSICHTEN IMMER KLICKBAR === */
+.search-result {
+  position: relative;
+  cursor: pointer;
+}
+
+.search-result * {
+  pointer-events: none;   /* 🔥 DAS IST DER FIX */
+}
+
+/* Deutlich klickbar */
+.search-result:hover {
+  background: #f4f7f4;
+  transform: translateY(-1px);
+}
+/* ==============================
+   MarketShield – Tooltip Badge
+============================== */
+
+.ms-tooltip {
+  position: relative;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2c3e50;
+  background: #f1f3f5;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  outline: none;
+}
+
+.ms-tooltip .ms-tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  width: 260px;
+  background-color: #1f2933;
+  color: #ffffff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ms-tooltip:hover .ms-tooltip-text,
+.ms-tooltip:focus-within .ms-tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+/* ==============================
+   MarketShield Tooltip
+============================== */
+
+.ms-tooltip {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.ms-tooltip-text {
+  display: none;
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  background: #1f2933;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  z-index: 9999;
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+
+/* Desktop Hover */
+.ms-tooltip:hover .ms-tooltip-text {
+  display: block;
+}
+
+/* Mobile / Touch */
+.ms-tooltip:focus-within .ms-tooltip-text {
+  display: block;
+}
+footer {
+  position: sticky;
+  bottom: 0;
+  background: #ffffff;
+  border-top: 1px solid #e0e0e0;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #555;
+  z-index: 50;
+}
+body {
+  padding-bottom: 60px;
+}
+/* ==============================
+   Tooltip – Fix (sichtbar & stabil)
+============================== */
+
+.ms-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.ms-tooltip-text {
+  display: none;
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2933;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  width: 260px;
+  z-index: 99999; /* WICHTIG */
+  box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+
+/* Hover Desktop */
+.ms-tooltip:hover .ms-tooltip-text {
+  display: block;
+}
+
+/* Touch / Keyboard */
+.ms-tooltip:focus-within .ms-tooltip-text {
+  display: block;
+}
+.ms-tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.ms-tooltip-text {
+  display: none;
+  position: absolute;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2933;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  width: 260px;
+  z-index: 99999;
+}
+
+.ms-tooltip:hover .ms-tooltip-text,
+.ms-tooltip:focus-within .ms-tooltip-text {
+  display: block;
+}
+/* ===============================
+   COMMUNITY REPORT BUTTON
+=============================== */
+
+.report-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 420px;
+  padding: 18px 22px;
+  background: #0b5ed7;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.report-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.22);
+}
+
+.report-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.report-sub {
+  font-size: 13px;
+  opacity: 0.9;
+}
+/* === COMMUNITY BUTTON FIX === */
+
+.community-report {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+}
+
+.report-btn {
+  background: #1fa365;     /* grün statt blau */
+  max-width: 320px;        /* kleiner */
+  padding: 14px 18px;
+  border-radius: 10px;
+  position: relative;
+  z-index: 50;
+}
+#reportModal {
+  display: none;   /* AUSGEBLENDET */
+}
+/* FIX: Button immer klickbar */
+#reportBtn {
+  position: relative;
+  z-index: 10001;
+  pointer-events: auto;
+}
+/* ===== REPORT MODAL ===== */
+
+.report-modal {
+  display: none;              /* WICHTIG */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.report-modal.active {
+  display: flex;
+}
+
+.report-modal-box {
   background: #fff;
   padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 8px;
 }
 
-/* Buttons */
-button {
+.report-modal textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+/* ===== REPORT MODAL – FINAL ===== */
+
+.report-modal {
+  display: none;                 /* <-- DAS blendet es auf der Startseite AUS */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+
+.report-modal.active {
+  display: flex;                 /* <-- NUR nach Klick sichtbar */
+}
+
+.report-modal-box {
+  background: #fff;
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 8px;
+}
+
+.report-modal textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+/* ===== REPORT MODAL – OBEN FIXIERT ===== */
+
+#reportModal {
+  display: none;                 /* Standard: unsichtbar */
+  position: fixed;               /* NICHT im Seitenfluss */
+  top: 0;                        /* OBEN */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 99999;
+
+  /* KEIN Centering! */
+  align-items: flex-start;       /* <<<<<< WICHTIG */
+  justify-content: center;
+
+  padding-top: 90px;             /* Abstand unter Header */
+}
+
+#reportModal.active {
+  display: flex;
+}
+
+#reportModal .report-modal-box {
+  background: #fff;
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 8px;
+}
+/* ===== REPORT MODAL – KLICK-FIX ===== */
+
+/* Modal ist standardmäßig KOMPLETT weg */
+#reportModal {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* Nur wenn aktiv, darf es klicken */
+#reportModal.active {
+  display: flex !important;
+  pointer-events: auto !important;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+}
+
+/* Button immer klickbar */
+#reportBtn {
+  position: relative;
+  z-index: 1;
+}
+/* Report Button darf NIE blockiert werden */
+.community-report {
+  position: relative;
+  z-index: 10;
+}
+
+/* Modal standardmäßig unsichtbar */
+.report-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+}
+
+/* Modal sichtbar */
+.report-modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Modal-Box */
+.report-modal-box {
+  background: #fff;
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 10px;
+}
+.back-home {
+  margin: 12px auto;
+  max-width: 720px;
   cursor: pointer;
+  color: #2e7d32;
+  font-weight: 600;
+}
+.back-home:hover {
+  text-decoration: underline;
+}
+/* =====================================================
+   BASIS – nichts blockiert Klicks
+===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   COMMUNITY REPORT BUTTON
+===================================================== */
+
+.community-report {
+  position: relative;
+  z-index: 10;           /* immer über Content */
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.report-btn {
+  background: #e8f5e9;
+  border: 2px solid #2e7d32;
+  color: #2e7d32;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.report-btn:hover {
+  background: #dff0e3;
+}
+
+/* =====================================================
+   REPORT MODAL – EINZIGE, SAUBERE VERSION
+===================================================== */
+
+#reportModal {
+  display: none;                 /* 🔑 extrem wichtig */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 9999;
+}
+
+#reportModal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-modal-box {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 420px;
+  width: 90%;
+}
+
+/* =====================================================
+   ZURÜCK ZUR STARTSEITE
+===================================================== */
+
+.back-home {
+  display: none;
+  margin: 12px auto;
+  max-width: 720px;
+  cursor: pointer;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.back-home:hover {
+  text-decoration: underline;
+}
+
+/* =====================================================
+   SUCHERGEBNISSE / LISTEN
+   KEINE pointer-events-Manipulation!
+===================================================== */
+
+.entry-card {
+  cursor: pointer;
+}
+
+
+
+/* =====================================================
+   TABELLEN / VERGLEICHE / LINKS
+===================================================== */
+
+table, button, a, input, select {
+  pointer-events: auto;   /* Sicherheit */
+}
+.summary-table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.summary-table th,
+.summary-table td {
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.summary-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+.summary-table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.summary-table th,
+.summary-table td {
+  border: 1px solid #ddd;
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.summary-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+/* ================= SUMMARY TABLES ================= */
+
+.summary-table-wrap {
+  overflow-x: auto;
+  margin: 16px 0 20px;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 520px;
+  background: #ffffff;
+}
+
+.summary-table thead th {
+  background: #f4f6f8;
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 2px solid #d0d7de;
+  white-space: nowrap;
+}
+
+.summary-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.summary-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Mobile-Optimierung */
+@media (max-width: 640px) {
+  .summary-table {
+    min-width: 420px;
+  }
+}
+.health-score .hearts { font-size: 22px; }
+.health-score.green .hearts { color:#2e7d32; }
+.health-score.yellow .hearts { color:#f9a825; }
+.health-score.red .hearts { color:#c62828; }
+
+.health-warning {
+  color:#c62828;
+  font-weight:bold;
+  margin-top:4px;
+}
+
+.industry-score-line {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:6px;
+}
+
+.industry-label { white-space:nowrap; font-size:14px; }
+
+.industry-bar {
+  width:160px;
+  height:10px;
+  background:#ddd;
+  border-radius:5px;
+  overflow:hidden;
+}
+
+.industry-fill {
+  height:100%;
+  background:#4a90e2;
+}
+.entry-card {
+  overflow: visible;
+  position: relative;
+}
+
+#results {
+  overflow: visible;
+}
+/* Rechtlicher Hinweis – dezent, aber sichtbar */
+.ms-legal {
+  font-size: 12px;
+  color: #666;
+  margin: 6px 0 14px 0;
+}
+
+.ms-legal::before {
+  content: "ℹ️ ";
+  opacity: 0.7;
+}
+.summary-table-wrap { overflow-x:auto; margin:10px 0; }
+.summary-table { width:100%; border-collapse:collapse; }
+.summary-table th, .summary-table td { border:1px solid #ddd; padding:8px; }
+.summary-table th { background:#f5f5f5; }
+#reportBtn {
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto;
+}
+#shareBox {
+  pointer-events: none;
+}
+#reportBtn {
+  pointer-events: auto;
+  position: relative;
+  z-index: 10;
+}
+#shareBox { pointer-events: none; }
+#shareBox {
+  pointer-events: none;
+}
+#reportBtn { pointer-events:auto; z-index:9999; }
+/* === MarketShield: Legal Tooltip FIX === */
+.ms-legal-tooltip {
+  position: absolute !important;
+  display: inline-block !important;
+  width: max-content !important;
+  max-width: 260px !important;
+  min-width: unset !important;
+
+  padding: 6px 8px !important;
+  background: #222 !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+
+  border-radius: 4px !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.25) !important;
+  white-space: normal !important;
+  z-index: 9999 !important;
+}
+/* === MarketShield: Content-Kante erzwingen === */
+.ms-content-wrap {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* === Buttons dürfen NICHT global 100% breit sein === */
+button {
+  width: auto;
+  max-width: 100%;
+}
+/* === Text-Absätze stabil === */
+.ms-text p {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+  white-space: normal;
+}
+/* === Tabellen sauber & scrollbar === */
+.ms-table-wrap {
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.ms-table-wrap table {
+  border-collapse: collapse;
+  min-width: 600px;
+  width: 100%;
+}
+
+.ms-table-wrap th,
+.ms-table-wrap td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.ms-table-wrap th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+/* === Scoreblock NICHT von globalem CSS zerstören lassen === */
+.ms-score-block {
+  display: block;
+}
+
+.ms-score-block * {
+  box-sizing: content-box;
+}
+/* === MarketShield Fix-Zone === */
+
+/* Content-Kante wie bei #results */
+.ms-fix-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Echter Tooltip, kein Balken */
+.ms-legal-tooltip {
+  position: absolute !important;
+  display: inline-block !important;
+  width: max-content !important;
+  max-width: 260px !important;
+  min-width: unset !important;
+  padding: 6px 8px !important;
+  background: #222 !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,.25) !important;
+  white-space: normal !important;
+  z-index: 9999 !important;
+}
+
+/* Absätze stabil */
+.ms-fix-wrap p {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+/* =====================================================
+   MARKETSHIELD – NOTFALL-FIX (FINAL)
+   NICHT DARÜBER SCHREIBEN
+===================================================== */
+
+/* Zurück zur Startseite – IM CONTENT, NICHT AM RAND */
+#backHome {
+  display: none;
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  margin: 16px auto !important;
+  max-width: 900px;
+  width: calc(100% - 32px);
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* Score-Layout – darf NICHT umbrechen */
+.entry-card div {
+  box-sizing: border-box;
+}
+
+/* Tooltip – MUSS funktionieren */
+.ms-tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.ms-tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 0;
+  bottom: 125%;
+  background: #222;
+  color: #fff;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: normal;
+}
+
+.ms-tooltip:hover::after,
+.ms-tooltip:focus::after {
+  opacity: 1;
+}
+
+/* Text-Darstellung – Absätze erzwingen */
+.ms-text p {
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+/* Tabellen – IMMER lesbar */
+.ms-table-wrap {
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.ms-table-wrap table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.ms-table-wrap th,
+.ms-table-wrap td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+/* =====================================================
+   MARKETSHIELD – VISIBILITY EMERGENCY OVERRIDE
+   GARANTIERT SICHTBAR – NICHT ANFASSEN
+===================================================== */
+
+/* === SOCIAL BUTTONS === */
+.social-buttons,
+.share-buttons,
+.ms-share,
+.ms-social {
+  display: flex !important;
+  gap: 10px !important;
+  margin: 16px 0 !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.social-buttons a,
+.share-buttons a,
+.ms-share a,
+.ms-social a,
+.social-buttons button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 16px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* === KOPIEREN / DRUCKEN / TEILEN === */
+.copy-btn,
+.print-btn,
+.share-btn,
+button[data-action="copy"],
+button[data-action="print"] {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  margin: 8px 8px 8px 0 !important;
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+}
+
+/* === VERSTECKEN VERBOTEN === */
+[hidden],
+[style*="display:none"],
+[style*="visibility:hidden"] {
+  display: revert !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* === KEINE MINI-ICONS === */
+svg,
+.icon,
+.social-buttons svg {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
 }

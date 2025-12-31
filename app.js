@@ -1,13 +1,13 @@
 /* =====================================================
-   MarketShield – NEW CORE app.js
+   MarketShield – app.js (STABIL / REPARIERT)
 ===================================================== */
 
+let currentEntryId = null;
+
+/* ================= SUPABASE ================= */
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FBywhrypx6zt_0nMlFudyQ_zFiqZKTD";
 
-const $ = (id) => document.getElementById(id);
-
-/* ================= SUPABASE ================= */
 async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
     headers: {
@@ -15,128 +15,207 @@ async function supa(query) {
       Authorization: `Bearer ${SUPABASE_KEY}`
     }
   });
-  if (!r.ok) throw new Error(await r.text());
-  return await r.json();
+  const t = await r.text();
+  if (!r.ok) throw new Error(t);
+  return JSON.parse(t || "[]");
 }
 
 /* ================= HELPERS ================= */
-function esc(s = "") {
+const $ = (id) => document.getElementById(id);
+
+function escapeHtml(s = "") {
   return String(s)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 }
 
-function oneLine(text, max = 140) {
+/* Textbereinigung */
+function normalizeText(text) {
   if (!text) return "";
-  return text.length > max ? text.slice(0, max) + " …" : text;
+  return String(text)
+    .replace(/\*\*/g, "")
+    .replace(/##+/g, "")
+    .replace(/__+/g, "")
+    .replace(/~~+/g, "")
+    .replace(/`+/g, "")
+    .replace(/\\n/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
-/* ================= RATINGS (ECHT) ================= */
-async function loadRatings(ids) {
-  if (!ids.length) return {};
-  const rows = await supa(
-    `entry_ratings?select=entry_id,rating&entry_id=in.(${ids.map(i => `"${i}"`).join(",")})`
-  );
-
-  const map = {};
-  rows.forEach(r => {
-    if (!map[r.entry_id]) map[r.entry_id] = [];
-    map[r.entry_id].push(r.rating);
-  });
-  return map;
+function shortText(t, max = 160) {
+  t = normalizeText(t);
+  return t.length > max ? t.slice(0, max) + " …" : t;
 }
 
-function renderStars(avg, count) {
-  if (!count) return `<div style="font-size:13px;opacity:.6;">Noch keine Bewertungen</div>`;
-  const stars =
-    "★★★★★".slice(0, Math.round(avg)) +
-    "☆☆☆☆☆".slice(0, 5 - Math.round(avg));
-  return `<div style="color:#f5b301;font-size:16px">${stars} <span style="color:#555;font-size:13px">${avg.toFixed(1)} (${count})</span></div>`;
+/* ================= SCORES (LOCKED) ================= */
+function renderHealth(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n >= 80) return "💚💚💚";
+  if (n >= 60) return "💚💚";
+  if (n >= 40) return "💚";
+  if (n >= 20) return "💛";
+  return "⚠️❗⚠️";
 }
 
-/* ================= LIST ================= */
-async function renderList(entries) {
+function renderIndustry(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  const w = Math.round((n / 10) * 80);
+  return `
+    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
+      <div style="width:${w}px;height:8px;background:#2e7d32;border-radius:6px;"></div>
+    </div>`;
+}
+
+function renderScoreBlock(score, processing, size = 13) {
+  const h = renderHealth(score);
+  const i = renderIndustry(processing);
+  if (!h && !i) return "";
+
+  return `
+    <div style="margin:12px 0;">
+      ${h ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
+          <div>${h}</div>
+          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
+        </div>` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+          <div>${i}</div>
+          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
+        </div>` : ""}
+    </div>`;
+}
+
+/* ================= LISTE ================= */
+function renderList(data) {
   const box = $("results");
-  box.innerHTML = "Lade…";
+  if (!box) return;
 
-  const ids = entries.map(e => e.id);
-  const ratings = await loadRatings(ids);
-
-  box.innerHTML = entries.map(e => {
-    const r = ratings[e.id] || [];
-    const avg = r.length ? r.reduce((a,b)=>a+b,0)/r.length : 0;
-
-    return `
-      <div class="entry-card" data-id="${e.id}">
-        <div style="font-size:18px;font-weight:700">${esc(e.title)}</div>
-        ${renderStars(avg, r.length)}
-        <div class="entry-preview">${esc(oneLine(e.summary))}</div>
+  box.innerHTML = (data || []).map(e => `
+    <div class="entry-card" data-id="${e.id}">
+      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
+      ${renderScoreBlock(e.score, e.processing_score)}
+      <div style="font-size:15px;line-height:1.4;">
+        ${escapeHtml(shortText(e.summary))}
       </div>
-    `;
-  }).join("");
+    </div>
+  `).join("");
 }
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
+  const box = $("results");
+  if (!box) return;
+
   const d = await supa(`entries?select=*&id=eq.${id}`);
   const e = d[0];
   if (!e) return;
 
-  const box = $("results");
+  currentEntryId = id;
+
   box.innerHTML = `
-    <div class="entry-detail">
-      <h2>${esc(e.title)}</h2>
-      <p>${esc(e.summary)}</p>
+    <h2>${escapeHtml(e.title)}</h2>
+    ${renderScoreBlock(e.score, e.processing_score)}
+
+    <h3>Zusammenfassung</h3>
+    <div style="white-space:pre-wrap;line-height:1.6;">
+      ${escapeHtml(normalizeText(e.summary))}
     </div>
+
+    <div id="entryActions"></div>
   `;
+
+  renderEntryActions(e.title);
+}
+
+/* ================= SOCIAL ================= */
+function renderEntryActions(title) {
+  const box = $("entryActions");
+  if (!box) return;
+
+  const url = location.href;
+  const encUrl = encodeURIComponent(url);
+  const encTitle = encodeURIComponent(title + " – MarketShield");
+
+  box.innerHTML = `
+    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button onclick="window.print()">🖨️ Drucken</button>
+      <button onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+    </div>`;
 }
 
 /* ================= SEARCH ================= */
+async function smartSearch(q) {
+  const term = q.trim();
+  if (term.length < 2) return [];
+
+  const enc = encodeURIComponent(term);
+
+  // ✅ NUR Titel durchsuchen
+  return await supa(
+    `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
+  );
+}
+
+
 function initSearch() {
   const input = $("searchInput");
-  if (!input) return;
+  const box = $("results");
+  if (!input || !box) return;
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) {
-      $("results").innerHTML = "";
-      return;
-    }
-    renderList(await supa(
-      `entries?select=id,title,summary&title=ilike.%25${encodeURIComponent(q)}%25`
-    ));
+    if (q.length < 2) return box.innerHTML = "";
+    renderList(await smartSearch(q));
   });
 }
 
-/* ================= CATEGORIES ================= */
+/* ================= KATEGORIEN ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
+  if (!grid) return;
+
   const data = await fetch("categories.json").then(r => r.json());
   grid.innerHTML = "";
 
-  data.categories.forEach(c => {
+  (data.categories || []).forEach(c => {
     const b = document.createElement("button");
     b.textContent = c.title;
-    b.onclick = async () => {
-      renderList(await supa(
-        `entries?select=id,title,summary&category=eq.${encodeURIComponent(c.title)}`
-      ));
-    };
+    b.onclick = () => loadCategory(c.title);
     grid.appendChild(b);
   });
 }
 
+async function loadCategory(cat) {
+  renderList(await supa(
+    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
+  ));
+}
+
 /* ================= NAV ================= */
 document.addEventListener("click", (e) => {
-  const card = e.target.closest(".entry-card");
-  if (!card) return;
-  loadEntry(card.dataset.id);
+  const c = e.target.closest(".entry-card");
+  if (!c) return;
+  history.pushState(null, "", "?id=" + c.dataset.id);
+  loadEntry(c.dataset.id);
 });
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  $("results").innerHTML = "";
   loadCategories();
   initSearch();
+
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) loadEntry(id);
 });
