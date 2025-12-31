@@ -191,6 +191,26 @@ async function loadEntry(id) {
   const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
 
   const e = d[0];
+// ================= SEO: STRUCTURED DATA (GOOGLE RATINGS) =================
+const ratingSchema =
+  (Number(e.rating_count) > 0 && Number(e.rating_avg) > 0)
+    ? `
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "${escapeHtml(e.title)}",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "${Number(e.rating_avg).toFixed(1)}",
+    "ratingCount": "${Number(e.rating_count)}"
+  }
+}
+</script>
+`
+    : "";
+
+   
   if (!e) return;
 
   currentEntryId = id;
