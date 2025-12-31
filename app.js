@@ -213,9 +213,13 @@ document.addEventListener("click", (e) => {
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
+  const box = $("results");
+  if (box) box.innerHTML = ""; // 🔒 Start: KEINE Einträge
+
+  loadCategories(); // ✅ nur Kategorien anzeigen
   initSearch();
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
+
