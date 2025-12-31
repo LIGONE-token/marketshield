@@ -2000,3 +2000,28 @@ body:not(.has-detail) #backHome {
 .entry-card {
   cursor: pointer;
 }
+/* ================= MARKETSHIELD CLICK FIX ================= */
+
+/* niemals Klicks blockieren */
+.category-grid,
+.category-grid * {
+  pointer-events: auto !important;
+}
+
+/* results darf nichts überdecken */
+#results {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Header / Overlays dürfen nicht blockieren */
+header,
+header * {
+  pointer-events: auto !important;
+}
+
+/* absolute / fixed Killer entschärfen */
+body * {
+  pointer-events: auto;
+}
