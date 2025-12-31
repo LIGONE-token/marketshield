@@ -2025,3 +2025,28 @@ header * {
 body * {
   pointer-events: auto;
 }
+/* ================= MARKETSHIELD CLICK RECOVERY ================= */
+
+/* Nichts darf Klicks blockieren */
+* {
+  pointer-events: auto !important;
+}
+
+/* Kategorie-Grid MUSS oben liegen */
+.category-grid {
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* Results darf nichts überdecken */
+#results {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Falls es Overlays gibt */
+.overlay,
+.modal,
+.popup {
+  pointer-events: none !important;
+}
