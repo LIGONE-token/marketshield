@@ -268,9 +268,6 @@ async function loadEntry(id) {
 
   renderEntryActions(e.title);
 }
-const relatedHTML = await loadRelatedEntries(e);
-const relatedBox = document.getElementById("relatedEntries");
-if (relatedBox) relatedBox.innerHTML = relatedHTML;
 
 /* ================= SOCIAL ================= */
 function renderEntryActions(title) {
@@ -291,6 +288,9 @@ function renderEntryActions(title) {
       <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
     </div>`;
 }
+const relatedHTML = await loadRelatedEntries(e);
+const relatedBox = document.getElementById("relatedEntries");
+if (relatedBox) relatedBox.innerHTML = relatedHTML;
 
 /* ================= SEARCH ================= */
 async function smartSearch(q) {
