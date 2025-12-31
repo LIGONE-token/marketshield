@@ -219,12 +219,32 @@ function initSearch() {
   const box = $("results");
   if (!input || !box) return;
 
-  input.addEventListener("input", async () => {
+  // 🔥 erzwinge echte Benutzbarkeit
+  input.style.pointerEvents = "auto";
+  input.style.zIndex = "50";
+  input.style.position = "relative";
+
+  input.addEventListener("input", async (e) => {
+    e.stopPropagation();
+
     const q = input.value.trim();
-    if (q.length < 2) return box.innerHTML = "";
-    renderList(await smartSearch(q));
+
+    // Startzustand: leer lassen (nur Kategorien sichtbar)
+    if (q.length < 2) {
+      box.innerHTML = "";
+      return;
+    }
+
+    try {
+      const data = await smartSearch(q);
+      renderList(data);
+    } catch (err) {
+      console.error("Search error:", err);
+      box.innerHTML = "<div style='opacity:.6'>Suche fehlgeschlagen</div>";
+    }
   });
 }
+
 
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
