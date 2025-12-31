@@ -415,16 +415,21 @@ window.addEventListener("popstate", () => {
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("INIT START");
+
   ensureResultsScaffold();
-  loadCategories();   // ← DAS IST PFLICHT
-  initSearch();
 
-  const id = new URLSearchParams(location.search).get("id");
-  if (id) {
-  loadEntry(id);
-} else {
-  showStart(); // ✅ Start = nur Kategorien
-}
+  const grid = document.querySelector(".category-grid");
+  if (grid) {
+    grid.style.display = "grid";
+    grid.style.visibility = "visible";
+    grid.style.opacity = "1";
+    console.log("✅ category-grid gefunden");
+  } else {
+    console.error("❌ category-grid NICHT gefunden");
+  }
 
-
+  loadCategories();   // MUSS sichtbar etwas erzeugen
+  showStart();        // leert nur results, NICHT Kategorien
 });
+;
