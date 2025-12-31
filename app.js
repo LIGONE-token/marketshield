@@ -92,6 +92,44 @@ function renderScoreBlock(score, processing, size = 13) {
         </div>` : ""}
     </div>`;
 }
+/* ================= RATING (READ ONLY) ================= */
+async function renderRating(entryId) {
+  try {
+    const data = await supa(
+      `entry_ratings?select=rating&entry_id=eq.${entryId}`
+    );
+
+    if (!data || !data.length) {
+      return `
+        <div style="font-size:13px;color:#777;margin:6px 0;">
+          Noch keine Bewertungen
+        </div>`;
+    }
+
+    const count = data.length;
+    const avg = data.reduce((s, r) => s + r.rating, 0) / count;
+    const rounded = Math.round(avg * 10) / 10;
+
+    const stars =
+      "★★★★★".slice(0, Math.round(avg)) +
+      "☆☆☆☆☆".slice(0, 5 - Math.round(avg));
+
+    return `
+      <div style="margin:6px 0 10px;">
+        <div style="font-size:18px;color:#f5b301;">
+          ${stars}
+          <span style="font-size:14px;color:#555;margin-left:6px;">
+            ${rounded} (${count})
+          </span>
+        </div>
+        <div style="font-size:13px;color:#777;">
+          Wie hilfreich war dieser Eintrag?
+        </div>
+      </div>`;
+  } catch {
+    return "";
+  }
+}
 
 /* ================= LISTE ================= */
 function renderList(data) {
