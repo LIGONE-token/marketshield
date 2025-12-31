@@ -361,3 +361,71 @@ document.addEventListener("click", (e) => {
   e.preventDefault();
   openRatingPopup();
 });
+function openRatingPopup() {
+  const overlay = document.createElement("div");
+  overlay.style = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  `;
+
+  overlay.innerHTML = `
+    <div style="
+      background:#fff;
+      padding:22px;
+      border-radius:14px;
+      max-width:360px;
+      width:90%;
+      text-align:center;
+    ">
+      <h3>Eintrag bewerten</h3>
+      <p style="font-size:13px;opacity:.7;">
+        Wie bewertest du diesen Eintrag?
+      </p>
+
+      <div id="rateStars" style="font-size:26px;cursor:pointer;">
+        <span data-v="1">☆</span>
+        <span data-v="2">☆</span>
+        <span data-v="3">☆</span>
+        <span data-v="4">☆</span>
+        <span data-v="5">☆</span>
+      </div>
+
+      <div style="margin-top:14px;">
+        <button id="cancelRate">Abbrechen</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  overlay.querySelector("#cancelRate").onclick = () => overlay.remove();
+
+  overlay.querySelectorAll("#rateStars span").forEach(star => {
+    star.onclick = async () => {
+      const rating = Number(star.dataset.v);
+
+      await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          entry_id: currentEntryId,
+          rating,
+          user_hash: getUserHash()
+        })
+      });
+
+      overlay.remove();
+      location.reload(); // bewusst: SEO & Konsistenz
+    };
+  });
+}
