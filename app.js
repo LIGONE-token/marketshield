@@ -193,16 +193,33 @@ async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
 
+  // 🔥 Klickbarkeit erzwingen
+  grid.style.pointerEvents = "auto";
+  grid.style.zIndex = "10";
+  grid.style.position = "relative";
+
   const data = await fetch("categories.json").then(r => r.json());
   grid.innerHTML = "";
 
   (data.categories || []).forEach(c => {
     const b = document.createElement("button");
+    b.type = "button";
     b.textContent = c.title;
-    b.onclick = () => loadCategory(c.title);
+
+    // 🔥 Button explizit klickbar
+    b.style.pointerEvents = "auto";
+    b.style.cursor = "pointer";
+
+    b.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      loadCategory(c.title);
+    });
+
     grid.appendChild(b);
   });
 }
+
 
 async function loadCategory(cat) {
   const box = $("results");
