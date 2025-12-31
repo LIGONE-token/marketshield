@@ -1619,3 +1619,18 @@ svg,
 * {
   pointer-events: auto !important;
 }
+/* ===== CLICK FIX AFTER ROLLBACK ===== */
+
+body {
+  pointer-events: auto;
+}
+
+.category-grid,
+.category-grid * ,
+#results,
+#results *,
+button,
+a,
+input {
+  pointer-events: auto !important;
+}
