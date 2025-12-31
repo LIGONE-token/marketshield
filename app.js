@@ -493,7 +493,7 @@ function openRatingPopup() {
       });
 
       overlay.remove();
-      location.reload(); // bewusst: SEO & Konsistenz
+      await loadEntry(currentEntryId); // bewusst: SEO & Konsistenz
     };
   });
 }
