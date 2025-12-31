@@ -186,18 +186,8 @@ function renderList(data) {
 }
 
 /* ================= DETAIL ================= */
-async function loadEntry(id) {
-  const box = $("results");
-  if (!box) return;
-
-  const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
-  const e = d[0];
-  if (!e) return;
-
-  currentEntryId = id;
-
-   async function loadRelatedEntries(entry) {
-  if (!entry?.category || !entry?.id) return "";
+async function loadRelatedEntries(entry) {
+  if (!entry || !entry.category || !entry.id) return "";
 
   const data = await supa(
     `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count
@@ -223,6 +213,19 @@ async function loadEntry(id) {
     </div>
   `;
 }
+
+
+async function loadEntry(id) {
+  const box = $("results");
+  if (!box) return;
+
+  const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
+  const e = d[0];
+  if (!e) return;
+
+  currentEntryId = id;
+
+ 
 
   // ================= SEO: STRUCTURED DATA (GOOGLE RATINGS) =================
   const ratingSchema =
