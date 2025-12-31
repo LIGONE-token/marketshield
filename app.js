@@ -310,51 +310,7 @@ document.addEventListener("click", (e) => {
     </div>
   `;
 
-  document.body.appendChild(overlay);
-
-  overlay.querySelector("#cancelReport").onclick = () => overlay.remove();
-
-  overlay.querySelector("#sendReport").onclick = async () => {
-    const text = overlay.querySelector("#reportText").value.trim();
-    if (!text) return;
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        description: text,                 // ✔️ Pflichtfeld
-        page: location.href,               // ✔️ JETZT gespeichert
-        source: "community",
-        status: "new",
-        entry_id: currentEntryId || null
-      })
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error("REPORT FAILED:", err);
-      overlay.remove();
-      alert("Report konnte nicht gespeichert werden.");
-      return;
-    }
-
-    overlay.innerHTML = `
-      <div style="background:#fff;padding:26px;border-radius:14px;text-align:center;">
-        <h3>Danke!</h3>
-        <p>Dein Hinweis wurde gespeichert.</p>
-        <button id="closeReport">Schließen</button>
-      </div>
-    `;
-
-    overlay.querySelector("#closeReport").onclick = () => overlay.remove();
-  };
-});
-
+  
   document.body.appendChild(overlay);
 
   // Abbrechen
