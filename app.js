@@ -503,3 +503,6 @@ if (!res.ok) {
 
 overlay.remove();
 await loadEntry(currentEntryId);
+    };
+  });
+}
