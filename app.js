@@ -289,7 +289,8 @@ async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
 
-  const data = await fetch("categories.json").then(r => r.json());
+  const data = await fetch("categories.json?ts=" + Date.now())
+  .then(r => r.json());
   grid.innerHTML = "";
 
   (data.categories || []).forEach(c => {
