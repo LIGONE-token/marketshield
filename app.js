@@ -267,6 +267,10 @@ async function loadEntry(id) {
   `;
 
   renderEntryActions(e.title);
+   const relatedHTML = await loadRelatedEntries(e);
+const relatedBox = document.getElementById("relatedEntries");
+if (relatedBox) relatedBox.innerHTML = relatedHTML;
+
 }
 
 /* ================= SOCIAL ================= */
