@@ -1,3 +1,23 @@
+/* ===== GLOBAL LAYOUT FIX ===== */
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+}
+
+/* Alle Hauptbereiche zentrieren */
+header,
+.category-grid,
+#results,
+.entry-detail {
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
 /* ===== MARKETSHIELD EMERGENCY BASE ===== */
 /* Ziel: Ordnung + Lesbarkeit + Klickbarkeit */
 
