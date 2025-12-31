@@ -92,19 +92,34 @@ function renderScoreBlock(score, processing, size = 13) {
         </div>` : ""}
     </div>`;
 }
-/* ================= USER RATING ================= */
-function renderUserRating(rating) {
-  const n = Number(rating);
-  if (!Number.isFinite(n) || n <= 0) return "";
+/* ================= USER RATING (ALWAYS VISIBLE) ================= */
+function renderUserRating(avg, count) {
+  const c = Number(count) || 0;
+  const a = Number(avg);
 
-  const full = Math.round(n);
+  // 🔹 KEINE Bewertungen vorhanden
+  if (c === 0 || !Number.isFinite(a)) {
+    return `
+      <div style="margin:6px 0;font-size:15px;opacity:.75;">
+        ☆☆☆☆☆ <span style="font-size:13px;">(0 Bewertungen)</span>
+      </div>
+    `;
+  }
+
+  // 🔹 Bewertungen vorhanden
+  const full = Math.round(a);
+  const empty = 5 - full;
+
   return `
-    <div style="margin:6px 0;font-size:16px;">
-      ${"⭐".repeat(full)}
-      <span style="font-size:13px;opacity:.7;">(${n.toFixed(1)})</span>
+    <div style="margin:6px 0;font-size:15px;">
+      ${"⭐".repeat(full)}${"☆".repeat(empty)}
+      <span style="font-size:13px;opacity:.7;">
+        (${a.toFixed(1)} · ${c} Bewertungen)
+      </span>
     </div>
   `;
 }
+
 
 /* ================= LISTE ================= */
 function renderList(data) {
