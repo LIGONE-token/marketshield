@@ -421,8 +421,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) {
-    loadEntry(id);
-  } else {
-    showStart();
-  }
+  loadEntry(id);
+} else {
+  loadEntries(); // ✅ Startseite lädt wieder Einträge
+}
+
 });
