@@ -196,6 +196,34 @@ async function loadEntry(id) {
 
   currentEntryId = id;
 
+   async function loadRelatedEntries(entry) {
+  if (!entry?.category || !entry?.id) return "";
+
+  const data = await supa(
+    `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count
+     &category=eq.${encodeURIComponent(entry.category)}
+     &id=neq.${entry.id}
+     &limit=5`
+  );
+
+  if (!data.length) return "";
+
+  return `
+    <h3>Ähnliche Artikel</h3>
+    <div class="related-grid">
+      ${data.map(e => `
+        <div class="related-card" data-id="${e.id}">
+          <strong>${escapeHtml(e.title)}</strong>
+          ${renderScoreBlock(e.score, e.processing_score, 12)}
+          <div style="font-size:13px;opacity:.8;">
+            ${escapeHtml(shortText(e.summary, 120))}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
   // ================= SEO: STRUCTURED DATA (GOOGLE RATINGS) =================
   const ratingSchema =
     (Number(e.rating_count) > 0 && Number(e.rating_avg) > 0)
@@ -231,11 +259,15 @@ async function loadEntry(id) {
       ${renderContent(normalizeText(e.summary))}
     </div>
 
-    <div id="entryActions"></div>
+<div id="relatedEntries"></div>
+<div id="entryActions"></div>
   `;
 
   renderEntryActions(e.title);
 }
+const relatedHTML = await loadRelatedEntries(e);
+const relatedBox = document.getElementById("relatedEntries");
+if (relatedBox) relatedBox.innerHTML = relatedHTML;
 
 /* ================= SOCIAL ================= */
 function renderEntryActions(title) {
@@ -338,6 +370,13 @@ document.getElementById("results")?.addEventListener("click", (e) => {
 
   history.pushState(null, "", "?id=" + c.dataset.id);
   loadEntry(c.dataset.id);
+});
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".related-card");
+  if (!card) return;
+
+  history.pushState(null, "", "?id=" + card.dataset.id);
+  loadEntry(card.dataset.id);
 });
 
 /* ================= BACK TO HOME ================= */
