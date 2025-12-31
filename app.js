@@ -307,11 +307,15 @@ ${renderScoreBlock(e.score, e.processing_score)}
   `).join("");
 
   document.querySelectorAll(".entry-card").forEach(card => {
-    card.onclick = () => {
-      history.pushState({}, "", "?id=" + card.dataset.id);
-      loadEntry(card.dataset.id);
-    };
+  card.addEventListener("click", () => {
+    const id = card.dataset.id;
+    if (id) {
+      history.pushState({}, "", "?id=" + id);
+      loadEntry(id);
+    }
   });
+});
+
 
   window.dispatchEvent(new Event("ms:state"));
 }
