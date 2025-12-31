@@ -289,3 +289,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (id) loadEntry(id);
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+  const reportBtn = document.getElementById("reportButton");
+  if (reportBtn) {
+    reportBtn.style.pointerEvents = "auto";
+    reportBtn.addEventListener("click", () => {
+      alert("Reportfunktion aktiv – Backend folgt");
+    });
+  }
+});
