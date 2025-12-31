@@ -13,6 +13,7 @@ async function supa(query) {
     headers: {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${SUPABASE_KEY}`
+       "Cache-Control": "no-store"
     }
   });
   const t = await r.text();
