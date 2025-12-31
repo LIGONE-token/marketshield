@@ -198,7 +198,10 @@ async function loadEntry(id) {
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
 
-${renderUserRating(e.rating_avg, e.rating_count)}
+${renderUserRating(e.rating_avg, e.rating_count).replace(
+  '<div',
+  '<div style="background:#ffe5e5;border:2px solid red;padding:8px;margin:8px 0;"'
+)}
 
 ${renderScoreBlock(e.score, e.processing_score)}
 
