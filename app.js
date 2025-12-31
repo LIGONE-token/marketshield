@@ -205,10 +205,14 @@ async function loadCategories() {
 }
 
 async function loadCategory(cat) {
+  const box = $("results");
+  if (box) box.innerHTML = ""; // 🔒 sauberer Wechsel
+
   renderList(await supa(
     `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
   ));
 }
+
 
 /* ================= NAV ================= */
 document.addEventListener("click", (e) => {
