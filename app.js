@@ -189,12 +189,15 @@ async function loadEntry(id) {
   if (!box) return;
 
   const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
-
   const e = d[0];
-// ================= SEO: STRUCTURED DATA (GOOGLE RATINGS) =================
-const ratingSchema =
-  (Number(e.rating_count) > 0 && Number(e.rating_avg) > 0)
-    ? `
+  if (!e) return;
+
+  currentEntryId = id;
+
+  // ================= SEO: STRUCTURED DATA (GOOGLE RATINGS) =================
+  const ratingSchema =
+    (Number(e.rating_count) > 0 && Number(e.rating_avg) > 0)
+      ? `
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -208,30 +211,26 @@ const ratingSchema =
 }
 </script>
 `
-    : "";
-
-   
-  if (!e) return;
-
-  currentEntryId = id;
+      : "";
 
   box.innerHTML = `
-  <h2>${escapeHtml(e.title)}</h2>
+    <h2>${escapeHtml(e.title)}</h2>
 
-  <div id="entryRating">
-    ${renderUserRating(e.rating_avg, e.rating_count)}
-  </div>
+    ${ratingSchema}
 
-  ${renderScoreBlock(e.score, e.processing_score)}
+    <div id="entryRating">
+      ${renderUserRating(e.rating_avg, e.rating_count)}
+    </div>
 
-  <h3>Zusammenfassung</h3>
-  <div id="entryContent" style="line-height:1.6;">
-    ${renderContent(normalizeText(e.summary))}
-  </div>
+    ${renderScoreBlock(e.score, e.processing_score)}
 
-  <div id="entryActions"></div>
-`;
+    <h3>Zusammenfassung</h3>
+    <div id="entryContent" style="line-height:1.6;">
+      ${renderContent(normalizeText(e.summary))}
+    </div>
 
+    <div id="entryActions"></div>
+  `;
 
   renderEntryActions(e.title);
 }
