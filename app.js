@@ -188,7 +188,8 @@ async function loadEntry(id) {
   const box = $("results");
   if (!box) return;
 
-  const d = await supa(`entries?select=*&id=eq.${id}`);
+  const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
+
   const e = d[0];
   if (!e) return;
 
@@ -243,8 +244,9 @@ async function smartSearch(q) {
 
   // ✅ NUR Titel durchsuchen
   return await supa(
-    `entries?select=id,title,summary,score,processing_score&title=ilike.%25${enc}%25`
-  );
+  `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&title=ilike.%25${enc}%25`
+);
+
 }
 
 
@@ -278,8 +280,9 @@ async function loadCategories() {
 
 async function loadCategory(cat) {
   renderList(await supa(
-    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
-  ));
+  `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encodeURIComponent(cat)}`
+));
+
 }
 
 /* ================= NAV (FIXED) ================= */
