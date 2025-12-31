@@ -1634,3 +1634,21 @@ a,
 input {
   pointer-events: auto !important;
 }
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 12px 0 24px;
+}
+
+.related-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  background: #fafafa;
+}
+
+.related-card:hover {
+  background: #f0f7f2;
+}
