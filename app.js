@@ -203,9 +203,10 @@ ${renderScoreBlock(e.score, e.processing_score)}
 
 
     <h3>Zusammenfassung</h3>
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${escapeHtml(normalizeText(e.summary))}
-    </div>
+    <div style="line-height:1.6;">
+  ${renderContent(normalizeText(e.summary))}
+</div>
+
 
     <div id="entryActions"></div>
   `;
