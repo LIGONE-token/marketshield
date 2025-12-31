@@ -287,19 +287,39 @@ function initSearch() {
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
-  if (!grid) return;
+  if (!grid) {
+    console.error("❌ .category-grid fehlt im HTML");
+    return;
+  }
 
-  const data = await fetch("categories.json?ts=" + Date.now())
-  .then(r => r.json());
+  let data;
+  try {
+    const res = await fetch("categories.json?ts=" + Date.now());
+    data = await res.json();
+  } catch (e) {
+    console.error("❌ categories.json konnte nicht geladen werden", e);
+    return;
+  }
+
+  const categories = Array.isArray(data)
+    ? data
+    : Array.isArray(data.categories)
+      ? data.categories
+      : [];
+
+  console.log("✅ Kategorien erkannt:", categories);
+
   grid.innerHTML = "";
 
-  (data.categories || []).forEach(c => {
+  categories.forEach(c => {
+    if (!c || !c.title) return;
     const b = document.createElement("button");
     b.textContent = c.title;
     b.onclick = () => loadCategory(c.title);
     grid.appendChild(b);
   });
 }
+
 
 async function loadCategory(cat) {
   renderList(await supa(
