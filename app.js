@@ -604,19 +604,17 @@ function renderProgressBox() {
   const content = document.getElementById("msProgressContent");
   const close   = document.getElementById("msProgressClose");
 
-   
-   
-  toggle.onclick = (e) => {
+  toggle.addEventListener("click", (e) => {
     e.preventDefault();
     toggle.style.display = "none";
     content.style.display = "block";
-  };
+  });
 
-  close.onclick = (e) => {
+  close.addEventListener("click", (e) => {
     e.preventDefault();
     content.style.display = "none";
     toggle.style.display = "block";
-  };
+  });
 }
 
 // === HARD FIX: ReportFab immer klickbar ===
