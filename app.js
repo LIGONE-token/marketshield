@@ -643,3 +643,65 @@ document.addEventListener("DOMContentLoaded", () => {
   }, true);
 });
   
+/* =====================================================
+   MarketShield – FINAL UI BINDINGS (LOCKED)
+   Progress + ReportFab – NO DEPENDENCIES
+===================================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* ===== PROGRESS – absolut isoliert ===== */
+  const pBox = document.getElementById("msProgressBox");
+  if (pBox && !pBox.dataset.bound) {
+    pBox.dataset.bound = "1";
+
+    pBox.innerHTML = `
+      <div id="msProgressToggle"
+           style="position:fixed;bottom:16px;right:16px;
+                  background:#2e7d32;color:#fff;padding:8px 12px;
+                  border-radius:18px;cursor:pointer;font-size:14px;
+                  z-index:2147483646;">
+        🛡 Dein Beitrag ▸
+      </div>
+
+      <div id="msProgressContent"
+           style="display:none;position:fixed;bottom:16px;right:16px;
+                  background:#fff;color:#000;padding:14px;border-radius:14px;
+                  width:220px;z-index:2147483647;">
+        <strong>🛡 Dein Beitrag</strong><br><br>
+        Dein Fortschritt wird hier angezeigt.<br><br>
+        <button id="msProgressClose"
+                style="background:none;border:none;color:#2e7d32;
+                       cursor:pointer;font-size:14px;padding:0;">
+          schließen
+        </button>
+      </div>
+    `;
+
+    const t = document.getElementById("msProgressToggle");
+    const c = document.getElementById("msProgressContent");
+    const x = document.getElementById("msProgressClose");
+
+    t.onclick = () => { t.style.display = "none"; c.style.display = "block"; };
+    x.onclick = () => { c.style.display = "none"; t.style.display = "block"; };
+  }
+
+  /* ===== REPORT FAB – absolut über allem ===== */
+  const fab = document.getElementById("msReportFab");
+  const modal = document.getElementById("reportModal");
+
+  if (fab && modal && !fab.dataset.bound) {
+    fab.dataset.bound = "1";
+
+    fab.style.position = "fixed";
+    fab.style.zIndex = "2147483647";
+    fab.style.pointerEvents = "auto";
+
+    fab.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      modal.style.display = "flex";
+    };
+  }
+
+});
