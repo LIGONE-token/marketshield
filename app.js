@@ -617,31 +617,3 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Danke! Dein Hinweis wurde gespeichert.");
     };
   }
-
-  /* =========================
-     PROGRESS (STABIL)
-  ========================= */
-  const box     = document.getElementById("msProgressBox");
-  const toggle  = document.getElementById("msProgressToggle");
-  const content = document.getElementById("msProgressContent");
-  const closeP  = document.getElementById("msProgressClose");
-
-  if (box && toggle && content && closeP) {
-    // IMMER geschlossener Startzustand
-    content.style.display = "none";
-    toggle.style.display  = "block";
-
-    toggle.onclick = (e) => {
-      e.preventDefault();
-      toggle.style.display  = "none";
-      content.style.display = "block";
-    };
-
-    closeP.onclick = (e) => {
-      e.preventDefault();
-      content.style.display = "none";
-      toggle.style.display  = "block";
-    };
-  }
-});
-
