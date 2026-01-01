@@ -592,9 +592,13 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!fab) return;
 
   const openReport = (e) => {
-  e.preventDefault();
-  openReportModal();
-};
+    e.preventDefault();
+    openReportModal();
+  };
+
+  fab.addEventListener("click", openReport);
+  fab.addEventListener("touchstart", openReport, { passive: false });
+});
 
 
     // bestehenden Report-Flow auslösen
