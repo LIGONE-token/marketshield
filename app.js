@@ -678,3 +678,22 @@ async function renderProgressBox() {
     toggle.style.display = "block";
   };
 }
+document.addEventListener("DOMContentLoaded", () => {
+  const fab = document.getElementById("msReportFab");
+  if (!fab) return;
+
+  const openReport = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // bestehenden Report-Flow auslösen
+    const fake = document.createElement("div");
+    fake.setAttribute("data-report", "1");
+    document.body.appendChild(fake);
+    fake.click();
+    fake.remove();
+  };
+
+  fab.addEventListener("click", openReport);
+  fab.addEventListener("touchstart", openReport, { passive: false });
+});
