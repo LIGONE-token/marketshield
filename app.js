@@ -425,7 +425,8 @@ document.addEventListener("click", (e) => {
 });
 function openReportModal() {
   const overlay = document.createElement("div");
-  overlay.style = `
+  overlay.id = "msReportOverlay";
+  overlay.style.cssText = `
     position:fixed;
     inset:0;
     background:rgba(0,0,0,0.55);
@@ -436,9 +437,14 @@ function openReportModal() {
   `;
 
   overlay.innerHTML = `
-    <div style="background:#fff;padding:20px;border-radius:12px;width:90%;max-width:420px;">
+    <div id="msReportBox"
+         style="background:#fff;padding:20px;border-radius:12px;
+                width:90%;max-width:420px;">
       <h3>Problem oder Anregung melden</h3>
-      <textarea id="reportText" style="width:100%;height:120px;"></textarea>
+
+      <textarea id="reportText"
+        style="width:100%;height:120px;"></textarea>
+
       <div style="margin-top:12px;text-align:right;">
         <button id="closeReport">Schließen</button>
       </div>
@@ -446,8 +452,19 @@ function openReportModal() {
   `;
 
   document.body.appendChild(overlay);
-  overlay.querySelector("#closeReport").onclick = () => overlay.remove();
+
+  // ✅ Klick auf dunklen Hintergrund schließt
+  overlay.addEventListener("click", () => overlay.remove());
+
+  // ✅ Klick im Fenster blockiert NICHTS, aber verhindert Schließen
+  document.getElementById("msReportBox")
+    .addEventListener("click", (e) => e.stopPropagation());
+
+  // ✅ Button schließt IMMER
+  document.getElementById("closeReport")
+    .addEventListener("click", () => overlay.remove());
 }
+
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
