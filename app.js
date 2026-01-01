@@ -1,6 +1,5 @@
 /* =====================================================
-   MarketShield – app.js
-   STABIL / BEREINIGT / FUNKTIONSIDENTISCH
+   MarketShield – app.js (STABIL / REPARIERT)
 ===================================================== */
 
 let currentEntryId = null;
@@ -9,19 +8,16 @@ let currentEntryId = null;
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JHb4LBhP26eI7BgDS1jIkw_4OYn3-F9";
 
-async function supa(query, opts = {}) {
+async function supa(query) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    method: opts.method || "GET",
     headers: {
       apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: opts.body ? JSON.stringify(opts.body) : undefined
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
   });
   const t = await r.text();
-  if (!r.ok) throw new Error(t || r.statusText);
-  return t ? JSON.parse(t) : [];
+  if (!r.ok) throw new Error(t);
+  return JSON.parse(t || "[]");
 }
 
 /* ================= HELPERS ================= */
@@ -34,6 +30,7 @@ function escapeHtml(s = "") {
     .replace(/>/g, "&gt;");
 }
 
+/* Textbereinigung */
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
@@ -42,13 +39,52 @@ function normalizeText(text) {
     .replace(/__+/g, "")
     .replace(/~~+/g, "")
     .replace(/`+/g, "")
-    .replace(/\r\n|\r/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
 function cleanId(id) {
   return String(id || "").trim();
+}
+
+/* ================= MARKDOWN TABLE ================= */
+function renderMarkdownTable(text) {
+  if (!text.includes("|") || !text.includes("---")) return text;
+
+  const lines = text.trim().split("\n").filter(l => l.trim());
+  if (lines.length < 3) return text;
+
+  const header = lines[0].split("|").map(c => c.trim()).filter(Boolean);
+  const rows = lines.slice(2).map(line =>
+    line.split("|").map(c => c.trim()).filter(Boolean)
+  );
+
+  let html = `<table class="ms-table"><thead><tr>`;
+  header.forEach(h => html += `<th>${escapeHtml(h)}</th>`);
+  html += `</tr></thead><tbody>`;
+
+  rows.forEach(r => {
+    html += `<tr>`;
+    r.forEach(c => html += `<td>${escapeHtml(c)}</td>`);
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  return html;
+}
+
+function renderContent(text) {
+  if (!text) return "";
+  if (text.includes("|") && text.includes("---")) {
+    return renderMarkdownTable(text);
+  }
+  return normalizeText(text)
+    .split("\n\n")
+    .map(p => `<p>${escapeHtml(p)}</p>`)
+    .join("");
 }
 
 function shortText(t, max = 160) {
@@ -60,15 +96,16 @@ function shortText(t, max = 160) {
 function getUserHash() {
   let h = localStorage.getItem("ms_user_hash");
   if (!h) {
-    h = crypto.randomUUID
-      ? crypto.randomUUID()
-      : "ms-" + Math.random().toString(36).slice(2) + Date.now();
+    h =
+      (window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : "ms-" + Math.random().toString(36).slice(2) + Date.now();
     localStorage.setItem("ms_user_hash", h);
   }
   return h;
 }
 
-/* ================= SCORES (UNVERÄNDERT) ================= */
+/* ================= SCORES ================= */
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n === 0) return "";
@@ -93,189 +130,63 @@ function renderIndustry(score) {
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
       <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
-    </div>`;
-}
-
-function renderScoreBlock(score, processing, size = 13) {
-  const health = renderHealth(score);
-  const industry = renderIndustry(processing);
-
-  if (!health && !industry) return "";
-
-  return `
-    <div style="margin:14px 0;display:flex;flex-direction:column;gap:8px;">
-
-      ${health ? `
-      <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
-        <div style="font-size:16px;">${health}</div>
-        <div style="font-size:${size}px;opacity:.85;">
-          Gesundheitsscore
-        </div>
-      </div>
-      ` : ""}
-
-      ${industry ? `
-      <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
-        <div>${industry}</div>
-        <div style="font-size:${size}px;opacity:.85;">
-          Industrie-Verarbeitungsgrad
-        </div>
-      </div>
-      ` : ""}
-
     </div>
   `;
 }
 
+function renderScoreBlock(score, processing, size = 13) {
+  const h = renderHealth(score);
+  const i = renderIndustry(processing);
+  if (!h && !i) return "";
+
+  return `
+    <div style="margin:12px 0;">
+      ${h ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+          <div>${h}</div>
+          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
+        </div>` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+          <div>${i}</div>
+          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
+        </div>` : ""}
+    </div>`;
+}
 
 /* ================= USER RATING ================= */
 function renderUserRating(avg, count) {
-  const full = Number.isFinite(avg) ? Math.round(avg) : 0;
+  const c = Number(count) || 0;
+  const a = Number(avg);
+
+  const full = Number.isFinite(a) ? Math.round(a) : 0;
   const empty = 5 - full;
+
   return `
     <div class="user-rating" data-rate style="cursor:pointer;">
       ${"⭐".repeat(full)}${"☆".repeat(empty)}
-      <span style="font-size:13px;opacity:.7;">(${count || 0} Bewertungen)</span>
-    </div>`;
+      <span style="font-size:13px;opacity:.7;">(${c} Bewertungen)</span>
+    </div>
+  `;
 }
 
 /* ================= LISTE ================= */
 function renderList(data) {
   const box = $("results");
   if (!box) return;
+
   box.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <strong>${escapeHtml(e.title)}</strong>
+      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderUserRating(e.rating_avg, e.rating_count)}
       ${renderScoreBlock(e.score, e.processing_score)}
       <div>${escapeHtml(shortText(e.summary))}</div>
-    </div>`).join("");
+    </div>
+  `).join("");
 }
 
-/* ================= ENTRY ================= */
-async function loadEntry(id) {
-  const box = $("results");
-  if (!box) return;
-
-  const d = await supa(`entries_with_ratings?select=*&id=eq.${cleanId(id)}`);
-  const e = d[0];
-  if (!e) return;
-
-  currentEntryId = e.id;
-
-  box.innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
-    ${renderUserRating(e.rating_avg, e.rating_count)}
-    ${renderScoreBlock(e.score, e.processing_score)}
-    <div>${normalizeText(e.summary)}</div>
-    <div id="entryActions"></div>`;
-
-  renderEntryActions(e.title);
-}
-
-/* ================= SOCIAL ================= */
-function renderEntryActions(title) {
-  const box = $("entryActions");
-  if (!box) return;
-
-  const url = location.href;
-  const t = encodeURIComponent(title + " – MarketShield");
-  const u = encodeURIComponent(url);
-
-  box.innerHTML = `
-    <button onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
-    <button onclick="window.print()">🖨️ Drucken</button>
-    <button onclick="window.open('https://t.me/share/url?url=${u}&text=${t}')">Telegram</button>`;
-}
-
-/* ================= NAV ================= */
-document.addEventListener("click", (e) => {
-  const card = e.target.closest(".entry-card");
-  if (!card) return;
-  history.pushState({}, "", "?id=" + card.dataset.id);
-  loadEntry(card.dataset.id);
-});
-
-/* ================= PROGRESS (FIXIERT) ================= */
-function initProgress() {
-  const box = document.getElementById("msProgressBox");
-  if (!box) return;
-
-  box.innerHTML = `
-    <div id="msProgressToggle">🛡 Dein Beitrag ▸</div>
-    <div id="msProgressContent" style="display:none">
-      <strong>🛡 Dein Beitrag</strong><br><br>
-      <button id="msProgressClose">schließen</button>
-    </div>`;
-
-  const t = $("msProgressToggle");
-  const c = $("msProgressContent");
-  const x = $("msProgressClose");
-
-  t.onclick = () => { t.style.display="none"; c.style.display="block"; };
-  x.onclick = () => { c.style.display="none"; t.style.display="block"; };
-}
-
-/* ================= REPORT FAB (FIXIERT) ================= */
-function initReportFab() {
-  const fab = $("msReportFab");
-  const modal = $("reportModal");
-  if (!fab || !modal) return;
-
-  fab.style.position = "fixed";
-  fab.style.zIndex = "2147483647";
-  fab.style.pointerEvents = "auto";
-
-  fab.onclick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    modal.style.display = "flex";
-  };
-}
-
-/* ================= INIT (EINMALIG) ================= */
+/* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
-  initProgress();
-  initReportFab();
-
-  const id = new URLSearchParams(location.search).get("id");
-  if (id) loadEntry(id);
-});
-/* =====================================================
-   EMERGENCY: PROGRESS DISABLE
-   (stellt Systemzustand vor Progress wieder her)
-===================================================== */
-
-document.addEventListener("DOMContentLoaded", () => {
-  const box = document.getElementById("msProgressBox");
-  if (box) {
-    box.innerHTML = "";
-    box.style.display = "none";
-  }
-});
-/* =====================================================
-   FINAL: REPORT FAB – SAFE RESTORE
-===================================================== */
-
-document.addEventListener("DOMContentLoaded", () => {
-  const fab = document.getElementById("msReportFab");
-  const modal = document.getElementById("reportModal");
-
-  if (!fab || !modal) return;
-
-  // Schutz gegen Überschreibung
-  if (fab.dataset.bound === "1") return;
-  fab.dataset.bound = "1";
-
-  // Erzwinge Klickbarkeit
-  fab.style.position = "fixed";
-  fab.style.zIndex = "2147483647";
-  fab.style.pointerEvents = "auto";
-
-  // EINZIGER Klick-Handler
-  fab.onclick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    modal.style.display = "flex";
-  };
+  console.log("MarketShield app.js – STABIL geladen");
 });
