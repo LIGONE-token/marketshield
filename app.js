@@ -97,19 +97,37 @@ function renderUserRating(avg, count) {
 
   let a = Number(avg);
   if (!Number.isFinite(a) || a < 0) a = 0;
-
-  // auf 0–5 begrenzen
   a = Math.max(0, Math.min(5, a));
 
-  const full  = Math.round(a);
+  const full  = Math.floor(a);
   const empty = 5 - full;
 
+  // SEO-Text (sichtbar!)
+  const seoText =
+    c === 0
+      ? "Noch keine Bewertungen"
+      : `${a.toFixed(1)} von 5 Sternen bei ${c} Bewertungen`;
+
   return `
-    <div class="user-rating" data-rate style="margin:6px 0;cursor:pointer;">
-      ${"⭐".repeat(full)}${"☆".repeat(empty)}
-      <span style="font-size:13px;opacity:.7;">
-        (${c} Bewertungen)
+    <div class="user-rating"
+         data-rate
+         itemscope
+         itemtype="https://schema.org/AggregateRating"
+         style="margin:6px 0;cursor:pointer;">
+
+      <span aria-hidden="true">
+        ${"⭐".repeat(full)}${"☆".repeat(empty)}
       </span>
+
+      <span class="rating-text"
+            itemprop="ratingValue"
+            style="margin-left:6px;font-size:14px;">
+        ${seoText}
+      </span>
+
+      <meta itemprop="bestRating" content="5">
+      <meta itemprop="worstRating" content="1">
+      <meta itemprop="reviewCount" content="${c}">
     </div>
   `;
 }
