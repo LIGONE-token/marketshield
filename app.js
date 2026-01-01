@@ -423,6 +423,31 @@ document.addEventListener("click", (e) => {
   document.getElementById("results").innerHTML = "";
   loadCategories();
 });
+function openReportModal() {
+  const overlay = document.createElement("div");
+  overlay.style = `
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+  `;
+
+  overlay.innerHTML = `
+    <div style="background:#fff;padding:20px;border-radius:12px;width:90%;max-width:420px;">
+      <h3>Problem oder Anregung melden</h3>
+      <textarea id="reportText" style="width:100%;height:120px;"></textarea>
+      <div style="margin-top:12px;text-align:right;">
+        <button id="closeReport">Schließen</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  overlay.querySelector("#closeReport").onclick = () => overlay.remove();
+}
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
@@ -567,7 +592,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!fab) return;
 
   const openReport = (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  openReportModal();
+};
+
 
     // bestehenden Report-Flow auslösen
     const fake = document.createElement("div");
