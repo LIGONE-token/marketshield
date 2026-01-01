@@ -230,13 +230,15 @@ async function loadCategory(cat) {
 }
 
 /* ================= NAVIGATION ================= */
-document.addEventListener("click", (e) => {
-  if (e.target.closest(".rating-open")) return;
-  const c = e.target.closest(".entry-card");
-  if (!c) return;
-  history.pushState(null, "", "?id=" + c.dataset.id);
-  loadEntry(c.dataset.id);
-});
+function bindEntryClicks() {
+  document.querySelectorAll(".entry-card").forEach(card => {
+    card.addEventListener("click", () => {
+      history.pushState(null, "", "?id=" + card.dataset.id);
+      loadEntry(card.dataset.id);
+    });
+  });
+}
+
 
 /* ================= PROGRESS ================= */
 function showProgress(text = "Wird gesendet …") {
