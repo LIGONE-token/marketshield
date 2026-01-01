@@ -436,3 +436,16 @@ document.addEventListener("click", async (e) => {
     hideProgress();
   }
 });
+/* =====================================================
+   REPORT MODAL – SCHLIESSEN (ROBUST)
+===================================================== */
+document.addEventListener("click", (e) => {
+  const closeBtn = e.target.closest("#closeReportModal");
+  if (!closeBtn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const modal = document.getElementById("reportModal");
+  if (modal) modal.classList.remove("open");
+});
