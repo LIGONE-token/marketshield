@@ -415,7 +415,7 @@ document.addEventListener("click", (e) => {
 
 /* ================= BACK TO HOME ================= */
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest("#backHome, .back-home, [data-home]");
+  const btn = e.target.closest("#backHome, .back-home, [data-home], #msReportFab");
   if (!btn) return;
 
   e.preventDefault();
