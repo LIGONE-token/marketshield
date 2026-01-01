@@ -605,16 +605,23 @@ function renderProgressBox() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const fab = document.getElementById("msReportFab");
-  if (!fab) return;
+  const fab   = document.getElementById("msReportFab");
+  const modal = document.getElementById("reportModal");
+  const close = document.getElementById("closeReportModal");
 
-  const openReport = (e) => {
-    e.preventDefault();
-    openReportModal();
+  if (!fab || !modal || !close) return;
+
+  // 🔴 NUR der FAB öffnet das Report-Fenster
+  fab.onclick = () => {
+    modal.style.display = "flex";
   };
 
+  // ❌ Oberer Button bleibt absichtlich TOT
+  const topBtn = document.getElementById("reportBtn");
+  if (topBtn) topBtn.onclick = null;
 
-
-  fab.addEventListener("click", openReport);
-  fab.addEventListener("touchstart", openReport, { passive: false });
+  // ✅ Fenster lässt sich zuverlässig schließen
+  close.onclick = () => {
+    modal.style.display = "none";
+  };
 });
