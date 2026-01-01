@@ -65,12 +65,20 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-  const w = Math.round((n / 10) * 80);
+
+  const clamped = Math.max(0, Math.min(10, n));
+  const w = Math.round((clamped / 10) * 80);
+
+  let color = "#2e7d32"; // 🟢 grün (0–3)
+  if (clamped >= 4 && clamped <= 7) color = "#f9a825"; // 🟡 gelb
+  if (clamped >= 8) color = "#c62828"; // 🔴 rot
+
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
-      <div style="width:${w}px;height:8px;background:#2e7d32;border-radius:6px;"></div>
+      <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
     </div>`;
 }
+
 
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
