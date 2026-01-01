@@ -241,3 +241,29 @@ document.addEventListener("DOMContentLoaded", () => {
     box.style.display = "none";
   }
 });
+/* =====================================================
+   FINAL: REPORT FAB – SAFE RESTORE
+===================================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const fab = document.getElementById("msReportFab");
+  const modal = document.getElementById("reportModal");
+
+  if (!fab || !modal) return;
+
+  // Schutz gegen Überschreibung
+  if (fab.dataset.bound === "1") return;
+  fab.dataset.bound = "1";
+
+  // Erzwinge Klickbarkeit
+  fab.style.position = "fixed";
+  fab.style.zIndex = "2147483647";
+  fab.style.pointerEvents = "auto";
+
+  // EINZIGER Klick-Handler
+  fab.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    modal.style.display = "flex";
+  };
+});
