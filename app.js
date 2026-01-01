@@ -626,4 +626,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 50);
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+  const fab = document.getElementById("msReportFab");
+  if (!fab) return;
+
+  fab.style.position = "fixed";
+  fab.style.zIndex = "2147483647";
+  fab.style.pointerEvents = "auto";
+
+  fab.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const modal = document.getElementById("reportModal");
+    if (modal) modal.style.display = "flex";
+  }, true);
+});
   
