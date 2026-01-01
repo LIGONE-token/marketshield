@@ -666,3 +666,64 @@ if (progressBox && progressToggle && progressContent && progressClose) {
     progressToggle.style.display = "block";
   };
 }
+// === FINAL FIX: ReportFab & Progress – NUR NACH DOM READY ===
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* ===== REPORT (NUR FAB) ===== */
+  const reportFab   = document.getElementById("msReportFab");
+  const reportModal = document.getElementById("reportModal");
+  const reportClose = document.getElementById("closeReportModal");
+
+  if (reportFab && reportModal && reportClose) {
+    // FAB immer klickbar (PC & Mobile)
+    reportFab.style.pointerEvents = "auto";
+    reportFab.style.zIndex = "10000";
+
+    reportFab.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      reportModal.style.display = "flex";
+    };
+
+    reportClose.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      reportModal.style.display = "none";
+    };
+  } else {
+    console.warn("Report-Elemente fehlen:", {
+      reportFab, reportModal, reportClose
+    });
+  }
+
+  /* ===== PROGRESS ===== */
+  const progressBox     = document.getElementById("msProgressBox");
+  const progressToggle  = document.getElementById("msProgressToggle");
+  const progressContent = document.getElementById("msProgressContent");
+  const progressClose   = document.getElementById("msProgressClose");
+
+  if (progressBox && progressToggle && progressContent && progressClose) {
+    // Startzustand erzwingen
+    progressContent.style.display = "none";
+    progressToggle.style.display  = "block";
+
+    progressToggle.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      progressToggle.style.display  = "none";
+      progressContent.style.display = "block";
+    };
+
+    progressClose.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      progressContent.style.display = "none";
+      progressToggle.style.display  = "block";
+    };
+  } else {
+    console.warn("Progress-Elemente fehlen:", {
+      progressBox, progressToggle, progressContent, progressClose
+    });
+  }
+
+});
