@@ -602,80 +602,40 @@ async function renderProgressBox() {
   const box = document.getElementById("msProgressBox");
   if (!box) return;
 
-  const userHash = getUserHash();
+  try {
+    const userHash = getUserHash();
 
-  // Punkte
-  const points = await supa(
-    `v_user_total_points?select=total_points&user_hash=eq.${userHash}`
-  );
+    const points  = await supa(`v_user_total_points?select=total_points&user_hash=eq.${userHash}`);
+    const quality = await supa(`v_user_quality?select=accepted,total&user_hash=eq.${userHash}`);
+    const impact  = await supa(`v_user_impact_core?select=applied_contributions&user_hash=eq.${userHash}`);
+    const ratings = await supa(`v_user_rating_count?select=rating_count&user_hash=eq.${userHash}`);
 
-  // Qualität
-  const quality = await supa(
-    `v_user_quality?select=accepted,total&user_hash=eq.${userHash}`
-  );
+    const totalPoints = points[0]?.total_points ?? 0;
+    const accepted   = quality[0]?.accepted ?? 0;
+    const total      = quality[0]?.total ?? 0;
+    const qualityRate = total > 0 ? Math.round((accepted / total) * 100) : 0;
+    const applied    = impact[0]?.applied_contributions ?? 0;
+    const ratingCount = ratings[0]?.rating_count ?? 0;
 
-  // Impact
-  const impact = await supa(
-    `v_user_impact_core?select=applied_contributions&user_hash=eq.${userHash}`
-  );
+    const hasActivity = totalPoints > 0 || ratingCount > 0 || applied > 0;
 
-   // Bewertungen (NEU)
-const ratings = await supa(
-  `v_user_rating_count?select=rating_count&user_hash=eq.${userHash}`
-);
+    box.innerHTML = renderProgressHTML(
+      hasActivity,
+      totalPoints,
+      ratingCount,
+      qualityRate,
+      applied
+    );
 
-const ratingCount = ratings[0]?.rating_count ?? 0;
+  } catch (e) {
+    console.warn("ProgressBox Fallback:", e);
 
+    // 🔹 Fallback: Box trotzdem anzeigen
+    box.innerHTML = renderProgressHTML(false, 0, 0, 0, 0);
+  }
 
-  const totalPoints = points[0]?.total_points ?? 0;
-  const accepted = quality[0]?.accepted ?? 0;
-  const total = quality[0]?.total ?? 0;
-  const qualityRate = total > 0 ? Math.round((accepted / total) * 100) : 0;
-  const applied = impact[0]?.applied_contributions ?? 0;
-  const hasActivity = totalPoints > 0 || ratingCount > 0 || applied > 0;
-
-
-  box.innerHTML = `
-  <div id="msProgressToggle" style="
-    background:#2e7d32;
-    color:#fff;
-    padding:8px 12px;
-    border-radius:18px;
-    cursor:pointer;
-    font-size:14px;
-    box-shadow:0 4px 12px rgba(0,0,0,.2);
-  ">
-    🛡 Dein Beitrag ▸
-  </div>
-
-  <div id="msProgressContent" style="
-    display:none;
-    margin-top:8px;
-    background:#fff;
-    color:#000;
-    padding:14px;
-    border-radius:14px;
-    width:220px;
-    box-shadow:0 6px 20px rgba(0,0,0,.25);
-    font-size:14px;
-  ">
-    <strong>🛡 Dein Beitrag</strong><br><br>
-
-    ${hasActivity ? `
-      ⭐ ${totalPoints} Punkte<br>
-      📝 Bewertungen: ${ratingCount}<br>
-      📈 Qualitätsquote: ${qualityRate} %<br>
-      🛠 Übernommene Beiträge: ${applied}<br>
-    ` : `
-      Noch keine Aktivitäten.<br>
-      Dein Beitrag zählt anonym – leg einfach los 👍
-    `}
-    <br>
-    <span id="msProgressClose" style="cursor:pointer;color:#2e7d32;">
-      schließen
-    </span>
-  </div>
-`;
+  bindProgressBoxEvents();
+}
 
   const toggle = document.getElementById("msProgressToggle");
   const content = document.getElementById("msProgressContent");
