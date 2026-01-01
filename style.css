@@ -1664,3 +1664,9 @@ input {
   header { padding-top: 8px; } /* falls der Header oben zu viel Luft hat */
   #searchInput { margin-top: -6px; }
 }
+/* REPORT FAB – CLICK FORCE */
+#msReportFab {
+  pointer-events: auto !important;
+  position: fixed !important;
+  z-index: 2147483647 !important;
+}
