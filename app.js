@@ -631,6 +631,12 @@ function renderProgressBox() {
    content.onclick = (e) => e.stopPropagation();
   const close   = document.getElementById("msProgressClose");
 
+   // 🔒 ABSOLUTE EVENT-SPERRE für ProgressBox
+box.addEventListener("click", (e) => {
+  e.stopPropagation();
+}, true);
+
+   
   toggle.onclick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -645,8 +651,6 @@ function renderProgressBox() {
     toggle.style.display = "block";
   };
 }
-
-
 
 document.addEventListener("DOMContentLoaded", () => {
   const fab = document.getElementById("msReportFab");
