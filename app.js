@@ -398,9 +398,8 @@ document.getElementById("results")?.addEventListener("click", (e) => {
   if (!c) return;
 
   e.preventDefault();
-  e.stopPropagation();
 
-  history.pushState(null, "", "?id=" + c.dataset.id);
+   history.pushState(null, "", "?id=" + c.dataset.id);
   loadEntry(c.dataset.id);
 });
 document.addEventListener("click", (e) => {
@@ -553,14 +552,12 @@ function renderProgressBox() {
    
   toggle.onclick = (e) => {
     e.preventDefault();
-    e.stopPropagation();
     toggle.style.display = "none";
     content.style.display = "block";
   };
 
   close.onclick = (e) => {
     e.preventDefault();
-    e.stopPropagation();
     content.style.display = "none";
     toggle.style.display = "block";
   };
@@ -572,7 +569,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const openReport = (e) => {
     e.preventDefault();
-    e.stopPropagation();
 
     // bestehenden Report-Flow auslösen
     const fake = document.createElement("div");
