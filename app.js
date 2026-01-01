@@ -202,7 +202,7 @@ const cleanCategory = String(entry.category).trim();
 
   const data = await supa(
     `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count
-     &category=eq.${encodeURIComponent(entry.category)}
+     &category=eq.${encodeURIComponent(cleanCategory)}
      &id=neq.${cleanId}
      &limit=5`
   );
