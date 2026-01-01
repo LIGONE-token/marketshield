@@ -208,6 +208,33 @@ function renderEntryActions(title) {
 }
 
 /* ================= SEARCH ================= */
+let lastSearchLogged = "";
+
+async function logSearch(term) {
+  if (!term || term.length < 2) return;
+  if (term === lastSearchLogged) return; // Duplikate vermeiden
+
+  lastSearchLogged = term;
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        query: term   // ✔ einziges Feld laut Schema
+      })
+    });
+  } catch (e) {
+    console.warn("Search logging failed:", e);
+  }
+}
+
+
 async function smartSearch(q) {
   const term = q.trim();
   if (term.length < 2) return [];
