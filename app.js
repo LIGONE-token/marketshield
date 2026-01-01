@@ -605,59 +605,51 @@ function renderProgressBox() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const fab      = document.getElementById("msReportFab");
-  const modal    = document.getElementById("reportModal");
-  const closeBtn = document.getElementById("closeReportModal");
-  const form     = document.getElementById("reportForm");
+  const fab   = document.getElementById("msReportFab");
+  const modal = document.getElementById("reportModal");
+  const form  = document.getElementById("reportForm");
+  const close = document.getElementById("closeReportModal");
 
-  if (!fab || !modal || !closeBtn || !form) return;
+  if (!fab || !modal || !form || !close) {
+    console.error("❌ Report-Element fehlt im DOM");
+    return;
+  }
 
-  // 🔴 Nur FAB öffnet das Modal
+  // ✅ NUR öffnen – kein Neubau
   fab.onclick = () => {
     modal.style.display = "flex";
   };
 
-  // ❌ Oberer Button bleibt bewusst tot
-  const topBtn = document.getElementById("reportBtn");
-  if (topBtn) topBtn.onclick = null;
-
-  // ✅ Modal schließen
-  closeBtn.onclick = () => {
+  // ✅ Schließen
+  close.onclick = () => {
     modal.style.display = "none";
   };
 
-  // ✅ REPORT SENDEN
+  // ✅ SENDEN (Button ist <button type="submit">)
   form.onsubmit = async (e) => {
     e.preventDefault();
 
-    const textarea = form.querySelector("textarea[name='description']");
-    const text = textarea.value.trim();
+    const text = form.querySelector("textarea").value.trim();
     if (!text) return;
 
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal"
-        },
-        body: JSON.stringify({
-          description: text,
-          page: location.href,
-          source: "marketshield",
-          status: "new"
-        })
-      });
+    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        description: text,
+        page: location.href,
+        source: "marketshield",
+        status: "new"
+      })
+    });
 
-      textarea.value = "";
-      modal.style.display = "none";
-      alert("Danke! Dein Hinweis wurde gespeichert.");
-
-    } catch (err) {
-      alert("Fehler beim Senden. Bitte später erneut versuchen.");
-      console.error(err);
-    }
+    form.reset();
+    modal.style.display = "none";
+    alert("Danke! Dein Hinweis wurde gespeichert.");
   };
 });
