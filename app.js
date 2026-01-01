@@ -97,24 +97,36 @@ function renderIndustry(score) {
 }
 
 function renderScoreBlock(score, processing, size = 13) {
-  const h = renderHealth(score);
-  const i = renderIndustry(processing);
-  if (!h && !i) return "";
+  const health = renderHealth(score);
+  const industry = renderIndustry(processing);
+
+  if (!health && !industry) return "";
 
   return `
-    <div style="margin:12px 0;">
-      ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
-          <div>${h}</div>
-          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
-        </div>` : ""}
-      ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;">
-          <div>${i}</div>
-          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
-    </div>`;
+    <div style="margin:14px 0;display:flex;flex-direction:column;gap:8px;">
+
+      ${health ? `
+      <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+        <div style="font-size:16px;">${health}</div>
+        <div style="font-size:${size}px;opacity:.85;">
+          Gesundheitsscore
+        </div>
+      </div>
+      ` : ""}
+
+      ${industry ? `
+      <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+        <div>${industry}</div>
+        <div style="font-size:${size}px;opacity:.85;">
+          Industrie-Verarbeitungsgrad
+        </div>
+      </div>
+      ` : ""}
+
+    </div>
+  `;
 }
+
 
 /* ================= USER RATING ================= */
 function renderUserRating(avg, count) {
