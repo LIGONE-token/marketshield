@@ -290,4 +290,47 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+/* REPORT FORM – SEND TO SUPABASE (SCHEMA-KONFORM) */
+document.addEventListener("DOMContentLoaded", () => {
+  const form  = document.getElementById("reportForm");
+  const modal = document.getElementById("reportModal");
+
+  if (!form) return;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const textarea = form.querySelector("textarea[name='description']");
+    const desc = textarea ? textarea.value.trim() : "";
+    if (!desc) return;
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          description: desc,                 // Pflichtfeld
+          source: "community",               // passt zum Default
+          entry_id: currentEntryId || null,  // TEXT (wie in Tabelle)
+          page: location.href                // korrektes Feld
+        })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      form.reset();
+      modal.classList.remove("open");
+      alert("Danke! Deine Meldung wurde gespeichert.");
+
+    } catch (err) {
+      console.error("Report submit failed:", err);
+      alert("Fehler beim Senden der Meldung.");
+    }
+  });
+});
 
