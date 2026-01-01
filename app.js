@@ -393,7 +393,9 @@ async function loadCategory(cat) {
 }
 
 /* ================= NAV (FIXED) ================= */
-document.getElementById("results")?.addEventListener("click", (e) => {
+const resultsBox = document.getElementById("results");
+if (resultsBox) resultsBox.addEventListener("click", (e) => {
+
   const c = e.target.closest(".entry-card");
   if (!c) return;
 
