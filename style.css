@@ -1655,3 +1655,12 @@ input {
 #reportBtn {
   display: none !important;
 }
+@media (max-width: 600px) {
+  #searchInput {
+    margin-top: -6px; /* nach Bedarf -4 bis -10 */
+  }
+}
+@media (max-width: 600px) {
+  header { padding-top: 8px; } /* falls der Header oben zu viel Luft hat */
+  #searchInput { margin-top: -6px; }
+}
