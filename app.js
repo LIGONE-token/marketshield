@@ -92,6 +92,22 @@ function renderScoreBlock(score, processing, size = 13) {
         </div>` : ""}
     </div>`;
 }
+function renderUserRating(avg, count) {
+  const a = Number(avg);
+  const c = Number(count) || 0;
+
+  if (!Number.isFinite(a) || a <= 0) return "";
+
+  const full = Math.round(a);
+  const empty = Math.max(0, 5 - full);
+
+  return `
+    <div class="user-rating" style="margin:6px 0;">
+      ${"⭐".repeat(full)}${"☆".repeat(empty)}
+      <span style="font-size:13px;opacity:.7;">(${c})</span>
+    </div>
+  `;
+}
 
 /* ================= LISTE ================= */
 function renderList(data) {
@@ -101,7 +117,9 @@ function renderList(data) {
   box.innerHTML = (data || []).map(e => `
     <div class="entry-card" data-id="${e.id}">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
-      ${renderScoreBlock(e.score, e.processing_score)}
+${renderUserRating(e.rating_avg, e.rating_count)}
+${renderScoreBlock(e.score, e.processing_score)}
+
       <div style="font-size:15px;line-height:1.4;">
         ${escapeHtml(shortText(e.summary))}
       </div>
