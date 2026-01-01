@@ -93,21 +93,27 @@ function renderScoreBlock(score, processing, size = 13) {
     </div>`;
 }
 function renderUserRating(avg, count) {
-  const c = Number(count) || 0;
+  const c = Number.isFinite(Number(count)) ? Number(count) : 0;
 
-  // avg kann null sein → dann 0
-  const a = Number.isFinite(Number(avg)) ? Number(avg) : 0;
+  let a = Number(avg);
+  if (!Number.isFinite(a) || a < 0) a = 0;
 
-  const full = Math.round(a);          // 0–5
-  const empty = Math.max(0, 5 - full); // Rest leer
+  // auf 0–5 begrenzen
+  a = Math.max(0, Math.min(5, a));
+
+  const full  = Math.round(a);
+  const empty = 5 - full;
 
   return `
     <div class="user-rating" data-rate style="margin:6px 0;cursor:pointer;">
       ${"⭐".repeat(full)}${"☆".repeat(empty)}
-      <span style="font-size:13px;opacity:.7;">(${c})</span>
+      <span style="font-size:13px;opacity:.7;">
+        (${c} Bewertungen)
+      </span>
     </div>
   `;
 }
+
 
 
 /* ================= LISTE ================= */
