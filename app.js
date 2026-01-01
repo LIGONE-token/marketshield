@@ -426,9 +426,66 @@ document.addEventListener("click", (e) => {
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
+  // CORE
   loadCategories();
   initSearch();
   renderProgressBox();
+
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) loadEntry(id);
+
+  /* =========================
+     REPORT (NUR FAB)
+  ========================= */
+  const fab   = document.getElementById("msReportFab");
+  const modal = document.getElementById("reportModal");
+  const form  = document.getElementById("reportForm");
+  const close = document.getElementById("closeReportModal");
+
+  if (fab && modal && form && close) {
+    // immer klickbar (PC)
+    fab.style.pointerEvents = "auto";
+    fab.style.zIndex = "10000";
+
+    fab.onclick = (e) => {
+      e.preventDefault();
+      modal.style.display = "flex";
+    };
+
+    close.onclick = (e) => {
+      e.preventDefault();
+      modal.style.display = "none";
+    };
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+
+      const textarea = form.querySelector("textarea[name='description']");
+      const text = textarea.value.trim();
+      if (!text) return;
+
+      await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          description: text,
+          page: location.href,
+          source: "marketshield",
+          status: "new"
+        })
+      });
+
+      form.reset();
+      modal.style.display = "none";
+      alert("Danke! Dein Hinweis wurde gespeichert.");
+    };
+  }
+});
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
@@ -562,58 +619,4 @@ function renderProgressBox() {
   };
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  /* =========================
-     REPORT (NUR FAB)
-  ========================= */
-  const fab   = document.getElementById("msReportFab");
-  const modal = document.getElementById("reportModal");
-  const form  = document.getElementById("reportForm");
-  const close = document.getElementById("closeReportModal");
 
-  if (fab && modal && form && close) {
-    // FAB immer klickbar (PC-Problem)
-    fab.style.pointerEvents = "auto";
-    fab.style.zIndex = "10000";
-
-    // Öffnen
-    fab.onclick = (e) => {
-      e.preventDefault();
-      modal.style.display = "flex";
-    };
-
-    // Schließen
-    close.onclick = (e) => {
-      e.preventDefault();
-      modal.style.display = "none";
-    };
-
-    // SENDEN
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-
-      const textarea = form.querySelector("textarea[name='description']");
-      const text = textarea.value.trim();
-      if (!text) return;
-
-      await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal"
-        },
-        body: JSON.stringify({
-          description: text,
-          page: location.href,
-          source: "marketshield",
-          status: "new"
-        })
-      });
-
-      form.reset();
-      modal.style.display = "none";
-      alert("Danke! Dein Hinweis wurde gespeichert.");
-    };
-  }
