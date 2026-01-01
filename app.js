@@ -265,3 +265,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
+/* REPORT FAB – FINAL */
+document.addEventListener("DOMContentLoaded", () => {
+  const fab = document.getElementById("msReportFab");
+  const modal = document.getElementById("reportModal");
+  if (!fab || !modal) return;
+
+  fab.onclick = () => { modal.style.display = "flex"; };
+});
