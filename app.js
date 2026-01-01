@@ -101,45 +101,20 @@ function renderScoreBlock(score, processing, size = 13) {
     </div>`;
 }
 function renderUserRating(avg, count) {
-  const c = Number.isFinite(Number(count)) ? Number(count) : 0;
-
-  let a = Number(avg);
-  if (!Number.isFinite(a) || a < 0) a = 0;
-  a = Math.max(0, Math.min(5, a));
-
-  const full  = Math.floor(a);
-  const empty = 5 - full;
-
-  // SEO-Text (sichtbar!)
-  const seoText =
-    c === 0
-      ? "Noch keine Bewertungen"
-      : `${a.toFixed(1)} von 5 Sternen bei ${c} Bewertungen`;
+  const c = Number.isFinite(+count) ? +count : 0;
+  const a = Math.max(0, Math.min(5, Math.round(+avg || 0)));
 
   return `
-    <div class="user-rating"
-         data-rate
-         itemscope
-         itemtype="https://schema.org/AggregateRating"
-         style="margin:6px 0;cursor:pointer;">
-
-      <span aria-hidden="true">
-${Array.from({ length: 5 }, (_, i) =>
-  `<span data-rate-star="${i + 1}" style="cursor:pointer;">
-     ${i < full ? "⭐" : "☆"}
-   </span>`
-).join("")}
+    <div class="user-rating">
+      ${Array.from({ length: 5 }, (_, i) => `
+        <span data-rate-star="${i + 1}"
+              style="cursor:pointer;font-size:18px;">
+          ${i < a ? "⭐" : "☆"}
+        </span>
+      `).join("")}
+      <span style="font-size:13px;opacity:.7;">
+        (${c} Bewertungen)
       </span>
-
-      <span class="rating-text"
-            itemprop="ratingValue"
-            style="margin-left:6px;font-size:14px;">
-        ${seoText}
-      </span>
-
-      <meta itemprop="bestRating" content="5">
-      <meta itemprop="worstRating" content="1">
-      <meta itemprop="reviewCount" content="${c}">
     </div>
   `;
 }
