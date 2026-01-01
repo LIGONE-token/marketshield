@@ -361,3 +361,31 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+/* PROGRESS – MANUAL & SAFE */
+function showProgress(text = "Bitte warten …") {
+  const p = document.getElementById("msProgressBox");
+  if (!p) return;
+
+  p.innerHTML = `
+    <div class="box">
+      <div style="font-weight:600;margin-bottom:8px;">${text}</div>
+      <div style="font-size:13px;opacity:.7;">Vorgang läuft</div>
+      <button id="closeProgress"
+              style="margin-top:14px;padding:6px 10px;">
+        Schließen
+      </button>
+    </div>
+  `;
+
+  p.classList.add("open");
+
+  const btn = document.getElementById("closeProgress");
+  if (btn) {
+    btn.onclick = () => p.classList.remove("open");
+  }
+}
+
+function hideProgress() {
+  const p = document.getElementById("msProgressBox");
+  if (p) p.classList.remove("open");
+}
