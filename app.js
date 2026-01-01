@@ -128,7 +128,9 @@ function renderUserRating(avg, count) {
       <div style="font-size:20px;line-height:1;">
         ${Array.from({ length: 5 }, (_, i) => i < stars ? "⭐" : "☆").join("")}
       </div>
-      <div class="rating-open" style="margin-top:4px;font-size:14px;cursor:pointer;text-decoration:underline;">
+<div class="rating-open"
+     onclick="event.preventDefault(); event.stopPropagation();"
+     style="margin-top:4px;font-size:14px;cursor:pointer;text-decoration:underline;">
         <strong>${avgText}</strong> von <strong>5 Sternen</strong>
         <span style="opacity:.75;">· ${c} Bewertung${c === 1 ? "" : "en"}</span>
       </div>
