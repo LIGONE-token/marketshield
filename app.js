@@ -605,7 +605,12 @@ function renderProgressBox() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const fab   = document.getElementById("msReportFab");
+  const fab = document.getElementById("msReportFab");
+if (fab) {
+  fab.style.pointerEvents = "auto";
+  fab.style.zIndex = "10000";
+}
+
   const modal = document.getElementById("reportModal");
   const box   = modal?.querySelector(".report-modal-box");
   const form  = document.getElementById("reportForm");
