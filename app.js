@@ -643,27 +643,25 @@ async function renderProgressBox() {
   `;
 
   // Events NACH dem Einfügen des HTMLs binden
-// Events NACH dem Einfügen des HTMLs binden
 const toggle = document.getElementById("msProgressToggle");
 const content = document.getElementById("msProgressContent");
+const close = document.getElementById("msProgressClose");
 
-document.addEventListener("click", (e) => {
-  // Öffnen
-  if (e.target.closest("#msProgressToggle")) {
+if (toggle && content && close) {
+  toggle.onclick = (e) => {
     e.preventDefault();
+    e.stopPropagation();   // ⬅️ WICHTIG
     content.style.display = "block";
     toggle.style.display = "none";
-    return;
-  }
+  };
 
-  // Schließen
-  if (e.target.closest("#msProgressClose")) {
+  close.onclick = (e) => {
     e.preventDefault();
+    e.stopPropagation();   // ⬅️ WICHTIG
     content.style.display = "none";
     toggle.style.display = "block";
-    return;
-  }
-});
+  };
+}
 
 
 
