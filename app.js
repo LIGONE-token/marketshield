@@ -389,3 +389,40 @@ function hideProgress() {
   const p = document.getElementById("msProgressBox");
   if (p) p.classList.remove("open");
 }
+/* RATING – CLICK HANDLER */
+document.addEventListener("click", async (e) => {
+  const star = e.target.closest("[data-rate-star]");
+  if (!star) return;
+
+  const value = Number(star.dataset.rateStar);
+  if (!value || !currentEntryId) return;
+
+  showProgress("Bewertung wird gespeichert …");
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        entry_id: currentEntryId,
+        rating: value
+      })
+    });
+
+    hideProgress();
+    alert("Danke für deine Bewertung! ⭐");
+
+    // Detailansicht neu laden → aktualisierte Sterne
+    loadEntry(currentEntryId);
+
+  } catch (err) {
+    hideProgress();
+    alert("Bewertung konnte nicht gespeichert werden.");
+    console.error(err);
+  }
+});
