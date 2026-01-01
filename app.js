@@ -599,3 +599,81 @@ await loadEntry(currentEntryId);
     };
   });
 }
+async function renderProgressBox() {
+  const box = document.getElementById("msProgressBox");
+  if (!box) return;
+
+  const userHash = getUserHash();
+
+  // Punkte
+  const points = await supa(
+    `v_user_total_points?select=total_points&user_hash=eq.${userHash}`
+  );
+
+  // Qualität
+  const quality = await supa(
+    `v_user_quality?select=accepted,total&user_hash=eq.${userHash}`
+  );
+
+  // Impact
+  const impact = await supa(
+    `v_user_impact_core?select=applied_contributions&user_hash=eq.${userHash}`
+  );
+
+  const totalPoints = points[0]?.total_points ?? 0;
+  const accepted = quality[0]?.accepted ?? 0;
+  const total = quality[0]?.total ?? 0;
+  const qualityRate = total > 0 ? Math.round((accepted / total) * 100) : 0;
+  const applied = impact[0]?.applied_contributions ?? 0;
+
+  // Wenn Nutzer noch nichts gemacht hat → nicht anzeigen
+  if (totalPoints === 0 && total === 0) return;
+
+  box.innerHTML = `
+    <div id="msProgressToggle" style="
+      background:#2e7d32;
+      color:#fff;
+      padding:8px 12px;
+      border-radius:18px;
+      cursor:pointer;
+      font-size:14px;
+      box-shadow:0 4px 12px rgba(0,0,0,.2);
+    ">
+      🛡 Dein Beitrag ▸
+    </div>
+
+    <div id="msProgressContent" style="
+      display:none;
+      margin-top:8px;
+      background:#fff;
+      color:#000;
+      padding:14px;
+      border-radius:14px;
+      width:220px;
+      box-shadow:0 6px 20px rgba(0,0,0,.25);
+      font-size:14px;
+    ">
+      <strong>🛡 Dein Beitrag</strong><br><br>
+      ⭐ ${totalPoints} Punkte<br>
+      📈 Qualitätsquote: ${qualityRate} %<br>
+      🛠 Übernommene Beiträge: ${applied}<br><br>
+      <span id="msProgressClose" style="cursor:pointer;color:#2e7d32;">
+        schließen
+      </span>
+    </div>
+  `;
+
+  const toggle = document.getElementById("msProgressToggle");
+  const content = document.getElementById("msProgressContent");
+  const close = document.getElementById("msProgressClose");
+
+  toggle.onclick = () => {
+    content.style.display = "block";
+    toggle.style.display = "none";
+  };
+
+  close.onclick = () => {
+    content.style.display = "none";
+    toggle.style.display = "block";
+  };
+}
