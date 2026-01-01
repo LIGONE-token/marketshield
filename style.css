@@ -1678,3 +1678,26 @@ input {
 #reportModal.open {
   display: flex !important;
 }
+/* PROGRESS OVERLAY – SAFE */
+#msProgressBox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2147483646;
+}
+
+#msProgressBox.open {
+  display: flex;
+}
+
+#msProgressBox .box {
+  background: #fff;
+  padding: 20px 24px;
+  border-radius: 12px;
+  width: 280px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,.3);
+}
