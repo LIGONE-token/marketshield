@@ -203,9 +203,6 @@ async function loadRelatedEntries(entry) {
   `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encodeURIComponent(cleanCategory)}&id=neq.${cleanId}&limit=5`
 );
 
-
-  );
-
   if (!data.length) return "";
 
   return `
