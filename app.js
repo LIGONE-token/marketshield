@@ -425,7 +425,7 @@ document.addEventListener("click", (e) => {
 });
 /* ================= REPORT BUTTON – WITH PAGE ================= */
 document.addEventListener("click", (e) => {
-  const btn = e.target.closest("#reportBtn, .report-btn, [data-report], #msReportFab");
+   const btn = e.target.closest("#backHome, .back-home, [data-home]");
   if (!btn) return;
 
   e.preventDefault();
