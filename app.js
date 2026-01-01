@@ -613,11 +613,6 @@ document.addEventListener("DOMContentLoaded", () => {
     openReportModal();
   };
 
-  fab.addEventListener("click", openReport);
-  fab.addEventListener("touchstart", openReport, { passive: false });
-});
-
-
 
 
   fab.addEventListener("click", openReport);
