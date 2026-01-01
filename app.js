@@ -700,3 +700,6 @@ document.addEventListener("DOMContentLoaded", () => {
   fab.addEventListener("click", openReport);
   fab.addEventListener("touchstart", openReport, { passive: false });
 });
+document.addEventListener("DOMContentLoaded", () => {
+  renderProgressBox();
+});
