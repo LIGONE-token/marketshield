@@ -309,7 +309,26 @@ document.addEventListener("click", (e) => {
   loadEntry(c.dataset.id);
 });
 
-/* ================= INIT ================= */
+/* =====================================================
+   PROGRESS – EINMAL, GLOBAL
+===================================================== */
+function showProgress(text = "Wird gesendet …") {
+  const box = document.getElementById("msProgressBox");
+  if (!box) return;
+  box.innerHTML = `<div class="box">${text}</div>`;
+  box.style.display = "flex";
+}
+
+function hideProgress() {
+  const box = document.getElementById("msProgressBox");
+  if (!box) return;
+  box.style.display = "none";
+  box.innerHTML = "";
+}
+
+/* =====================================================
+   INIT – EINMAL
+===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
   initSearch();
@@ -317,9 +336,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
-/* REPORT FAB – ROBUST FINAL */
+
+/* =====================================================
+   REPORT FAB – MODAL ÖFFNEN / SCHLIESSEN
+===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-  const fab = document.getElementById("msReportFab");
+  const fab   = document.getElementById("msReportFab");
   const modal = document.getElementById("reportModal");
   if (!fab || !modal) return;
 
@@ -334,11 +356,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-/* REPORT FORM – SEND TO SUPABASE (SCHEMA-KONFORM) */
+
+/* =====================================================
+   REPORT FORM – SENDEN (SUPABASE)
+===================================================== */
 document.addEventListener("DOMContentLoaded", () => {
   const form  = document.getElementById("reportForm");
   const modal = document.getElementById("reportModal");
-
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
@@ -347,6 +371,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const textarea = form.querySelector("textarea[name='description']");
     const desc = textarea ? textarea.value.trim() : "";
     if (!desc) return;
+
+    showProgress("Nachricht wird gesendet …");
 
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
@@ -358,10 +384,10 @@ document.addEventListener("DOMContentLoaded", () => {
           Prefer: "return=minimal"
         },
         body: JSON.stringify({
-          description: desc,                 // Pflichtfeld
-          source: "community",               // passt zum Default
-          entry_id: currentEntryId || null,  // TEXT (wie in Tabelle)
-          page: location.href                // korrektes Feld
+          description: desc,
+          source: "community",
+          entry_id: currentEntryId || null,
+          page: location.href
         })
       });
 
@@ -374,75 +400,15 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error("Report submit failed:", err);
       alert("Fehler beim Senden der Meldung.");
+    } finally {
+      hideProgress();
     }
   });
 });
 
-/* PROGRESS – MANUAL & SAFE */
-function showProgress(text = "Bitte warten …") {
-  const p = document.getElementById("msProgressBox");
-  if (!p) return;
-
-  p.innerHTML = `
-    <div class="box">
-      <div style="font-weight:600;margin-bottom:8px;">${text}</div>
-      <div style="font-size:13px;opacity:.7;">Vorgang läuft</div>
-      <button id="closeProgress"
-              style="margin-top:14px;padding:6px 10px;">
-        Schließen
-      </button>
-    </div>
-  `;
-
-  p.classList.add("open");
-
-  const btn = document.getElementById("closeProgress");
-  if (btn) {
-    btn.onclick = () => p.classList.remove("open");
-  }
-}
-
-function hideProgress() {
-  const p = document.getElementById("msProgressBox");
-  if (p) p.classList.remove("open");
-}
-/* RATING – CLICK HANDLER */
-document.addEventListener("click", async (e) => {
-  const star = e.target.closest("[data-rate-star]");
-  if (!star) return;
-
-  const value = Number(star.dataset.rateStar);
-  if (!value || !currentEntryId) return;
-
-  showProgress("Bewertung wird gespeichert …");
-
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        entry_id: currentEntryId,
-        rating: value
-      })
-    });
-
-    hideProgress();
-    alert("Danke für deine Bewertung! ⭐");
-
-    // Detailansicht neu laden → aktualisierte Sterne
-    loadEntry(currentEntryId);
-
-  } catch (err) {
-    hideProgress();
-    alert("Bewertung konnte nicht gespeichert werden.");
-    console.error(err);
-  }
-});
+/* =====================================================
+   RATING – NUR FENSTER ÖFFNEN (KEIN SOFORT-RATING)
+===================================================== */
 document.addEventListener("click", (e) => {
   const trigger = e.target.closest(".rating-open");
   if (!trigger) return;
@@ -450,17 +416,3 @@ document.addEventListener("click", (e) => {
   const modal = document.getElementById("ratingModal");
   if (modal) modal.style.display = "flex";
 });
-function showProgress(text = "Wird gesendet …") {
-  const box = document.getElementById("msProgressBox");
-  if (!box) return;
-
-  box.innerHTML = `<div class="box">${text}</div>`;
-  box.style.display = "flex";
-}
-
-function hideProgress() {
-  const box = document.getElementById("msProgressBox");
-  if (!box) return;
-  box.style.display = "none";
-  box.innerHTML = "";
-}
