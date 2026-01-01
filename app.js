@@ -171,6 +171,37 @@ ${renderScoreBlock(e.score, e.processing_score)}
   `;
 
   renderEntryActions(e.title);
+
+   async function loadSimilarEntries(entry) {
+  const box = document.getElementById("similarEntries");
+  if (!box || !entry?.category) return;
+
+  const data = await supa(
+    `entries_with_ratings?select=id,title,summary,rating_avg,rating_count` +
+    `&category=eq.${encodeURIComponent(entry.category)}` +
+    `&id=neq.${entry.id}` +
+    `&limit=5`
+  );
+
+  if (!data.length) {
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = `
+    <h3>Ähnliche Einträge</h3>
+    ${data.map(e => `
+      <div class="entry-card" data-id="${e.id}">
+        <strong>${escapeHtml(e.title)}</strong><br>
+        ${renderUserRating(e.rating_avg, e.rating_count)}
+        <div style="font-size:14px;opacity:.8;">
+          ${escapeHtml(shortText(e.summary))}
+        </div>
+      </div>
+    `).join("")}
+  `;
+}
+
 }
 
 /* ================= SOCIAL ================= */
