@@ -450,3 +450,17 @@ document.addEventListener("click", (e) => {
   const modal = document.getElementById("ratingModal");
   if (modal) modal.style.display = "flex";
 });
+function showProgress(text = "Wird gesendet …") {
+  const box = document.getElementById("msProgressBox");
+  if (!box) return;
+
+  box.innerHTML = `<div class="box">${text}</div>`;
+  box.style.display = "flex";
+}
+
+function hideProgress() {
+  const box = document.getElementById("msProgressBox");
+  if (!box) return;
+  box.style.display = "none";
+  box.innerHTML = "";
+}
