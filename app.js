@@ -607,17 +607,16 @@ function renderProgressBox() {
 document.addEventListener("DOMContentLoaded", () => {
   const fab   = document.getElementById("msReportFab");
   const modal = document.getElementById("reportModal");
+  const box   = modal?.querySelector(".report-modal-box");
   const form  = document.getElementById("reportForm");
   const close = document.getElementById("closeReportModal");
 
-  if (!fab || !modal || !form || !close) {
-    console.error("❌ Report-Element fehlt im DOM");
-    return;
-  }
+  if (!fab || !modal || !box || !form || !close) return;
 
-  // ✅ NUR öffnen – kein Neubau
+  // 🔴 FAB öffnet das Report-Fenster vollständig
   fab.onclick = () => {
     modal.style.display = "flex";
+    box.style.display   = "block";   // 🔥 DAS FEHLTE
   };
 
   // ✅ Schließen
@@ -625,7 +624,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display = "none";
   };
 
-  // ✅ SENDEN (Button ist <button type="submit">)
+  // ✅ SENDEN (Submit)
   form.onsubmit = async (e) => {
     e.preventDefault();
 
