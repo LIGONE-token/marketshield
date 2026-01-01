@@ -487,9 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-  const id = new URLSearchParams(location.search).get("id");
-  if (id) loadEntry(id);
-});
+ 
 /* ================= OPEN RATING POPUP ================= */
 document.addEventListener("click", (e) => {
   const rateBox = e.target.closest(".user-rating[data-rate]");
