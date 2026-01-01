@@ -619,4 +619,25 @@ function renderProgressBox() {
   };
 }
 
+// === HARD FIX: ReportFab immer klickbar ===
+const reportFab = document.getElementById("msReportFab");
+const reportModal = document.getElementById("reportModal");
+const reportClose = document.getElementById("closeReportModal");
+
+if (reportFab && reportModal && reportClose) {
+  reportFab.style.pointerEvents = "auto";
+  reportFab.style.zIndex = "10000";
+
+  reportFab.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    reportModal.style.display = "flex";
+  };
+
+  reportClose.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    reportModal.style.display = "none";
+  };
+}
 
