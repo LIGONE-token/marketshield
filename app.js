@@ -412,3 +412,10 @@ document.addEventListener("click", async (e) => {
     console.error(err);
   }
 });
+document.addEventListener("click", (e) => {
+  const trigger = e.target.closest(".rating-open");
+  if (!trigger) return;
+
+  const modal = document.getElementById("ratingModal");
+  if (modal) modal.style.display = "flex";
+});
