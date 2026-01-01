@@ -106,18 +106,16 @@ function renderUserRating(avg, count) {
 
   return `
     <div class="user-rating">
-      ${Array.from({ length: 5 }, (_, i) => `
-        <span data-rate-star="${i + 1}"
-              style="cursor:pointer;font-size:18px;">
-          ${i < a ? "⭐" : "☆"}
-        </span>
-      `).join("")}
+      ${Array.from({ length: 5 }, (_, i) =>
+        i < a ? "⭐" : "☆"
+      ).join("")}
       <span style="font-size:13px;opacity:.7;">
         (${c} Bewertungen)
       </span>
     </div>
   `;
 }
+
 
 
 
