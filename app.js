@@ -196,7 +196,9 @@ function renderList(data) {
 async function loadRelatedEntries(entry) {
   if (!entry || !entry.category || !entry.id) return "";
 
-  const cleanId = String(entry.id).trim();   // 👈 HIER
+  const cleanId = String(entry.id).trim();
+const cleanCategory = String(entry.category).trim();
+   // 👈 HIER
 
   const data = await supa(
     `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count
