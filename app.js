@@ -46,6 +46,9 @@ function normalizeText(text) {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
+function cleanId(id) {
+  return String(id || "").trim();
+}
 
 
 function renderMarkdownTable(text) {
@@ -193,7 +196,7 @@ function renderList(data) {
 async function loadRelatedEntries(entry) {
   if (!entry || !entry.category || !entry.id) return "";
 
-  const cleanId = String(entry.id).trim();
+  const cleanId = String(entry.id).trim();   // 👈 HIER
 
   const data = await supa(
     `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count
@@ -222,6 +225,8 @@ async function loadRelatedEntries(entry) {
 
 
 async function loadEntry(id) {
+  id = cleanId(id);
+
   const box = $("results");
   if (!box) return;
 
