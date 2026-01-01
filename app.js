@@ -513,6 +513,7 @@ document.addEventListener("click", (e) => {
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
   initSearch();
+  renderProgressBox();
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
