@@ -641,3 +641,28 @@ if (reportFab && reportModal && reportClose) {
   };
 }
 
+// === HARD FIX: Progress-Fenster zuverlässig schließen ===
+const progressBox = document.getElementById("msProgressBox");
+const progressToggle = document.getElementById("msProgressToggle");
+const progressContent = document.getElementById("msProgressContent");
+const progressClose = document.getElementById("msProgressClose");
+
+if (progressBox && progressToggle && progressContent && progressClose) {
+  // Startzustand erzwingen
+  progressContent.style.display = "none";
+  progressToggle.style.display = "block";
+
+  progressToggle.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    progressToggle.style.display = "none";
+    progressContent.style.display = "block";
+  };
+
+  progressClose.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    progressContent.style.display = "none";
+    progressToggle.style.display = "block";
+  };
+}
