@@ -1652,3 +1652,6 @@ input {
 .related-card:hover {
   background: #f0f7f2;
 }
+#reportBtn {
+  display: none !important;
+}
