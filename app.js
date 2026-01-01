@@ -416,3 +416,37 @@ document.addEventListener("click", (e) => {
   const modal = document.getElementById("ratingModal");
   if (modal) modal.style.display = "flex";
 });
+document.addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-rating-submit]");
+  if (!btn) return;
+
+  const value = Number(btn.dataset.ratingSubmit);
+  if (!value || !currentEntryId) return;
+
+  showProgress("Bewertung wird gespeichert …");
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        entry_id: currentEntryId,
+        rating: value
+      })
+    });
+
+    document.getElementById("ratingModal").style.display = "none";
+    loadEntry(currentEntryId);
+
+  } catch (err) {
+    console.error(err);
+    alert("Bewertung konnte nicht gespeichert werden.");
+  } finally {
+    hideProgress();
+  }
+});
