@@ -86,20 +86,37 @@ function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
   if (!h && !i) return "";
+
   return `
     <div style="margin:12px 0;">
       ${h ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin-bottom:${i ? 6 : 0}px;">
-          <div>${h}</div>
+        <div style="
+          display:grid;
+          grid-template-columns:90px 1fr;
+          gap:8px;
+          align-items:center;
+          margin-bottom:${i ? 6 : 0}px;
+        ">
+          <div style="font-size:20px;line-height:1;">${h}</div>
           <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
-        </div>` : ""}
+        </div>
+      ` : ""}
+
       ${i ? `
-        <div style="display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;">
+        <div style="
+          display:grid;
+          grid-template-columns:90px 1fr;
+          gap:8px;
+          align-items:center;
+        ">
           <div>${i}</div>
           <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
-        </div>` : ""}
-    </div>`;
+        </div>
+      ` : ""}
+    </div>
+  `;
 }
+
 
 function renderUserRating(avg, count) {
   const c = Number.isFinite(+count) ? +count : 0;
