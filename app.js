@@ -229,3 +229,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
+/* =====================================================
+   EMERGENCY: PROGRESS DISABLE
+   (stellt Systemzustand vor Progress wieder her)
+===================================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const box = document.getElementById("msProgressBox");
+  if (box) {
+    box.innerHTML = "";
+    box.style.display = "none";
+  }
+});
