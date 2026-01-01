@@ -545,7 +545,6 @@ function renderProgressBox() {
 
   const toggle  = document.getElementById("msProgressToggle");
   const content = document.getElementById("msProgressContent");
-   content.onclick = (e) => e.stopPropagation();
   const close   = document.getElementById("msProgressClose");
 
    
