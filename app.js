@@ -140,7 +140,8 @@ async function loadEntry(id) {
 
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-    ${renderScoreBlock(e.score, e.processing_score)}
+${renderUserRating(e.rating_avg, e.rating_count)}
+${renderScoreBlock(e.score, e.processing_score)}
 
     <h3>Zusammenfassung</h3>
     <div style="white-space:pre-wrap;line-height:1.6;">
