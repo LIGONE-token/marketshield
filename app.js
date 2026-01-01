@@ -621,6 +621,14 @@ async function renderProgressBox() {
     `v_user_impact_core?select=applied_contributions&user_hash=eq.${userHash}`
   );
 
+   // Bewertungen (NEU)
+const ratings = await supa(
+  `v_user_rating_count?select=rating_count&user_hash=eq.${userHash}`
+);
+
+const ratingCount = ratings[0]?.rating_count ?? 0;
+
+
   const totalPoints = points[0]?.total_points ?? 0;
   const accepted = quality[0]?.accepted ?? 0;
   const total = quality[0]?.total ?? 0;
