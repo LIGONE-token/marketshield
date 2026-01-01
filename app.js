@@ -352,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       form.reset();
       modal.classList.remove("open");
-      alert("Danke! Deine Meldung wurde gespeichert.");
+      alert("Nachricht versendet! Vielen Dank für deine Mithilfe 💚");
 
     } catch (err) {
       console.error("Report submit failed:", err);
