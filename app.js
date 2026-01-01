@@ -104,26 +104,21 @@ function renderUserRating(avg, count) {
   const c = Number.isFinite(+count) ? +count : 0;
   const avgNum = Number.isFinite(+avg) ? +avg : 0;
 
-  // gerundete Sterne (nur Anzeige)
   const stars = Math.max(0, Math.min(5, Math.round(avgNum)));
-
-  // Textwerte
   const avgText = avgNum ? avgNum.toFixed(1) : "0,0";
-  const countText = c === 1 ? "1 Bewertung" : `${c} Bewertungen`;
 
   return `
-    <div class="user-rating" aria-label="Nutzerbewertung">
+    <div class="user-rating">
       <div style="font-size:20px;line-height:1;">
         ${Array.from({ length: 5 }, (_, i) => i < stars ? "⭐" : "☆").join("")}
       </div>
 
-      <div style="margin-top:4px;font-size:14px;">
-        <strong>${avgText}</strong> von <strong>5</strong>
-        <span style="opacity:.75;">(${countText})</span>
-      </div>
-
-      <div style="font-size:12px;opacity:.6;margin-top:2px;">
-        Basierend auf echten Nutzerbewertungen
+      <div class="rating-open"
+           style="margin-top:4px;font-size:14px;cursor:pointer;text-decoration:underline;">
+        <strong>${avgText}</strong> von <strong>5 Sternen</strong>
+        <span style="opacity:.75;">
+          · ${c} Bewertung${c === 1 ? "" : "en"}
+        </span>
       </div>
     </div>
   `;
