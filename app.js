@@ -423,48 +423,6 @@ document.addEventListener("click", (e) => {
   document.getElementById("results").innerHTML = "";
   loadCategories();
 });
-function openReportModal() {
-  const overlay = document.createElement("div");
-  overlay.id = "msReportOverlay";
-  overlay.style.cssText = `
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.55);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:9999;
-  `;
-
-  overlay.innerHTML = `
-    <div id="msReportBox"
-         style="background:#fff;padding:20px;border-radius:12px;
-                width:90%;max-width:420px;">
-      <h3>Problem oder Anregung melden</h3>
-
-      <textarea id="reportText"
-        style="width:100%;height:120px;"></textarea>
-
-      <div style="margin-top:12px;text-align:right;">
-        <button id="closeReport">Schließen</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  // ✅ Klick auf dunklen Hintergrund schließt
-  overlay.addEventListener("click", () => overlay.remove());
-
-  // ✅ Klick im Fenster blockiert NICHTS, aber verhindert Schließen
-  document.getElementById("msReportBox")
-    .addEventListener("click", (e) => e.stopPropagation());
-
-  // ✅ Button schließt IMMER
-  document.getElementById("closeReport")
-    .addEventListener("click", () => overlay.remove());
-}
-
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
@@ -605,55 +563,85 @@ function renderProgressBox() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const fab = document.getElementById("msReportFab");
-if (fab) {
-  fab.style.pointerEvents = "auto";
-  fab.style.zIndex = "10000";
-}
-
+  /* =========================
+     REPORT (NUR FAB)
+  ========================= */
+  const fab   = document.getElementById("msReportFab");
   const modal = document.getElementById("reportModal");
-  const box   = modal?.querySelector(".report-modal-box");
   const form  = document.getElementById("reportForm");
   const close = document.getElementById("closeReportModal");
 
-  if (!fab || !modal || !box || !form || !close) return;
+  if (fab && modal && form && close) {
+    // FAB immer klickbar (PC-Problem)
+    fab.style.pointerEvents = "auto";
+    fab.style.zIndex = "10000";
 
-  // 🔴 FAB öffnet das Report-Fenster vollständig
-  fab.onclick = () => {
-    modal.style.display = "flex";
-    box.style.display   = "block";   // 🔥 DAS FEHLTE
-  };
+    // Öffnen
+    fab.onclick = (e) => {
+      e.preventDefault();
+      modal.style.display = "flex";
+    };
 
-  // ✅ Schließen
-  close.onclick = () => {
-    modal.style.display = "none";
-  };
+    // Schließen
+    close.onclick = (e) => {
+      e.preventDefault();
+      modal.style.display = "none";
+    };
 
-  // ✅ SENDEN (Submit)
-  form.onsubmit = async (e) => {
-    e.preventDefault();
+    // SENDEN
+    form.onsubmit = async (e) => {
+      e.preventDefault();
 
-    const text = form.querySelector("textarea").value.trim();
-    if (!text) return;
+      const textarea = form.querySelector("textarea[name='description']");
+      const text = textarea.value.trim();
+      if (!text) return;
 
-    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        description: text,
-        page: location.href,
-        source: "marketshield",
-        status: "new"
-      })
-    });
+      await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          description: text,
+          page: location.href,
+          source: "marketshield",
+          status: "new"
+        })
+      });
 
-    form.reset();
-    modal.style.display = "none";
-    alert("Danke! Dein Hinweis wurde gespeichert.");
-  };
+      form.reset();
+      modal.style.display = "none";
+      alert("Danke! Dein Hinweis wurde gespeichert.");
+    };
+  }
+
+  /* =========================
+     PROGRESS (STABIL)
+  ========================= */
+  const box     = document.getElementById("msProgressBox");
+  const toggle  = document.getElementById("msProgressToggle");
+  const content = document.getElementById("msProgressContent");
+  const closeP  = document.getElementById("msProgressClose");
+
+  if (box && toggle && content && closeP) {
+    // IMMER geschlossener Startzustand
+    content.style.display = "none";
+    toggle.style.display  = "block";
+
+    toggle.onclick = (e) => {
+      e.preventDefault();
+      toggle.style.display  = "none";
+      content.style.display = "block";
+    };
+
+    closeP.onclick = (e) => {
+      e.preventDefault();
+      content.style.display = "none";
+      toggle.style.display  = "block";
+    };
+  }
 });
+
