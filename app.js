@@ -633,10 +633,7 @@ const ratingCount = ratings[0]?.rating_count ?? 0;
   const qualityRate = total > 0 ? Math.round((accepted / total) * 100) : 0;
   const applied = impact[0]?.applied_contributions ?? 0;
 
-  // Wenn Nutzer noch nichts gemacht hat → nicht anzeigen
-  if (totalPoints === 0 && total === 0) return;
-
-  box.innerHTML = `
+   box.innerHTML = `
     <div id="msProgressToggle" style="
       background:#2e7d32;
       color:#fff;
