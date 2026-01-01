@@ -431,7 +431,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // CORE
   loadCategories();
   initSearch();
-  renderProgressBox();
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
