@@ -605,23 +605,59 @@ function renderProgressBox() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const fab   = document.getElementById("msReportFab");
-  const modal = document.getElementById("reportModal");
-  const close = document.getElementById("closeReportModal");
+  const fab      = document.getElementById("msReportFab");
+  const modal    = document.getElementById("reportModal");
+  const closeBtn = document.getElementById("closeReportModal");
+  const form     = document.getElementById("reportForm");
 
-  if (!fab || !modal || !close) return;
+  if (!fab || !modal || !closeBtn || !form) return;
 
-  // 🔴 NUR der FAB öffnet das Report-Fenster
+  // 🔴 Nur FAB öffnet das Modal
   fab.onclick = () => {
     modal.style.display = "flex";
   };
 
-  // ❌ Oberer Button bleibt absichtlich TOT
+  // ❌ Oberer Button bleibt bewusst tot
   const topBtn = document.getElementById("reportBtn");
   if (topBtn) topBtn.onclick = null;
 
-  // ✅ Fenster lässt sich zuverlässig schließen
-  close.onclick = () => {
+  // ✅ Modal schließen
+  closeBtn.onclick = () => {
     modal.style.display = "none";
+  };
+
+  // ✅ REPORT SENDEN
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const textarea = form.querySelector("textarea[name='description']");
+    const text = textarea.value.trim();
+    if (!text) return;
+
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          description: text,
+          page: location.href,
+          source: "marketshield",
+          status: "new"
+        })
+      });
+
+      textarea.value = "";
+      modal.style.display = "none";
+      alert("Danke! Dein Hinweis wurde gespeichert.");
+
+    } catch (err) {
+      alert("Fehler beim Senden. Bitte später erneut versuchen.");
+      console.error(err);
+    }
   };
 });
