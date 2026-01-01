@@ -664,6 +664,7 @@ const ratingCount = ratings[0]?.rating_count ?? 0;
     ">
       <strong>🛡 Dein Beitrag</strong><br><br>
       ⭐ ${totalPoints} Punkte<br>
+      📝 Bewertungen: ${ratingCount}<br>
       📈 Qualitätsquote: ${qualityRate} %<br>
       🛠 Übernommene Beiträge: ${applied}<br><br>
       <span id="msProgressClose" style="cursor:pointer;color:#2e7d32;">
