@@ -616,5 +616,14 @@ function renderProgressBox() {
   });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  const wait = setInterval(() => {
+    const box = document.getElementById("msProgressBox");
+    if (box) {
+      clearInterval(wait);
+      renderProgressBox();
+    }
+  }, 50);
+});
 
   
