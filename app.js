@@ -124,7 +124,11 @@ function renderUserRating(avg, count) {
          style="margin:6px 0;cursor:pointer;">
 
       <span aria-hidden="true">
-        ${"⭐".repeat(full)}${"☆".repeat(empty)}
+${Array.from({ length: 5 }, (_, i) =>
+  `<span data-rate-star="${i + 1}" style="cursor:pointer;">
+     ${i < full ? "⭐" : "☆"}
+   </span>`
+).join("")}
       </span>
 
       <span class="rating-text"
