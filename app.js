@@ -599,8 +599,64 @@ await loadEntry(currentEntryId);
   });
 }
 async function renderProgressBox() {
-  return;
+  const box = document.getElementById("msProgressBox");
+  if (!box) return;
+
+  box.innerHTML = `
+    <div id="msProgressToggle" style="
+      position:fixed;
+      bottom:16px;
+      right:16px;
+      background:#2e7d32;
+      color:#fff;
+      padding:8px 12px;
+      border-radius:18px;
+      cursor:pointer;
+      font-size:14px;
+      z-index:999;
+      box-shadow:0 4px 12px rgba(0,0,0,.2);
+    ">
+      🛡 Dein Beitrag ▸
+    </div>
+
+    <div id="msProgressContent" style="
+      display:none;
+      position:fixed;
+      bottom:16px;
+      right:16px;
+      background:#fff;
+      color:#000;
+      padding:14px;
+      border-radius:14px;
+      width:220px;
+      z-index:1000;
+      box-shadow:0 6px 20px rgba(0,0,0,.25);
+      font-size:14px;
+    ">
+      <strong>🛡 Dein Beitrag</strong><br><br>
+      Dein Fortschritt wird hier angezeigt.<br>
+      (aktiviert im nächsten Schritt)<br><br>
+      <span id="msProgressClose" style="cursor:pointer;color:#2e7d32;">
+        schließen
+      </span>
+    </div>
+  `;
+
+  const toggle = document.getElementById("msProgressToggle");
+  const content = document.getElementById("msProgressContent");
+  const close = document.getElementById("msProgressClose");
+
+  toggle.onclick = () => {
+    content.style.display = "block";
+    toggle.style.display = "none";
+  };
+
+  close.onclick = () => {
+    content.style.display = "none";
+    toggle.style.display = "block";
+  };
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const fab = document.getElementById("msReportFab");
