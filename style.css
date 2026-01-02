@@ -1689,8 +1689,9 @@ input {
   z-index: 2147483646;
 }
 
-#msProgressBox.open {
-  display: flex;
+#msProgressBox {
+  display: none;        /* 🔴 DAS ist entscheidend */
+  pointer-events: none;
 }
 
 #msProgressBox .box {
