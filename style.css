@@ -4330,3 +4330,28 @@ html, body,
   user-select: none;
 }
 #ratingModalStars span{ cursor:pointer; }
+/* ===============================
+   MarketShield – RatingModal FINAL CENTER
+   =============================== */
+
+#ratingModal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  z-index: 100000;
+}
+
+#ratingModal.open {
+  display: flex;
+}
+
+#ratingModal > * {
+  background: #fff;
+  width: min(420px, 92vw);
+  padding: 18px 16px 16px;
+  border-radius: 14px;
+  box-sizing: border-box;
+}
