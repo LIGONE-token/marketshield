@@ -233,58 +233,47 @@ function renderRatingBlock(avg = 0, count = 0) {
 
   return `
     <div id="ratingBox"
-     style="
-       margin:6px 0 10px 0;
-       font-size:12.5px;
-       line-height:1.35;
+         style="
+           margin:6px 0 10px 0;
+           font-size:12.5px;
+           line-height:1.35;
+           width:100%;
+           text-align:left;
+         "
+         itemprop="aggregateRating"
+         itemscope
+         itemtype="https://schema.org/AggregateRating">
 
-       /* 🔒 Parent-Zentrierung aushebeln */
-       align-self:flex-start;
-       width:100%;
-       text-align:left;
-     "
-     itemprop="aggregateRating"
-     itemscope
-     itemtype="https://schema.org/AggregateRating">
+      <meta itemprop="ratingValue" content="${a.toFixed(1)}">
+      <meta itemprop="bestRating" content="5">
+      <meta itemprop="ratingCount" content="${c}">
 
-      <span style="opacity:.85;">
+      <div style="opacity:.85;">
         <strong>Nutzerbewertung:</strong>
         ${a.toFixed(1).replace(".", ",")} von 5
-        <span style="opacity:.7;">(${c})</span>
-      </span>
-
-      <!-- Sterne bewusst in eigener Zeile -->
-      <div id="ratingStars"
-     style="
-       margin-top:2px;
-       font-size:14px;
-       line-height:1;
-       letter-spacing:-1px;
-       cursor:pointer;
-       user-select:none;
-
-       /* 🔒 niemals mittig */
-       display:flex;
-       justify-content:flex-start;
-       align-items:center;
-       text-align:left;
-
-       /* verhindert auto-zentrierung */
-       width:fit-content;
-       margin-left:0;
-       margin-right:auto;
-
-       color:#f4b400;
-     ">
-  ${[1,2,3,4,5].map(n =>
-<span data-star="${n}" data-rating-star="1">
-  ${a >= n ? "★" : "☆"}
-</span>
-  ).join("")}
-</div>
-
-
+        <span style="opacity:.6;">(${c})</span>
       </div>
+
+      <div id="ratingStars"
+           style="
+             margin-top:2px;
+             display:flex;
+             justify-content:flex-start;
+             align-items:center;
+             gap:2px;
+             font-size:14px;
+             line-height:1;
+             cursor:pointer;
+             user-select:none;
+             color:#f4b400;
+           ">
+        ${[1,2,3,4,5].map(n =>
+          `<span data-star="${n}" data-rating-star="1">` +
+          (a >= n ? "★" : "☆") +
+          `</span>`
+        ).join("")}
+      </div>
+
     </div>
   `;
 }
