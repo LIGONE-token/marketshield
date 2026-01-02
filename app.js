@@ -1,3 +1,4 @@
+console.log("APP VERSION LIVE 2026-01-03 00:42");
 
 /* =====================================================
    MarketShield – app.js (FINAL / KOMPLETT / STABIL)
