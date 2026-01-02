@@ -595,6 +595,58 @@ function initRatingModal() {
 
   if (close) close.onclick = closeRatingModal;
 }
+/* ================= RATING MODAL ================= */
+
+function openRatingModal(prefill = null) {
+  const modal = document.getElementById("ratingModal");
+  const stars = document.getElementById("ratingModalStars");
+  if (!modal || !stars) return;
+
+  // Optional: vorgewählten Stern anzeigen
+  stars.querySelectorAll("span").forEach(s => {
+    const n = Number(s.dataset.star);
+    s.textContent = (prefill && prefill >= n) ? "★" : "☆";
+  });
+
+  modal.classList.add("open");
+}
+
+function closeRatingModal() {
+  const modal = document.getElementById("ratingModal");
+  if (modal) modal.classList.remove("open");
+}
+
+function initRatingModal() {
+  const stars = document.getElementById("ratingModalStars");
+  const close = document.getElementById("closeRatingModal");
+  if (!stars) return;
+
+  // Klick im Modal speichert Bewertung
+  stars.querySelectorAll("span").forEach(star => {
+    star.onclick = async () => {
+      const rating = Number(star.dataset.star);
+      if (!rating || !currentEntryId) return;
+
+      await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          entry_id: currentEntryId,
+          rating
+        })
+      });
+
+      closeRatingModal();
+      loadEntry(currentEntryId);
+    };
+  });
+
+  if (close) close.onclick = closeRatingModal;
+}
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
