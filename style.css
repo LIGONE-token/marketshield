@@ -2160,3 +2160,16 @@ html, body,
   box-shadow: 0 10px 40px rgba(0,0,0,0.4);
   text-align: center;
 }
+#ratingModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+}
+
+#ratingModal.open {
+  display: flex;
+}
