@@ -201,8 +201,9 @@ async function loadEntry(id) {
     ${renderScoreBlock(e.score, e.processing_score)}
     <h3>Zusammenfassung</h3>
     <div class="entry-summary">
-  ${normalizeText(e.summary)}
+  ${e.summary}
 </div>
+
 
     <div id="entryActions"></div>
     <div id="similarEntries"></div>
