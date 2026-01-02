@@ -3,7 +3,6 @@
 ===================================================== */
 
 let currentEntryId = null;
-window.openRatingModal = openRatingModal;
 
 
 /* ================= SUPABASE ================= */
@@ -599,6 +598,7 @@ function openRatingModal(prefill = null) {
     };
   }
 }
+window.openRatingModal = openRatingModal;
 
 
 function closeRatingModal() {
