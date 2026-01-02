@@ -134,6 +134,34 @@ function renderSummary(summary = "") {
   flushPipe(); flushKV(); flushParagraph();
   return html;
 }
+function renderScoreBlock(score, processing) {
+  if (score == null && processing == null) return "";
+
+  const bar = v => `
+    <div style="background:#eee;border-radius:6px;height:10px;overflow:hidden;margin-top:4px;">
+      <div style="
+        width:${Math.min(Math.max(v,0),10) * 10}%;
+        height:100%;
+        background:${v >= 7 ? "#c62828" : v >= 4 ? "#f9a825" : "#2e7d32"};
+      "></div>
+    </div>
+  `;
+
+  return `
+    <div style="margin:12px 0;">
+      ${score != null ? `
+        <div style="margin-bottom:6px;">
+          <strong>Gesundheit:</strong> ${score}/10
+          ${bar(score)}
+        </div>` : ""}
+      ${processing != null ? `
+        <div>
+          <strong>Industrie:</strong> ${processing}/10
+          ${bar(processing)}
+        </div>` : ""}
+    </div>
+  `;
+}
 
 /* ========== LISTE ========= */
 function renderList(data) {
