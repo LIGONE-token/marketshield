@@ -504,7 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     loadCategories().catch(showFatal);
     initSearch();
-    initReport();
+    initReportFabFinal();
     initBackHome();
 
     const params = new URLSearchParams(location.search);
