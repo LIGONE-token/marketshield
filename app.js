@@ -423,54 +423,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-/* =====================================================
-   RATING – OHNE HTML (PROMPT) – STABIL
-===================================================== */
-document.addEventListener("click", async (e) => {
-  const trigger = e.target.closest(".rating-open");
-  if (!trigger) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  if (!currentEntryId) {
-    return;
-  }
-
-  const input = prompt("Bewertung (1–5):", "5");
-  if (input === null) return; // Abbruch
-
-  const value = Number(String(input).trim());
-  if (!Number.isFinite(value) || value < 1 || value > 5) {
-
-   return;
-  }
-
-  showProgress("Bewertung wird gespeichert …");
-
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        entry_id: currentEntryId,
-        rating: value
-      })
-    });
-
-    await loadEntry(currentEntryId);
-
-  } catch (err) {
-    console.error(err);
-  } finally {
-    hideProgress();
-  }
-});
 
 /* =====================================================
    REPORT MODAL – SCHLIESSEN (ROBUST)
