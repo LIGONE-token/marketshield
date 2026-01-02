@@ -3,6 +3,8 @@
 ===================================================== */
 
 let currentEntryId = null;
+window.openRatingModal = openRatingModal;
+
 
 /* ================= SUPABASE ================= */
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
