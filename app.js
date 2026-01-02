@@ -374,7 +374,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     showProgress("Nachricht wird gesendet …");
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      console.log("VOR ALERT");
+alert("TEST ALERT");
+console.log("NACH ALERT");
+
+       const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
         method: "POST",
         headers: {
           apikey: SUPABASE_KEY,
