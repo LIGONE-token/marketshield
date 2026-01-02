@@ -332,39 +332,35 @@ async function loadEntry(id) {
 
   renderEntryActions(e.title);
   updateBackHome();
-}
+   // ⭐ Rating klickbar machen – korrekt nach DOM-Erzeugung
 const stars = document.getElementById("ratingStars");
 if (stars) {
   stars.querySelectorAll("span").forEach(star => {
-    star.addEventListener("click", async (ev) => {
-      ev.preventDefault();
-      ev.stopPropagation();
+    star.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
       const rating = Number(star.dataset.star);
       if (!rating || !currentEntryId) return;
 
-      try {
-        await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            entry_id: currentEntryId,
-            rating
-          })
-        });
+      await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          entry_id: currentEntryId,
+          rating
+        })
+      });
 
-        // 🔁 neu laden → Durchschnitt + Anzahl aktualisiert
-        loadEntry(currentEntryId);
-
-      } catch (err) {
-        showFatal(err);
-      }
-    });
+      loadEntry(currentEntryId); // sofort korrekt neu rendern
+    };
   });
+}
+
 }
 
 /* ================= SHARE / ACTIONS ================= */
