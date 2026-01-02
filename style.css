@@ -4259,3 +4259,13 @@ html, body,
 }
 /* ===== FORCE RATING MODAL (FINAL) ===== */
 
+/* === REPORT MODAL TEXTAREA FIX === */
+#reportModal textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  resize: vertical;
+  box-sizing: border-box;
+}
