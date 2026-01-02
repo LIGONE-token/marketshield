@@ -222,6 +222,8 @@ async function loadEntry(id) {
   renderEntryActions(e.title);
   await loadSimilarEntries(e);
   bindEntryClicks(box);
+   bindRatingClicks();
+
 }
 
 /* ================= ÄHNLICHE EINTRÄGE ================= */
