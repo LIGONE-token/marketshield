@@ -402,24 +402,32 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-/* ================= RATING – MODAL & SPEICHERN ================= */
-document.addEventListener("click", (e) => {
+/* =====================================================
+   RATING – OHNE HTML (PROMPT) – STABIL
+===================================================== */
+document.addEventListener("click", async (e) => {
   const trigger = e.target.closest(".rating-open");
   if (!trigger) return;
-  e.preventDefault(); e.stopPropagation();
-  const modal = document.getElementById("ratingModal");
-  if (modal) modal.style.display = "flex";
-});
 
-document.addEventListener("click", async (e) => {
-  const btn = e.target.closest("[data-rating-submit]");
-  if (!btn) return;
-  e.preventDefault(); e.stopPropagation();
+  e.preventDefault();
+  e.stopPropagation();
 
-  const value = Number(btn.dataset.ratingSubmit);
-  if (!value || !currentEntryId) return;
+  if (!currentEntryId) {
+    alert("Bitte zuerst einen Eintrag öffnen.");
+    return;
+  }
+
+  const input = prompt("Bewertung (1–5):", "5");
+  if (input === null) return; // Abbruch
+
+  const value = Number(String(input).trim());
+  if (!Number.isFinite(value) || value < 1 || value > 5) {
+    alert("Bitte eine Zahl von 1 bis 5 eingeben.");
+    return;
+  }
 
   showProgress("Bewertung wird gespeichert …");
+
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
       method: "POST",
@@ -429,11 +437,15 @@ document.addEventListener("click", async (e) => {
         "Content-Type": "application/json",
         Prefer: "return=minimal"
       },
-      body: JSON.stringify({ entry_id: currentEntryId, rating: value })
+      body: JSON.stringify({
+        entry_id: currentEntryId,
+        rating: value
+      })
     });
-    const modal = document.getElementById("ratingModal");
-    if (modal) modal.style.display = "none";
+
     await loadEntry(currentEntryId);
+    alert("Danke! Bewertung gespeichert ✅");
+
   } catch (err) {
     console.error(err);
     alert("Bewertung konnte nicht gespeichert werden.");
@@ -441,6 +453,7 @@ document.addEventListener("click", async (e) => {
     hideProgress();
   }
 });
+
 /* =====================================================
    REPORT MODAL – SCHLIESSEN (ROBUST)
 ===================================================== */
