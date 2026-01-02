@@ -1727,3 +1727,18 @@ input {
 .entry-card {
   pointer-events: auto;
 }
+/* 🔥 RATING MUSS IMMER KLICKBAR SEIN */
+.rating-open {
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto !important;
+}
+
+/* Card darf Rating NICHT blockieren */
+.entry-card {
+  pointer-events: auto;
+}
+
+.entry-card * {
+  pointer-events: auto;
+}
