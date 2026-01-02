@@ -200,7 +200,17 @@ async function loadEntry(id) {
 
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-    ${renderUserRating(e.rating_avg, e.rating_count)}
+    <div id="inlineRating" style="margin:12px 0 18px;">
+  <div id="inlineStars" style="font-size:26px;cursor:pointer;">
+    ${[1,2,3,4,5].map(n => `
+      <span data-star="${n}">${Math.round(e.rating_avg || 0) >= n ? "⭐" : "☆"}</span>
+    `).join("")}
+  </div>
+  <div style="font-size:13px;opacity:.7;margin-top:4px;">
+    Bewertung abgeben (${e.rating_count || 0})
+  </div>
+</div>
+
     ${renderScoreBlock(e.score, e.processing_score)}
     <h3>Zusammenfassung</h3>
     <div class="entry-summary">
