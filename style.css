@@ -1661,8 +1661,8 @@ input {
   }
 }
 @media (max-width: 600px) {
-  header { padding-top: 8px; } /* falls der Header oben zu viel Luft hat */
-  #searchInput { margin-top: -6px; }
+  header { padding-top: 6px; } /* falls der Header oben zu viel Luft hat */
+  #searchInput { margin-top: -10px; }
 }
 /* REPORT FAB – CLICK FORCE */
 #msReportFab {
