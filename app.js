@@ -529,10 +529,14 @@ document.addEventListener("click", (e) => {
   const modal = document.getElementById("ratingModal");
   if (modal) modal.classList.remove("open");
 });
-// ⭐ INLINE RATING – SUPABASE (FINAL)
+// ⭐ INLINE RATING – SUPABASE (FINAL & ISOLIERT)
 document.addEventListener("click", async (e) => {
   const star = e.target.closest("#inlineStars span");
-  if (!star || !currentEntryId) return;
+  if (!star) return;                 // 👈 ALLES andere ignorieren
+  if (!currentEntryId) return;
+
+  e.preventDefault();
+  e.stopPropagation();               // 👈 NUR HIER stoppen
 
   const value = Number(star.dataset.star);
   if (!value) return;
@@ -552,10 +556,9 @@ document.addEventListener("click", async (e) => {
       })
     });
 
-    // neu laden → zeigt aktualisierte Bewertung
     await loadEntry(currentEntryId);
 
   } catch (err) {
-    console.error("Rating speichern fehlgeschlagen:", err);
+    console.error("Rating failed:", err);
   }
 });
