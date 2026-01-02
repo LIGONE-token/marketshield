@@ -141,40 +141,16 @@ function renderUserRating(avg, count) {
         ${Array.from({ length: 5 }, (_, i) => i < stars ? "⭐" : "☆").join("")}
       </div>
 
-      <!-- 🔑 DAS ist der klickbare Trigger -->
-      <div
-  data-rating-trigger="1"
-  onclick="alert('KLICK KOMMT AN')"
-  style="margin-top:4px;font-size:14px;cursor:pointer;text-decoration:underline;display:inline-block;"
->
-
+      <button
+        type="button"
+        class="rating-trigger"
+        style="margin-top:4px;font-size:14px;background:none;border:0;cursor:pointer;text-decoration:underline;"
+      >
         <strong>${avgText}</strong> von <strong>5</strong>
-        <span style="opacity:.75;">
-          · ${c} Bewertung${c === 1 ? "" : "en"}
-        </span>
-      </div>
+        <span style="opacity:.75;">· ${c} Bewertung${c === 1 ? "" : "en"}</span>
+      </button>
     </div>
   `;
-}
-
-/* ================= ENTRY CLICK BINDING ================= */
-function bindEntryClicks(root = document) {
-  root.querySelectorAll(".entry-card").forEach(card => {
-    card.onclick = (e) => {
-
-      // ⭐ Rating hat Vorrang
-      if (e.target.closest("[data-rating-trigger]")) return;
-
-      // 🔗 andere interaktive Elemente nicht kapern
-      if (e.target.closest("a, button, input, textarea, select")) return;
-
-      const id = card.dataset.id;
-      if (!id) return;
-
-      history.pushState({}, "", "?id=" + id);
-      loadEntry(id);
-    };
-  });
 }
 
 
@@ -458,16 +434,7 @@ document.addEventListener("click", (e) => {
 ===================================================== */
 
 // Öffnen des Rating-Modals – PRIORITÄT
-document.addEventListener("click", (e) => {
-  const trigger = e.target.closest("[data-rating-trigger]");
-  if (!trigger) return;
 
-  e.preventDefault();
-  e.stopPropagation();
-
-  const modal = document.getElementById("ratingModal");
-  if (modal) modal.classList.add("open");
-}, true); // ⬅️ WICHTIG: Capture!
 
 
 
