@@ -1657,7 +1657,7 @@ input {
 }
 @media (max-width: 600px) {
   #searchInput {
-    margin-top: -6px; /* nach Bedarf -4 bis -10 */
+    margin-top: -10px; /* nach Bedarf -4 bis -10 */
   }
 }
 @media (max-width: 600px) {
