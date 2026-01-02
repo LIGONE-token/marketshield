@@ -220,6 +220,23 @@ function renderScoreBlock(score, processing, size = 13) {
     </div>
   `;
 }
+function renderRatingBlock(avg = 0, count = 0) {
+  const a = Number(avg) || 0;
+  const c = Number(count) || 0;
+
+  return `
+    <div id="ratingBox" style="margin:10px 0;font-size:14px;">
+      <strong>Nutzerbewertung:</strong>
+      ${a.toFixed(1).replace(".", ",")}/5 (${c})
+      <span id="ratingStars"
+            style="font-size:16px;margin-left:6px;cursor:pointer;user-select:none;">
+        ${[1,2,3,4,5].map(n =>
+          `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
+        ).join("")}
+      </span>
+    </div>
+  `;
+}
 
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
