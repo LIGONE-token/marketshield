@@ -33,107 +33,97 @@ function normalizeText(t="") {
   return t.replace(/\r/g,"").replace(/\n{3,}/g,"\n\n").trim();
 }
 
-function renderSummary(summary) {
+function renderSummary(summary = "") {
   const text = normalizeText(summary);
   if (!text) return "";
 
-  const lines = text.split("\n").map(l => l.trim());
-
+  const lines = text.split("\n");
   let html = "";
-  let buffer = [];
 
-  // Hilfsfunktionen
+  let paragraph = [];
+  let kvBlock = [];
+  let pipeBlock = [];
+
   const flushParagraph = () => {
-    if (!buffer.length) return;
-    html += `<p>${escapeHtml(buffer.join(" ")).replace(/\n/g,"<br>")}</p>`;
-    buffer = [];
+    if (!paragraph.length) return;
+    html += `<p style="margin:0 0 12px;line-height:1.55;">${
+      escapeHtml(paragraph.join(" ")).replace(/\n/g, "<br>")
+    }</p>`;
+    paragraph = [];
   };
 
-  const renderPipeTable = (rows) => {
-    const cells = rows.map(r =>
-      r.split("|").map(c => c.trim()).filter(Boolean)
-    );
-    if (cells.length < 2 || cells[0].length < 2) return "";
-
-    const head = cells[0];
-    const body = cells.slice(1);
-
-    return `
-      <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
-        <thead>
-          <tr>
-            ${head.map(h => `<th style="border-bottom:2px solid #ccc;padding:6px;text-align:left;">${escapeHtml(h)}</th>`).join("")}
-          </tr>
-        </thead>
-        <tbody>
-          ${body.map(row => `
-            <tr>
-              ${row.map(c => `<td style="border-bottom:1px solid #eee;padding:6px;">${escapeHtml(c)}</td>`).join("")}
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    `;
-  };
-
-  const renderKVTable = (rows) => {
-    if (rows.length < 2) return "";
-    return `
-      <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
-        <tbody>
-          ${rows.map(r => {
-            const [k,v] = r.split(":").map(s => s.trim());
-            if (!v) return "";
-            return `
-              <tr>
-                <td style="width:35%;border-bottom:1px solid #eee;padding:6px;"><strong>${escapeHtml(k)}</strong></td>
-                <td style="border-bottom:1px solid #eee;padding:6px;">${escapeHtml(v)}</td>
-              </tr>
-            `;
-          }).join("")}
-        </tbody>
-      </table>
-    `;
-  };
-
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-
-    // Pipe-Tabelle
-    if (line.includes("|")) {
-      const rows = [];
-      while (i < lines.length && lines[i].includes("|")) {
-        rows.push(lines[i]);
-        i++;
-      }
-      flushParagraph();
-      html += renderPipeTable(rows) || `<p>${escapeHtml(rows.join(" "))}</p>`;
-      continue;
-    }
-
-    // Key: Value Tabelle
-    if (/^[^:]{2,30}:\s+.+$/.test(line)) {
-      const rows = [];
-      while (i < lines.length && /^[^:]{2,30}:\s+.+$/.test(lines[i])) {
-        rows.push(lines[i]);
-        i++;
-      }
-      flushParagraph();
-      html += renderKVTable(rows) || `<p>${escapeHtml(rows.join(" "))}</p>`;
-      continue;
-    }
-
-    // Normaler Text
-    if (!line) {
-      flushParagraph();
+  const flushKV = () => {
+    if (kvBlock.length < 2) {
+      paragraph.push(...kvBlock);
     } else {
-      buffer.push(line);
+      html += `
+        <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+          <tbody>
+            ${kvBlock.map(l => {
+              const [k, v] = l.split(":");
+              return `
+                <tr>
+                  <td style="width:35%;padding:6px;border-bottom:1px solid #eee;"><strong>${escapeHtml(k)}</strong></td>
+                  <td style="padding:6px;border-bottom:1px solid #eee;">${escapeHtml(v)}</td>
+                </tr>`;
+            }).join("")}
+          </tbody>
+        </table>`;
     }
-    i++;
+    kvBlock = [];
+  };
+
+  const flushPipe = () => {
+    const rows = pipeBlock
+      .map(l => l.split("|").map(c => c.trim()).filter(Boolean))
+      .filter(r => r.length >= 2);
+
+    if (rows.length < 2) {
+      paragraph.push(...pipeBlock);
+    } else {
+      const head = rows[0];
+      const body = rows.slice(1);
+
+      html += `
+        <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+          <thead>
+            <tr>${head.map(h => `<th style="text-align:left;border-bottom:2px solid #ccc;padding:6px;">${escapeHtml(h)}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${body.map(r => `
+              <tr>${r.map(c => `<td style="padding:6px;border-bottom:1px solid #eee;">${escapeHtml(c)}</td>`).join("")}</tr>
+            `).join("")}
+          </tbody>
+        </table>`;
+    }
+    pipeBlock = [];
+  };
+
+  for (const line of lines) {
+    const l = line.trim();
+
+    if (!l) {
+      flushPipe(); flushKV(); flushParagraph();
+      continue;
+    }
+
+    if (l.includes("|")) {
+      flushParagraph(); flushKV();
+      pipeBlock.push(l);
+      continue;
+    }
+
+    if (/^[^:]{2,40}:\s+.+$/.test(l)) {
+      flushParagraph(); flushPipe();
+      kvBlock.push(l);
+      continue;
+    }
+
+    flushPipe(); flushKV();
+    paragraph.push(l);
   }
 
-  flushParagraph();
+  flushPipe(); flushKV(); flushParagraph();
   return html;
 }
 
