@@ -1927,3 +1927,53 @@ html, body,
 #ratingStars span {
   cursor: pointer;
 }
+/* =========================
+   RATING MODAL – SICHTBAR & KLAR
+========================= */
+#ratingModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+}
+
+#ratingModal.open {
+  display: flex;
+}
+
+#ratingModal .modal-content {
+  background: #ffffff;
+  color: #111;
+  padding: 24px;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  text-align: center;
+}
+
+/* Sterne */
+#ratingStars {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  font-size: 34px;
+  margin: 16px 0 20px;
+}
+
+#ratingStars span {
+  cursor: pointer;
+}
+
+/* Abbrechen-Button */
+#closeRatingModal {
+  margin-top: 8px;
+  background: none;
+  border: 0;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+}
