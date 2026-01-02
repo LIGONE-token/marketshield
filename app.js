@@ -233,14 +233,19 @@ function renderRatingBlock(avg = 0, count = 0) {
 
   return `
     <div id="ratingBox"
-         style="margin:6px 0 10px 0;font-size:12.5px;line-height:1.35;"
-         itemprop="aggregateRating"
-         itemscope
-         itemtype="https://schema.org/AggregateRating">
+     style="
+       margin:6px 0 10px 0;
+       font-size:12.5px;
+       line-height:1.35;
 
-      <meta itemprop="ratingValue" content="${a.toFixed(1)}">
-      <meta itemprop="bestRating" content="5">
-      <meta itemprop="ratingCount" content="${c}">
+       /* 🔒 Parent-Zentrierung aushebeln */
+       align-self:flex-start;
+       width:100%;
+       text-align:left;
+     "
+     itemprop="aggregateRating"
+     itemscope
+     itemtype="https://schema.org/AggregateRating">
 
       <span style="opacity:.85;">
         <strong>Nutzerbewertung:</strong>
