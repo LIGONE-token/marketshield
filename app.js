@@ -185,13 +185,20 @@ function renderHealth(score) {
 function renderIndustry(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
-  const w = Math.round((n / 10) * 80);
+
+  const w = Math.round((Math.min(Math.max(n, 0), 10) / 10) * 80);
+
+  let color = "#2e7d32";      // grün
+  if (n >= 4 && n <= 7) color = "#f9a825"; // gelb
+  if (n >= 8) color = "#c62828";           // rot
+
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
-      <div style="width:${w}px;height:8px;background:#2e7d32;"></div>
+      <div style="width:${w}px;height:8px;background:${color};"></div>
     </div>
   `;
 }
+
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
   const i = renderIndustry(processing);
