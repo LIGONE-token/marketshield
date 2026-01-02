@@ -56,17 +56,6 @@ function shortText(t, max = 160) {
   t = normalizeText(t);
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
-function bindRatingClicks(root = document) {
-  root.querySelectorAll("[data-rating-trigger]").forEach(el => {
-    el.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const modal = document.getElementById("ratingModal");
-      if (modal) modal.classList.add("open");
-    };
-  });
-}
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
@@ -200,7 +189,6 @@ async function loadEntry(id) {
   renderEntryActions(e.title);
   await loadSimilarEntries(e);
   bindEntryClicks(box);
-   bindRatingClicks();
 
 }
 
@@ -495,3 +483,14 @@ function highlightStars(n) {
     s.textContent = (Number(s.dataset.star) <= n) ? "⭐" : "☆";
   });
 }
+// ⭐ Rating-Button öffnet Modal
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".rating-trigger");
+  if (!btn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const modal = document.getElementById("ratingModal");
+  if (modal) modal.classList.add("open");
+});
