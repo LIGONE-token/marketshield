@@ -77,14 +77,41 @@ function renderTextBlock(title, text) {
 }
 function renderJsonList(title, data) {
   if (!data) return "";
-  let arr;
-  try { arr = Array.isArray(data) ? data : JSON.parse(data); } catch { return ""; }
+
+  let arr = [];
+
+  // 🔹 Fall 1: echtes Array
+  if (Array.isArray(data)) {
+    arr = data;
+  }
+
+  // 🔹 Fall 2: String mit Trennzeichen |
+  else if (typeof data === "string" && data.includes("|")) {
+    arr = data.split("|").map(v => v.trim()).filter(Boolean);
+  }
+
+  // 🔹 Fall 3: JSON-String
+  else if (typeof data === "string") {
+    try {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) arr = parsed;
+    } catch {
+      // Fallback: Einzelwert
+      arr = [data];
+    }
+  }
+
   if (!arr.length) return "";
+
   return `
     <h3>${escapeHtml(title)}</h3>
-    <ul style="line-height:1.6;padding-left:18px;">
-      ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
-    </ul>
+    <div class="ms-table">
+      ${arr.map(v => `
+        <div class="ms-row">
+          <div class="ms-cell">${escapeHtml(v)}</div>
+        </div>
+      `).join("")}
+    </div>
   `;
 }
 
