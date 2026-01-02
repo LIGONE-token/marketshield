@@ -4290,3 +4290,43 @@ html, body,
 
   font-family: inherit;
 }
+/* ===============================
+   MarketShield – RatingModal CENTER + STABIL
+   =============================== */
+
+#ratingModal{
+  position: fixed;
+  inset: 0;
+  display: none;                 /* default zu */
+  align-items: center;           /* vertikal zentriert */
+  justify-content: center;       /* horizontal zentriert */
+  padding: 18px;
+  background: rgba(0,0,0,0.55);
+  z-index: 100000;
+}
+
+#ratingModal.open{
+  display: flex;                 /* aktiv */
+}
+
+/* Inhalt-Box (egal wie sie heißt, wir fangen beides ab) */
+#ratingModal .modal-content,
+#ratingModal .content,
+#ratingModal > div{
+  background: #fff;
+  width: min(420px, 92vw);
+  border-radius: 14px;
+  padding: 16px 16px 14px 16px;
+  box-sizing: border-box;
+}
+
+/* Sterne im Modal sauber */
+#ratingModalStars{
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  font-size: 22px;
+  line-height: 1;
+  user-select: none;
+}
+#ratingModalStars span{ cursor:pointer; }
