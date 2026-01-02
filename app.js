@@ -250,14 +250,17 @@ function renderRatingBlock(avg = 0, count = 0) {
 
       <!-- Sterne bewusst in eigener Zeile -->
       <div id="ratingStars"
-           style="
-             margin-top:2px;
-             font-size:12px;
-             line-height:1;
-             letter-spacing:-0.5px;
-             cursor:pointer;
-             user-select:none;
-           ">
+     style="
+       margin-top:2px;
+       font-size:14px;
+       line-height:1;
+       letter-spacing:-1px;
+       cursor:pointer;
+       user-select:none;
+       text-align:left;
+       color:inherit;
+     ">
+
         ${[1,2,3,4,5].map(n =>
           `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
         ).join("")}
