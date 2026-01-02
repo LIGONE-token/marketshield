@@ -449,3 +449,36 @@ document.addEventListener("click", (e) => {
   const modal = document.getElementById("ratingModal");
   if (modal) modal.classList.add("open");
 });
+// ⭐ STERN-KLICK → Bewertung speichern (FINAL)
+document.addEventListener("click", async (e) => {
+  const star = e.target.closest("#ratingStars span");
+  if (!star) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const value = Number(star.dataset.star);
+  if (!value || !currentEntryId) return;
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        entry_id: currentEntryId,
+        rating: value
+      })
+    });
+
+    document.getElementById("ratingModal")?.classList.remove("open");
+    await loadEntry(currentEntryId);
+
+  } catch (err) {
+    console.error("Rating failed:", err);
+  }
+});
