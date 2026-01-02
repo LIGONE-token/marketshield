@@ -281,6 +281,7 @@ async function loadEntry(id) {
 
   results.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
+    ${renderRatingBlock(e.rating_avg, e.rating_count)}
     ${renderScoreBlock(e.score, e.processing_score, 14)}
     ${renderMiniLegalPopupLink()}
     ${renderTextBlock("Zusammenfassung", e.summary)}
