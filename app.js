@@ -34,11 +34,167 @@ function normalizeText(t="") {
 }
 
 function renderSummary(summary) {
-  return normalizeText(summary)
-    .split("\n\n")
-    .map(p => `<p>${escapeHtml(p).replace(/\n/g,"<br>")}</p>`)
-    .join("");
+  const text = normalizeText(summary);
+  if (!text) return "";
+
+  const lines = text.split("\n");
+
+  // -------- 1) Pipe-Tabellen erkennen (z.B. "A | B | C") --------
+  // Wir suchen nach einem Block aus >= 2 Zeilen, die jeweils "|" enthalten.
+  const blocks = [];
+  let buf = [];
+  for (const raw of lines) {
+    const line = raw.trim();
+    const isPipe = line.includes("|") && line.replace(/\s/g, "").length > 2;
+    if (isPipe) {
+      buf.push(line);
+    } else {
+      if (buf.length) { blocks.push({ type: "pipe", lines: buf }); buf = []; }
+      blocks.push({ type: "text", line: raw });
+    }
+  }
+  if (buf.length) blocks.push({ type: "pipe", lines: buf });
+
+  function pipeToTable(pipeLines) {
+    // Entferne typische Markdown-Separator-Zeilen wie |---|---|
+    const cleaned = pipeLines.filter(l => !/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?\s*$/.test(l));
+
+    // In Zellen splitten
+    const rows = cleaned
+      .map(l => l.split("|").map(c => c.trim()).filter(c => c.length))
+      .filter(r => r.length >= 2);
+
+    if (rows.length < 2) return ""; // keine echte Tabelle
+
+    const head = rows[0];
+    const body = rows.slice(1);
+
+    return `
+      <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+        <thead>
+          <tr>
+            ${head.map(h => `<th style="text-align:left;border-bottom:2px solid #ddd;padding:8px;">${escapeHtml(h)}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${body.map(r => `
+            <tr>
+              ${r.map(c => `<td style="border-bottom:1px solid #eee;padding:8px;vertical-align:top;">${escapeHtml(c)}</td>`).join("")}
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  // -------- 2) Key: Value "Tabellen" erkennen (z.B. "Wirkung: ..." ) --------
+  // Wir bauen daraus eine zweispaltige Tabelle, wenn mehrere Zeilen so aussehen.
+  function kvBlockToTable(kvLines) {
+    const rows = kvLines
+      .map(l => {
+        const m = l.match(/^(.{1,50}?)[\:\-]\s+(.*)$/); // "Key: Value" oder "Key - Value"
+        if (!m) return null;
+        return [m[1].trim(), m[2].trim()];
+      })
+      .filter(Boolean);
+
+    if (rows.length < 2) return ""; // sonst lieber als Text
+
+    return `
+      <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+        <tbody>
+          ${rows.map(([k,v]) => `
+            <tr>
+              <td style="width:34%;border-bottom:1px solid #eee;padding:8px;vertical-align:top;"><strong>${escapeHtml(k)}</strong></td>
+              <td style="border-bottom:1px solid #eee;padding:8px;vertical-align:top;">${escapeHtml(v)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  // -------- 3) Text normal als Absätze/Listen --------
+  let out = "";
+  let paragraph = [];
+  let kvBuf = [];
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    const p = paragraph.join("\n").trim();
+    if (p) out += `<p style="margin:0 0 12px;line-height:1.55;">${escapeHtml(p).replace(/\n/g,"<br>")}</p>`;
+    paragraph = [];
+  };
+
+  const flushKv = () => {
+    if (!kvBuf.length) return;
+    const table = kvBlockToTable(kvBuf);
+    if (table) {
+      flushParagraph();
+      out += table;
+    } else {
+      // wenn es keine echte KV-Tabelle ist, zurück in Absatz
+      paragraph.push(...kvBuf);
+    }
+    kvBuf = [];
+  };
+
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+
+    if (b.type === "pipe") {
+      flushKv();
+      flushParagraph();
+      const table = pipeToTable(b.lines);
+      if (table) out += table;
+      else paragraph.push(...b.lines); // fallback
+      continue;
+    }
+
+    const line = (b.line ?? "").trim();
+
+    // Leerzeile -> Absatz/KV flush
+    if (!line) {
+      flushKv();
+      flushParagraph();
+      continue;
+    }
+
+    // KV-Zeile sammeln
+    if (/^(.{1,50}?)[\:\-]\s+.+$/.test(line)) {
+      kvBuf.push(line);
+      continue;
+    } else {
+      flushKv();
+    }
+
+    // Bullet-Liste (einfach)
+    if (/^[-•]\s+/.test(line)) {
+      flushParagraph();
+      // sammle zusammenhängende Bullet-Linien
+      const items = [];
+      let j = i;
+      while (j < blocks.length && blocks[j].type === "text") {
+        const l = (blocks[j].line ?? "").trim();
+        if (!/^[-•]\s+/.test(l)) break;
+        items.push(l.replace(/^[-•]\s+/, ""));
+        j++;
+      }
+      out += `<ul style="margin:8px 0 14px 18px;">${items.map(it => `<li style="margin:0 0 6px;">${escapeHtml(it)}</li>`).join("")}</ul>`;
+      i = j - 1;
+      continue;
+    }
+
+    // Normaler Text -> Absatzpuffer
+    paragraph.push(line);
+  }
+
+  flushKv();
+  flushParagraph();
+
+  return out;
 }
+
 
 /* ========== LISTE ========= */
 function renderList(data) {
