@@ -1,3 +1,5 @@
+alert("APP.JS LÄUFT");
+
 /* =====================================================
    MarketShield – app.js (FINAL / KOMPLETT / STABIL)
    - Keine globalen document-click Fallen für Navigation
