@@ -368,17 +368,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const textarea = form.querySelector("textarea[name='description']");
     const desc = textarea ? textarea.value.trim() : "";
     if (!desc) return;
 
     showProgress("Nachricht wird gesendet …");
-    try {
-      console.log("VOR ALERT");
-alert("TEST ALERT");
-console.log("NACH ALERT");
 
-       const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
         method: "POST",
         headers: {
           apikey: SUPABASE_KEY,
@@ -393,13 +391,33 @@ console.log("NACH ALERT");
           page: currentEntryId ? `entry:${currentEntryId}` : "home"
         })
       });
+
       if (!res.ok) throw new Error(await res.text());
+
       form.reset();
-      if (modal) modal.classList.remove("open");
-      alert("Nachricht versendet! Vielen Dank für deine Mithilfe 💚");
+
+      // ✅ EINZIGES Feedback – intern, ruhig, ohne Browserfenster
+      const msg = document.createElement("div");
+      msg.textContent = "Nachricht gesendet.";
+      msg.style.cssText = `
+        margin-top:12px;
+        padding:10px;
+        background:#f1f8f3;
+        color:#2e7d32;
+        border-radius:6px;
+        font-size:14px;
+        text-align:center;
+      `;
+      form.appendChild(msg);
+
+      setTimeout(() => {
+        msg.remove();
+        if (modal) modal.classList.remove("open");
+      }, 1200);
+
     } catch (err) {
       console.error("Report submit failed:", err);
-      alert("Fehler beim Senden der Meldung.");
+      // optional: hier ebenfalls KEIN alert()
     } finally {
       hideProgress();
     }
