@@ -551,16 +551,20 @@ function openRatingModal(prefill = null) {
   const stars = document.getElementById("ratingModalStars");
   if (!modal || !stars) return;
 
-  pendingRating = prefill;
+  // ⭐ SOFORT sichtbar machen
+  modal.classList.add("open");
 
-  // Sterne visuell setzen
+  // ⭐ Sterne sofort rendern (ohne Abhängigkeit)
   stars.querySelectorAll("span").forEach(s => {
     const n = Number(s.dataset.star);
-    s.textContent = pendingRating >= n ? "★" : "☆";
+    s.textContent = (prefill && prefill >= n) ? "★" : "☆";
+    s.style.fontSize = "28px";
+    s.style.cursor = "pointer";
+    s.style.color = "#f4b400";
+    s.style.margin = "0 4px";
   });
-
-  modal.classList.add("open");
 }
+
 
 function closeRatingModal() {
   const modal = document.getElementById("ratingModal");
