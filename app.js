@@ -464,7 +464,8 @@ document.addEventListener("click", (e) => {
 
   const modal = document.getElementById("ratingModal");
   if (modal) modal.classList.add("open");
-});
+}, true); // ⬅️ WICHTIG: Capture!
+
 
 
 // Schließen-Button
