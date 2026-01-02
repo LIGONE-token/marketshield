@@ -37,23 +37,105 @@ function renderSummary(summary) {
   const text = normalizeText(summary);
   if (!text) return "";
 
-  const lines = text.split("\n");
+  const lines = text.split("\n").map(l => l.trim());
 
-  // -------- 1) Pipe-Tabellen erkennen (z.B. "A | B | C") --------
-  // Wir suchen nach einem Block aus >= 2 Zeilen, die jeweils "|" enthalten.
-  const blocks = [];
-  let buf = [];
-  for (const raw of lines) {
-    const line = raw.trim();
-    const isPipe = line.includes("|") && line.replace(/\s/g, "").length > 2;
-    if (isPipe) {
-      buf.push(line);
-    } else {
-      if (buf.length) { blocks.push({ type: "pipe", lines: buf }); buf = []; }
-      blocks.push({ type: "text", line: raw });
+  let html = "";
+  let buffer = [];
+
+  // Hilfsfunktionen
+  const flushParagraph = () => {
+    if (!buffer.length) return;
+    html += `<p>${escapeHtml(buffer.join(" ")).replace(/\n/g,"<br>")}</p>`;
+    buffer = [];
+  };
+
+  const renderPipeTable = (rows) => {
+    const cells = rows.map(r =>
+      r.split("|").map(c => c.trim()).filter(Boolean)
+    );
+    if (cells.length < 2 || cells[0].length < 2) return "";
+
+    const head = cells[0];
+    const body = cells.slice(1);
+
+    return `
+      <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+        <thead>
+          <tr>
+            ${head.map(h => `<th style="border-bottom:2px solid #ccc;padding:6px;text-align:left;">${escapeHtml(h)}</th>`).join("")}
+          </tr>
+        </thead>
+        <tbody>
+          ${body.map(row => `
+            <tr>
+              ${row.map(c => `<td style="border-bottom:1px solid #eee;padding:6px;">${escapeHtml(c)}</td>`).join("")}
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  };
+
+  const renderKVTable = (rows) => {
+    if (rows.length < 2) return "";
+    return `
+      <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
+        <tbody>
+          ${rows.map(r => {
+            const [k,v] = r.split(":").map(s => s.trim());
+            if (!v) return "";
+            return `
+              <tr>
+                <td style="width:35%;border-bottom:1px solid #eee;padding:6px;"><strong>${escapeHtml(k)}</strong></td>
+                <td style="border-bottom:1px solid #eee;padding:6px;">${escapeHtml(v)}</td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    `;
+  };
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Pipe-Tabelle
+    if (line.includes("|")) {
+      const rows = [];
+      while (i < lines.length && lines[i].includes("|")) {
+        rows.push(lines[i]);
+        i++;
+      }
+      flushParagraph();
+      html += renderPipeTable(rows) || `<p>${escapeHtml(rows.join(" "))}</p>`;
+      continue;
     }
+
+    // Key: Value Tabelle
+    if (/^[^:]{2,30}:\s+.+$/.test(line)) {
+      const rows = [];
+      while (i < lines.length && /^[^:]{2,30}:\s+.+$/.test(lines[i])) {
+        rows.push(lines[i]);
+        i++;
+      }
+      flushParagraph();
+      html += renderKVTable(rows) || `<p>${escapeHtml(rows.join(" "))}</p>`;
+      continue;
+    }
+
+    // Normaler Text
+    if (!line) {
+      flushParagraph();
+    } else {
+      buffer.push(line);
+    }
+    i++;
   }
-  if (buf.length) blocks.push({ type: "pipe", lines: buf });
+
+  flushParagraph();
+  return html;
+}
 
   function pipeToTable(pipeLines) {
     // Entferne typische Markdown-Separator-Zeilen wie |---|---|
