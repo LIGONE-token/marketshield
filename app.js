@@ -133,7 +133,9 @@ function renderUserRating(avg, count) {
       </div>
 
       <div class="rating-open"
-           style="margin-top:4px;font-size:14px;cursor:pointer;text-decoration:underline;">
+     data-rating-trigger="1"
+     style="margin-top:4px;font-size:14px;cursor:pointer;text-decoration:underline;">
+
         <strong>${avgText}</strong> von <strong>5</strong>
         <span style="opacity:.75;">
           · ${c} Bewertung${c === 1 ? "" : "en"}
