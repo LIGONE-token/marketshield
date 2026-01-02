@@ -342,23 +342,7 @@ async function loadCategory(cat) {
   renderList(data);
 }
 
-/* ================= PROGRESS ================= */
-function showProgress(text) {
-  const box = document.getElementById("msProgressBox");
-  if (!box) return;
 
-  box.textContent = text || "Bitte warten …";
-  box.style.display = "flex";
-  box.classList.add("open");
-}
-
-function hideProgress() {
-  const box = document.getElementById("msProgressBox");
-  if (!box) return;
-
-  box.classList.remove("open");
-  box.style.display = "none";
-}
 
 
 /* ================= INIT ================= */
