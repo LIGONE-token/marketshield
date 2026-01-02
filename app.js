@@ -386,7 +386,7 @@ document.addEventListener("DOMContentLoaded", () => {
           description: desc,
           source: "community",
           entry_id: currentEntryId || null,
-          page: location.href
+          page: currentEntryId ? `entry:${currentEntryId}` : "home"
         })
       });
       if (!res.ok) throw new Error(await res.text());
