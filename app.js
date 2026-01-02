@@ -258,7 +258,8 @@ function renderRatingBlock(avg = 0, count = 0) {
        cursor:pointer;
        user-select:none;
        text-align:left;
-       color:inherit;
+       color:#f4b400;
+
      ">
 
        ${[1,2,3,4,5].map(n =>
