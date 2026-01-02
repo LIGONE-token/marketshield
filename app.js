@@ -405,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const desc = textarea ? textarea.value.trim() : "";
     if (!desc) return;
 
-    showProgress("Nachricht wird gesendet …");
+    //showProgress("Nachricht wird gesendet …");
 
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
@@ -450,7 +450,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error("Report submit failed:", err);
     } finally {
-      hideProgress();
+     // hideProgress();
     }
   });
 });
@@ -510,7 +510,7 @@ document.querySelectorAll("#ratingStars span").forEach(star => {
     const value = Number(star.dataset.star);
     if (!value || !currentEntryId) return;
 
-    showProgress("Bewertung wird gespeichert …");
+    //showProgress("Bewertung wird gespeichert …");
 
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
@@ -533,7 +533,7 @@ document.querySelectorAll("#ratingStars span").forEach(star => {
     } catch (err) {
       console.error("Rating failed:", err);
     } finally {
-      hideProgress();
+      //hideProgress();
     }
   });
 });
