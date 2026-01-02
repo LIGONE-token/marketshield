@@ -303,7 +303,7 @@ async function loadEntry(id) {
   const results = getResultsEl();
   if (!results) return;
 
-  const data = await supa(`entries?select=*&id=eq.${id}`);
+  const data = await supa(`entries_with_ratings?id=eq.${id}`);
   const e = data && data[0];
   if (!e) return;
 
