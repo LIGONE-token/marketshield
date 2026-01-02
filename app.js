@@ -617,6 +617,50 @@ function initReportFabFinal() {
 
     form.reset();
     modal.classList.remove("open");
-    alert("Meldung gesendet. Danke!");
+form.onsubmit = async (e) => {
+  e.preventDefault();
+
+  const description = form.description?.value?.trim();
+  if (!description) return; // ❌ KEIN Alert, einfach nichts tun
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        description,
+        source: "community",
+        status: "new",
+        entry_id: currentEntryId || null
+      })
+    });
+
+    // Formular leeren
+    form.reset();
+
+    // 🔕 Leises visuelles Feedback (kein Popup, keine URL)
+    const note = document.createElement("div");
+    note.textContent = "Meldung wurde gesendet ✓";
+    note.style.cssText = `
+      margin-top:10px;
+      font-size:13px;
+      color:#2e7d32;
+    `;
+    form.appendChild(note);
+
+    setTimeout(() => note.remove(), 3000);
+
+    // Modal schließen
+    modal.classList.remove("open");
+
+  } catch {
+    // ❌ KEIN alert, ❌ KEIN popup
+    // Fehler bewusst still
+  }
+};
   };
 }
