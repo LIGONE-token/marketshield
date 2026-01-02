@@ -551,6 +551,33 @@ document.addEventListener("click", (e) => {
 
 
 /* ================= RATING MODAL ================= */
+function updateRatingUIInstant(newRating) {
+  // ⭐ Sterne im Detailblock sofort updaten
+  const stars = document.querySelectorAll("#ratingStars span");
+  if (stars && stars.length) {
+    stars.forEach(star => {
+      const n = Number(star.dataset.star);
+      star.textContent = newRating >= n ? "★" : "☆";
+    });
+  }
+
+  // Text "Nutzerbewertung: x von 5" optional schnell anpassen (ohne Supabase)
+  const ratingBox = document.getElementById("ratingBox");
+  if (ratingBox) {
+    const strong = ratingBox.querySelector("strong");
+    if (strong && strong.parentNode) {
+      // nur den Textteil neu setzen, robust gegen kleine Layoutänderungen
+      const line = strong.parentNode;
+      const countSpan = line.querySelector("span");
+      const countText = countSpan ? countSpan.outerHTML : "";
+      line.innerHTML = `<strong>Nutzerbewertung:</strong> ${String(newRating.toFixed(1)).replace(".", ",")} von 5 ${countText}`;
+    }
+  }
+}
+
+// optional: global verfügbar machen (verhindert "nicht definiert", falls du später aus HTML triggerst)
+window.updateRatingUIInstant = updateRatingUIInstant;
+
 
 let pendingRating = null;
 
