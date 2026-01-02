@@ -2065,3 +2065,45 @@ html, body,
 #closeRatingModal {
   margin-top: 10px;
 }
+/* ===== FORCE RATING MODAL (FINAL) ===== */
+
+#ratingModal {
+  position: fixed !important;
+  inset: 0 !important;
+  display: none !important;
+  background: rgba(0,0,0,0.7) !important;
+  z-index: 999999 !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#ratingModal.open {
+  display: flex !important;
+}
+
+#ratingModal .modal-box {
+  background: #ffffff !important;
+  width: 90% !important;
+  max-width: 360px !important;
+  padding: 18px 20px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important;
+  text-align: center !important;
+}
+
+#ratingModalStars {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-size: 28px !important;
+  margin: 14px 0 !important;
+}
+
+#ratingModalStars span {
+  cursor: pointer !important;
+  color: #f4b400 !important;
+}
+
+#closeRatingModal {
+  margin-top: 10px !important;
+}
