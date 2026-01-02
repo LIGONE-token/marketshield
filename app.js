@@ -753,17 +753,3 @@ function showReportToast(text, isError = false) {
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
-function updateRatingUIInstant(newRating) {
-  const stars = document.querySelectorAll("#ratingStars span");
-  if (!stars.length) return;
-
-  stars.forEach(star => {
-    const n = Number(star.dataset.star);
-    star.textContent = newRating >= n ? "★" : "☆";
-  });
-
-  const text = document.querySelector("#ratingBox strong");
-  if (text) {
-    text.nextSibling.textContent = ` ${newRating.toFixed(1).replace(".", ",")} von 5`;
-  }
-}
