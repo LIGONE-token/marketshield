@@ -531,7 +531,13 @@ async function loadCategory(cat) {
 /* ================= CARD CLICK ================= */
 document.addEventListener("click", (e) => {
 
-  // ⭐ Klick auf Bewertung → NICHT als Card-Klick behandeln
+  // 🚫 Klicks im Rating-Modal komplett ignorieren
+  if (e.target.closest("#ratingModal")) {
+    e.stopPropagation();
+    return;
+  }
+
+  // 🚫 Klick auf Sterne im Eintrag nicht als Card-Klick behandeln
   if (e.target.closest("[data-rating-star]")) return;
 
   const card = e.target.closest(".entry-card");
@@ -542,27 +548,29 @@ document.addEventListener("click", (e) => {
   loadEntry(id);
 });
 
+
 /* ================= RATING MODAL ================= */
 
 let pendingRating = null;
 
 function openRatingModal(prefill = null) {
   const modal = document.getElementById("ratingModal");
-  const stars = document.getElementById("ratingModalStars");
-  const close = document.getElementById("closeRatingModal");
-  if (!modal || !stars) return;
+  const starsBox = document.getElementById("ratingModalStars");
+  const closeBtn = document.getElementById("closeRatingModal");
+  if (!modal || !starsBox) return;
 
   // Modal anzeigen
   modal.classList.add("open");
 
-  // ⭐ Sterne sofort setzen
-  stars.querySelectorAll("span").forEach(s => {
-    const n = Number(s.dataset.star);
-    s.textContent = prefill && prefill >= n ? "★" : "☆";
-    s.style.cursor = "pointer";
+  // ⭐ Sterne klickbar machen
+  starsBox.querySelectorAll("span").forEach(star => {
+    const n = Number(star.dataset.star);
+    star.textContent = prefill && prefill >= n ? "★" : "☆";
+    star.style.cursor = "pointer";
 
-    // ⭐ Bewertung speichern
-    s.onclick = async () => {
+    star.onclick = async (e) => {
+      e.stopPropagation();
+
       if (!currentEntryId) return;
 
       await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
@@ -584,8 +592,11 @@ function openRatingModal(prefill = null) {
   });
 
   // ❌ Schließen-Button
-  if (close) {
-    close.onclick = () => modal.classList.remove("open");
+  if (closeBtn) {
+    closeBtn.onclick = (e) => {
+      e.stopPropagation();
+      modal.classList.remove("open");
+    };
   }
 }
 
