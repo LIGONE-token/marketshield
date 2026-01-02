@@ -272,7 +272,9 @@ function renderRatingBlock(avg = 0, count = 0) {
        color:#f4b400;
      ">
   ${[1,2,3,4,5].map(n =>
-    `<span data-star="${n}" style="display:inline-block;line-height:1;vertical-align:baseline;">${a >= n ? "★" : "☆"}</span>`
+<span data-star="${n}" data-rating-star="1">
+  ${a >= n ? "★" : "☆"}
+</span>
   ).join("")}
 </div>
 
