@@ -362,52 +362,57 @@ async function loadEntry(id) {
 
   results.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
+
     ${renderRatingBlock(e.rating_avg, e.rating_count)}
     ${renderScoreBlock(e.score, e.processing_score, 14)}
     ${renderMiniLegalPopupLink()}
+
     ${renderTextBlock("Zusammenfassung", e.summary)}
     ${renderTextBlock("Wirkmechanismus", e.mechanism)}
     ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
+
     ${renderJsonList("Positive Effekte", e.effects_positive)}
     ${renderJsonList("Negative Effekte", e.effects_negative)}
     ${renderJsonList("Risikogruppen", e.risk_groups)}
     ${renderJsonList("Synergien / Wechselwirkungen", e.synergy)}
     ${renderJsonList("Natürliche Quellen", e.natural_sources)}
     ${renderJsonList("Tags", e.tags)}
+
     <div id="entryActions"></div>
   `;
 
   renderEntryActions(e.title);
   updateBackHome();
-   // ⭐ Rating klickbar machen – korrekt nach DOM-Erzeugung
-const stars = document.getElementById("ratingStars");
-if (stars) {
-  stars.querySelectorAll("span").forEach(star => {
-    star.onclick = async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
 
-      const rating = Number(star.dataset.star);
-      if (!rating || !currentEntryId) return;
+  // ⭐ Rating klickbar machen (NUR EINMAL, NACH DEM RENDER)
+  const stars = document.getElementById("ratingStars");
+  if (stars) {
+    stars.querySelectorAll("span").forEach(star => {
+      star.onclick = async (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
 
-      await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          entry_id: currentEntryId,
-          rating
-        })
-      });
+        const rating = Number(star.dataset.star);
+        if (!rating || !currentEntryId) return;
 
-      loadEntry(currentEntryId); // sofort korrekt neu rendern
-    };
-  });
-}
+        await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            entry_id: currentEntryId,
+            rating
+          })
+        });
 
+        // 🔁 sofort neu laden → Anzeige aktualisiert
+        loadEntry(currentEntryId);
+      };
+    });
+  }
 }
 
 /* ================= SHARE / ACTIONS ================= */
@@ -540,7 +545,7 @@ async function loadCategory(cat) {
 /* ================= CARD CLICK ================= */
 document.addEventListener("click", (e) => {
 
-  // ⛔ Klick auf Bewertung? → IGNORIEREN
+  // ⭐ Klick auf Bewertung → NICHT als Card-Klick behandeln
   if (e.target.closest("[data-rating-star]")) return;
 
   const card = e.target.closest(".entry-card");
@@ -548,8 +553,9 @@ document.addEventListener("click", (e) => {
 
   const id = card.dataset.id;
   history.pushState(null, "", "?id=" + id);
-  loadEntry(id).catch(showFatal);
+  loadEntry(id);
 });
+
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
