@@ -576,20 +576,28 @@ function openRatingModal(prefill = null) {
       if (!currentEntryId) return;
 
       await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          entry_id: currentEntryId,
-          rating: n
-        })
-      });
+  method: "POST",
+  headers: {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    entry_id: currentEntryId,
+    rating: n
+  })
+});
 
-      modal.classList.remove("open");
-      loadEntry(currentEntryId);
+// ⭐ SOFORT-UPDATE (optimistisch)
+updateRatingUIInstant(n);
+
+modal.classList.remove("open");
+
+// 🔁 Hintergrund-Reload (für exakten Schnitt)
+setTimeout(() => {
+  loadEntry(currentEntryId);
+}, 600);
+
     };
   });
 
