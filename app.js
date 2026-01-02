@@ -569,83 +569,70 @@ function initReportFabFinal() {
   const close = document.getElementById("closeReportModal");
   const form  = document.getElementById("reportForm");
 
-  if (!fab || !modal || !form) {
-    console.error("ReportFab: Elemente fehlen");
-    return;
-  }
+  if (!fab || !modal || !form) return;
 
-  // 🔹 FAB klickbar erzwingen
-  fab.style.pointerEvents = "auto";
-  fab.style.cursor = "pointer";
-  fab.style.zIndex = "99999";
-
-  // 🔹 Modal öffnen
+  // FAB öffnen
   fab.onclick = (e) => {
     e.preventDefault();
     modal.classList.add("open");
   };
 
-  // 🔹 Modal schließen
+  // Modal schließen
   if (close) {
     close.onclick = () => modal.classList.remove("open");
   }
 
-  // 🔹 Report senden → Supabase
+  // EINZIGER Submit-Handler
   form.onsubmit = async (e) => {
     e.preventDefault();
 
     const description = form.description?.value?.trim();
-    if (!description) {
-      alert("Bitte Beschreibung eingeben.");
-      return;
+    if (!description) return; // ❌ KEIN Alert
+
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          description,
+          source: "community",
+          status: "new",
+          entry_id: currentEntryId || null
+        })
+      });
+
+      form.reset();
+      modal.classList.remove("open");
+      showReportToast("Meldung wurde gesendet ✓");
+
+    } catch {
+      showReportToast("Senden fehlgeschlagen", true);
     }
+  };
+}
 
-    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        description,
-        source: "community",
-        status: "new",
-        entry_id: currentEntryId || null
-      })
-    });
+// ... alle anderen Funktionen hier drüber ...
 
-    form.reset();
-    modal.classList.remove("open");
-form.onsubmit = async (e) => {
-  e.preventDefault();
-
-  const description = form.description?.value?.trim();
-  if (!description) return; // ❌ kein Alert
-
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        description,
-        source: "community",
-        status: "new",
-        entry_id: currentEntryId || null
-      })
-    });
-
-    form.reset();
-    modal.classList.remove("open");
-
-    showReportToast("Meldung wurde gesendet ✓");
-
-  } catch {
-    showReportToast("Senden fehlgeschlagen", true);
-  }
-};
+function showReportToast(text, isError = false) {
+  const t = document.createElement("div");
+  t.textContent = text;
+  t.style.cssText = `
+    position:fixed;
+    bottom:80px;
+    left:50%;
+    transform:translateX(-50%);
+    background:${isError ? "#c62828" : "#2e7d32"};
+    color:#fff;
+    padding:10px 16px;
+    border-radius:8px;
+    font-size:14px;
+    z-index:100000;
+    box-shadow:0 4px 12px rgba(0,0,0,.25);
+  `;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
