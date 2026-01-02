@@ -151,7 +151,9 @@ function bindEntryClicks(root = document) {
     card.onclick = (e) => {
 
       // 👉 WICHTIG: NUR reagieren, wenn DIREKT die Card angeklickt wird
-      if (e.target !== card) return;
+      if (e.target.closest("[data-rating-trigger]")) return;
+if (e.target !== card) return;
+
 
       const id = card.dataset.id;
       if (!id) return;
