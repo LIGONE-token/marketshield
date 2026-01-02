@@ -1807,3 +1807,12 @@ input {
 .overlay.active {
   pointer-events: auto;
 }
+/* ============================
+   PROGRESS HARD DISABLE
+============================ */
+
+/* Progress darf NIE die Seite blockieren */
+#msProgressBox {
+  display: none !important;
+  pointer-events: none !important;
+}
