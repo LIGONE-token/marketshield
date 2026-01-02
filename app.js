@@ -150,10 +150,11 @@ function bindEntryClicks(root = document) {
   root.querySelectorAll(".entry-card").forEach(card => {
     card.onclick = (e) => {
 
-      // 👉 WICHTIG: NUR reagieren, wenn DIREKT die Card angeklickt wird
+      // ⭐ Rating hat IMMER Vorrang
       if (e.target.closest("[data-rating-trigger]")) return;
-if (e.target !== card) return;
 
+      // 👉 Navigation NUR bei echtem Card-Hintergrund
+      if (e.target !== card) return;
 
       const id = card.dataset.id;
       if (!id) return;
