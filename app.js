@@ -557,7 +557,10 @@ function openRatingModal(prefill = null) {
 
   // Modal anzeigen
   modal.classList.add("open");
+modal.style.display = "flex";
+modal.style.pointerEvents = "auto";
 
+   
   // ⭐ Sterne klickbar machen
   starsBox.querySelectorAll("span").forEach(star => {
     const n = Number(star.dataset.star);
@@ -594,14 +597,32 @@ function openRatingModal(prefill = null) {
       modal.classList.remove("open");
     };
   }
+   // Klick auf dunklen Hintergrund schließt
+modal.onclick = (e) => {
+  if (e.target === modal) closeRatingModal();
+};
+
+// ESC schließt
+document.onkeydown = (e) => {
+  if (e.key === "Escape") closeRatingModal();
+};
+
 }
 window.openRatingModal = openRatingModal;
 
 
 function closeRatingModal() {
   const modal = document.getElementById("ratingModal");
-  if (modal) modal.classList.remove("open");
+  if (!modal) return;
+
+  // 1) Klasse weg
+  modal.classList.remove("open");
+
+  // 2) INLINE-FORCE AUS (falls irgendwo display:flex gesetzt wurde)
+  modal.style.display = "none";
+  modal.style.pointerEvents = "none";
 }
+
 window.addEventListener("popstate", () => {
   closeRatingModal();
 });
