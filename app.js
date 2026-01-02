@@ -57,11 +57,22 @@ function shortText(t, max = 160) {
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
 /* ================= ENTRY KLICK (FINAL) ================= */
+/* ================= ENTRY KLICK (FINAL FIX) ================= */
 function bindEntryClicks(container) {
   if (!container) return;
 
   container.querySelectorAll(".entry-card").forEach(card => {
-    card.addEventListener("click", () => {
+    card.addEventListener("click", (e) => {
+
+      // ❗ Klicks auf Rating / Buttons ignorieren
+      if (
+        e.target.closest(".rating-trigger") ||
+        e.target.closest("#ratingModal") ||
+        e.target.closest("button")
+      ) {
+        return;
+      }
+
       const id = card.dataset.id;
       if (!id) return;
 
@@ -70,6 +81,7 @@ function bindEntryClicks(container) {
     });
   });
 }
+
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
