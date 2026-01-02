@@ -417,7 +417,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
       console.error("Report submit failed:", err);
-      // optional: hier ebenfalls KEIN alert()
     } finally {
       hideProgress();
     }
@@ -435,7 +434,6 @@ document.addEventListener("click", async (e) => {
   e.stopPropagation();
 
   if (!currentEntryId) {
-    alert("Bitte zuerst einen Eintrag öffnen.");
     return;
   }
 
@@ -444,8 +442,8 @@ document.addEventListener("click", async (e) => {
 
   const value = Number(String(input).trim());
   if (!Number.isFinite(value) || value < 1 || value > 5) {
-    alert("Bitte eine Zahl von 1 bis 5 eingeben.");
-    return;
+
+   return;
   }
 
   showProgress("Bewertung wird gespeichert …");
@@ -466,11 +464,9 @@ document.addEventListener("click", async (e) => {
     });
 
     await loadEntry(currentEntryId);
-    alert("Danke! Bewertung gespeichert ✅");
 
   } catch (err) {
     console.error(err);
-    alert("Bewertung konnte nicht gespeichert werden.");
   } finally {
     hideProgress();
   }
