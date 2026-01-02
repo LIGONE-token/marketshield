@@ -1870,3 +1870,23 @@ html, body,
     margin-top: -12px !important;
   }
 }
+.entry-summary {
+  white-space: normal !important;
+  line-height: 1.7 !important;
+}
+
+.entry-summary p {
+  margin: 0 0 1em 0 !important;
+}
+
+.entry-summary table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 12px 0 !important;
+}
+
+.entry-summary th,
+.entry-summary td {
+  border: 1px solid #ccc !important;
+  padding: 8px !important;
+}
