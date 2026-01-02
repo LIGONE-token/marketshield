@@ -508,3 +508,14 @@ document.addEventListener("click", async (e) => {
     console.error("Rating failed:", err);
   }
 });
+// ❌❌ RATING MODAL – IMMER SCHLIESSEN (FINAL)
+document.addEventListener("click", (e) => {
+  const closeBtn = e.target.closest("#closeRatingModal");
+  if (!closeBtn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const modal = document.getElementById("ratingModal");
+  if (modal) modal.classList.remove("open");
+});
