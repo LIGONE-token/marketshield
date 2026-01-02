@@ -595,36 +595,6 @@ function closeRatingModal() {
   if (modal) modal.classList.remove("open");
 }
 
-function initRatingModal() {
-  const stars = document.getElementById("ratingModalStars");
-  const close = document.getElementById("closeRatingModal");
-  if (!stars) return;
-
-  stars.querySelectorAll("span").forEach(star => {
-    star.onclick = async () => {
-      const rating = Number(star.dataset.star);
-      if (!rating || !currentEntryId) return;
-
-      await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          entry_id: currentEntryId,
-          rating
-        })
-      });
-
-      closeRatingModal();
-      loadEntry(currentEntryId);
-    };
-  });
-
-  if (close) close.onclick = closeRatingModal;
-}
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
@@ -632,7 +602,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCategories().catch(showFatal);
     initSearch();
     initReportFabFinal();
-     initRatingModal();
     initBackHome();
 
     const params = new URLSearchParams(location.search);
