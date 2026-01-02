@@ -231,17 +231,18 @@ async function loadEntry(id) {
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
 
-    <div id="ratingBox">
-      <div>
-        <strong>Nutzerbewertung:</strong>
-        ${avg.toFixed(1).replace(".",",")}/5 (${cnt})
-      </div>
-      <div id="ratingStars" style="font-size:26px;cursor:pointer;">
-        ${[1,2,3,4,5].map(n =>
-          `<span data-star="${n}">${Math.round(avg)>=n?"⭐":"☆"}</span>`
-        ).join("")}
-      </div>
-    </div>
+   <div id="ratingBox" style="margin:8px 0;">
+  <span style="font-size:14px;">
+    <strong>Nutzerbewertung:</strong>
+    ${avg.toFixed(1).replace(".",",")}/5 (${cnt})
+  </span>
+  <span id="ratingStars" style="font-size:22px;cursor:pointer;margin-left:6px;vertical-align:middle;">
+    ${[1,2,3,4,5].map(n =>
+      `<span data-star="${n}">${Math.round(avg)>=n?"⭐":"☆"}</span>`
+    ).join("")}
+  </span>
+</div>
+
 
     <h3>Zusammenfassung</h3>
     <div class="entry-summary">
