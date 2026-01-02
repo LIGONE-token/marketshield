@@ -233,7 +233,7 @@ function renderRatingBlock(avg = 0, count = 0) {
 
   return `
     <div id="ratingBox"
-         style="margin:6px 0 10px 0;font-size:13px;line-height:1.3;"
+         style="margin:6px 0 10px 0;font-size:12.5px;line-height:1.35;"
          itemprop="aggregateRating"
          itemscope
          itemtype="https://schema.org/AggregateRating">
@@ -245,28 +245,27 @@ function renderRatingBlock(avg = 0, count = 0) {
       <span style="opacity:.85;">
         <strong>Nutzerbewertung:</strong>
         ${a.toFixed(1).replace(".", ",")} von 5
-        <span style="opacity:.7;">(${c} Bewertungen)</span>
+        <span style="opacity:.7;">(${c})</span>
       </span>
 
-      <span id="ratingStars"
-      style="
-        font-size:14px;
-        margin-left:6px;
-        cursor:pointer;
-        user-select:none;
-        vertical-align:baseline;
-        position:relative;
-        top:1px;
-        line-height:1;
-      ">
-  ${[1,2,3,4,5].map(n =>
-    `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
-  ).join("")}
-</span>
-
+      <!-- Sterne bewusst in eigener Zeile -->
+      <div id="ratingStars"
+           style="
+             margin-top:2px;
+             font-size:12px;
+             line-height:1;
+             letter-spacing:-0.5px;
+             cursor:pointer;
+             user-select:none;
+           ">
+        ${[1,2,3,4,5].map(n =>
+          `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
+        ).join("")}
+      </div>
     </div>
   `;
 }
+
 
 
 /* ================= KATEGORIEN ================= */
