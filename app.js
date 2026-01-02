@@ -257,14 +257,25 @@ function renderRatingBlock(avg = 0, count = 0) {
        letter-spacing:-1px;
        cursor:pointer;
        user-select:none;
+
+       /* 🔒 niemals mittig */
+       display:flex;
+       justify-content:flex-start;
+       align-items:center;
        text-align:left;
+
+       /* verhindert auto-zentrierung */
+       width:fit-content;
+       margin-left:0;
+       margin-right:auto;
+
        color:#f4b400;
-
      ">
+  ${[1,2,3,4,5].map(n =>
+    `<span data-star="${n}" style="display:inline-block;line-height:1;vertical-align:baseline;">${a >= n ? "★" : "☆"}</span>`
+  ).join("")}
+</div>
 
-       ${[1,2,3,4,5].map(n =>
-  `<span data-star="${n}">${a >= n ? "★" : "☆"}</span>`
-).join("")}
 
       </div>
     </div>
