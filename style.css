@@ -1779,3 +1779,18 @@ input {
   background: #f3f3f3;
   font-weight: 600;
 }
+.entry-summary {
+  white-space: normal;
+  line-height: 1.6;
+}
+
+.entry-summary table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.entry-summary td,
+.entry-summary th {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+}
