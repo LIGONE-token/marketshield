@@ -530,8 +530,12 @@ async function loadCategory(cat) {
 /* ================= CARD CLICK ================= */
 document.addEventListener("click", (e) => {
 
-  // ⛔ Modal komplett ausnehmen – NICHT blockieren!
-  if (e.target.closest("#ratingModal")) return;
+  // ⭐ Klicks im Rating-Modal vollständig ignorieren
+  if (e.target.closest("#ratingModal")) {
+    e.stopPropagation();
+    e.preventDefault();
+    return;
+  }
 
   // ⭐ Sterne im Eintrag ausnehmen
   if (e.target.closest("[data-rating-star]")) return;
@@ -543,6 +547,7 @@ document.addEventListener("click", (e) => {
   history.pushState(null, "", "?id=" + id);
   loadEntry(id);
 });
+
 
 
 /* ================= RATING MODAL ================= */
@@ -599,8 +604,12 @@ modal.style.pointerEvents = "auto";
   }
    // Klick auf dunklen Hintergrund schließt
 modal.onclick = (e) => {
-  if (e.target === modal) closeRatingModal();
+  if (e.target === modal) {
+    e.stopPropagation();
+    closeRatingModal();
+  }
 };
+
 
 // ESC schließt
 document.onkeydown = (e) => {
