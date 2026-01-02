@@ -251,7 +251,7 @@ function renderRatingBlock(avg = 0, count = 0) {
       <span id="ratingStars"
             style="font-size:14px;margin-left:6px;cursor:pointer;user-select:none;">
         ${[1,2,3,4,5].map(n =>
-          `<span data-star="${n}" aria-label="${n} Sterne">${Math.round(a) >= n ? "★" : "☆"}</span>`
+          `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
         ).join("")}
       </span>
     </div>
