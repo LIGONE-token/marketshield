@@ -384,32 +384,16 @@ async function loadEntry(id) {
   renderEntryActions(e.title);
   updateBackHome();
 
-  // ⭐ Rating klickbar machen (NUR EINMAL, NACH DEM RENDER)
+  // ⭐ Klick auf Sterne → Bewertungsfenster öffnen
   const stars = document.getElementById("ratingStars");
   if (stars) {
     stars.querySelectorAll("span").forEach(star => {
-      star.onclick = async (ev) => {
+      star.onclick = (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
 
-        const rating = Number(star.dataset.star);
-        if (!rating || !currentEntryId) return;
-
-        await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            entry_id: currentEntryId,
-            rating
-          })
-        });
-
-        // 🔁 sofort neu laden → Anzeige aktualisiert
-        loadEntry(currentEntryId);
+        const prefill = Number(star.dataset.star) || null;
+        openRatingModal(prefill);
       };
     });
   }
