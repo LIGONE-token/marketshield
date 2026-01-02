@@ -1,5 +1,3 @@
-console.log("APP VERSION LIVE 2026-01-03 00:42");
-
 /* =====================================================
    MarketShield – app.js (FINAL / KOMPLETT / STABIL)
    - Keine globalen document-click Fallen für Navigation
@@ -57,6 +55,17 @@ function normalizeText(text) {
 function shortText(t, max = 160) {
   t = normalizeText(t);
   return t.length > max ? t.slice(0, max) + " …" : t;
+}
+function bindRatingClicks(root = document) {
+  root.querySelectorAll("[data-rating-trigger]").forEach(el => {
+    el.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const modal = document.getElementById("ratingModal");
+      if (modal) modal.classList.add("open");
+    };
+  });
 }
 
 /* ================= SCORES ================= */
