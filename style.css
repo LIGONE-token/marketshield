@@ -1,17 +1,4 @@
-/* ===== EMERGENCY RESET ===== */
-body {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-#results,
-.category-grid,
-header,
-footer {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
+
 
 
 html, body {
