@@ -199,9 +199,10 @@ async function loadEntry(id) {
     ${renderUserRating(e.rating_avg, e.rating_count)}
     ${renderScoreBlock(e.score, e.processing_score)}
     <h3>Zusammenfassung</h3>
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${escapeHtml(normalizeText(e.summary))}
-    </div>
+    <div class="entry-summary">
+  ${normalizeText(e.summary)}
+</div>
+
     <div id="entryActions"></div>
     <div id="similarEntries"></div>
   `;
