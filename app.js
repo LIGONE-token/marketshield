@@ -150,11 +150,11 @@ function bindEntryClicks(root = document) {
   root.querySelectorAll(".entry-card").forEach(card => {
     card.onclick = (e) => {
 
-      // ⭐ Rating hat IMMER Vorrang
+      // ⭐ Rating hat Vorrang
       if (e.target.closest("[data-rating-trigger]")) return;
 
-      // 👉 Navigation NUR bei echtem Card-Hintergrund
-      if (e.target !== card) return;
+      // 🔗 andere interaktive Elemente nicht kapern
+      if (e.target.closest("a, button, input, textarea, select")) return;
 
       const id = card.dataset.id;
       if (!id) return;
@@ -164,6 +164,7 @@ function bindEntryClicks(root = document) {
     };
   });
 }
+
 
 
 /* ================= LISTE ================= */
