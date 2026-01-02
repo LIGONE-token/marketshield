@@ -143,15 +143,11 @@ function renderUserRating(avg, count) {
 
       <!-- 🔑 DAS ist der klickbare Trigger -->
       <div
-        data-rating-trigger="1"
-        style="
-          margin-top:4px;
-          font-size:14px;
-          cursor:pointer;
-          text-decoration:underline;
-          display:inline-block;
-        "
-      >
+  data-rating-trigger="1"
+  onclick="alert('KLICK KOMMT AN')"
+  style="margin-top:4px;font-size:14px;cursor:pointer;text-decoration:underline;display:inline-block;"
+>
+
         <strong>${avgText}</strong> von <strong>5</strong>
         <span style="opacity:.75;">
           · ${c} Bewertung${c === 1 ? "" : "en"}
