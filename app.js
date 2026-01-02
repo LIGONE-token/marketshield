@@ -141,15 +141,19 @@ function renderUserRating(avg, count) {
 function bindEntryClicks(root = document) {
   root.querySelectorAll(".entry-card").forEach(card => {
     card.onclick = (e) => {
-      // Interaktive Elemente NICHT abfangen
-      if (e.target.closest(".rating-open, button, a")) return;
+
+      // 👉 WICHTIG: NUR reagieren, wenn DIREKT die Card angeklickt wird
+      if (e.target !== card) return;
+
       const id = card.dataset.id;
       if (!id) return;
+
       history.pushState({}, "", "?id=" + id);
       loadEntry(id);
     };
   });
 }
+
 
 /* ================= LISTE ================= */
 function renderList(data) {
