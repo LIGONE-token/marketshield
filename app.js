@@ -448,19 +448,18 @@ document.addEventListener("click", (e) => {
    RATING – SAUBERES MODAL (FINAL)
 ===================================================== */
 
-// Öffnen des Rating-Modals
+// Öffnen des Rating-Modals – PRIORITÄT
 document.addEventListener("click", (e) => {
-  const trigger = e.target.closest(".rating-open");
+  const trigger = e.target.closest("[data-rating-trigger]");
   if (!trigger) return;
 
   e.preventDefault();
   e.stopPropagation();
 
-  if (!currentEntryId) return;
-
   const modal = document.getElementById("ratingModal");
   if (modal) modal.classList.add("open");
 });
+
 
 // Schließen-Button
 document.getElementById("closeRatingModal")?.addEventListener("click", () => {
