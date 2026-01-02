@@ -1,17 +1,11 @@
 /* =====================================================
-   MarketShield – app.js (FINAL / KOMPLETT / STABIL)
-   - Keine globalen document-click Fallen für Navigation
-   - Entry-Klicks werden NACH Render gebunden
-   - ReportFab per Event-Delegation (robust)
-   - Kategorien, Bewertungen, Socials klickbar
-   - KEIN zusätzlicher "Zur Startseite"-Button unten
+   MarketShield – app.js (STABIL / NEU)
 ===================================================== */
 
-/* ================= GLOBAL ================= */
+/* ========== GLOBAL ========= */
 let currentEntryId = null;
-let lastSearchLogged = "";
 
-/* ================= SUPABASE ================= */
+/* ========== SUPABASE ========= */
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JHb4LBhP26eI7BgDS1jIkw_4OYn3-F9";
 
@@ -22,543 +16,108 @@ async function supa(query) {
       Authorization: `Bearer ${SUPABASE_KEY}`
     }
   });
-  const t = await r.text();
-  if (!r.ok) throw new Error(t || r.statusText);
-  return JSON.parse(t || "[]");
+  if (!r.ok) throw new Error(await r.text());
+  return await r.json();
 }
 
-/* ================= HELPERS ================= */
-const $ = (id) => document.getElementById(id);
+/* ========== HELPERS ========= */
+const $ = id => document.getElementById(id);
 
 function escapeHtml(s = "") {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return String(s).replace(/[&<>]/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;"
+  })[c]);
 }
 
-function normalizeText(text) {
-  if (!text) return "";
-  return String(text)
-    .replace(/\*\*/g, "")
-    .replace(/##+/g, "")
-    .replace(/__+/g, "")
-    .replace(/~~+/g, "")
-    .replace(/`+/g, "")
-    .replace(/\\n/g, "\n")
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+function normalizeText(t="") {
+  return t.replace(/\r/g,"").replace(/\n{3,}/g,"\n\n").trim();
 }
 
-function shortText(t, max = 160) {
-  t = normalizeText(t);
-  return t.length > max ? t.slice(0, max) + " …" : t;
-}
-/* ================= ENTRY KLICK (FINAL) ================= */
-/* ================= ENTRY KLICK (FINAL FIX) ================= */
-function bindEntryClicks(container) {
-  if (!container) return;
-
-  container.querySelectorAll(".entry-card").forEach(card => {
-    card.addEventListener("click", (e) => {
-
-      // ❗ Klicks auf Rating / Buttons ignorieren
-      if (
-        e.target.closest(".rating-trigger") ||
-        e.target.closest("#ratingModal") ||
-        e.target.closest("button")
-      ) {
-        return;
-      }
-
-      const id = card.dataset.id;
-      if (!id) return;
-
-      history.pushState({}, "", "?id=" + id);
-      loadEntry(id);
-    });
-  });
+function renderSummary(summary) {
+  return normalizeText(summary)
+    .split("\n\n")
+    .map(p => `<p>${escapeHtml(p).replace(/\n/g,"<br>")}</p>`)
+    .join("");
 }
 
-
-/* ================= SCORES ================= */
-function renderHealth(score) {
-  const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
-  if (n >= 80) return "💚💚💚";
-  if (n >= 60) return "💚💚";
-  if (n >= 40) return "💚";
-  if (n >= 20) return "💛";
-  return "⚠️❗⚠️";
-}
-
-function renderIndustry(score) {
-  const n = Number(score);
-  if (!Number.isFinite(n) || n <= 0) return "";
-  const clamped = Math.max(0, Math.min(10, n));
-  const w = Math.round((clamped / 10) * 80);
-  let color = "#2e7d32";
-  if (clamped >= 4 && clamped <= 7) color = "#f9a825";
-  if (clamped >= 8) color = "#c62828";
-  return `
-    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
-      <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
-    </div>`;
-}
-
-function renderScoreBlock(score, processing, size = 13) {
-  const h = renderHealth(score);
-  const i = renderIndustry(processing);
-  if (!h && !i) return "";
-
-  return `
-    <div style="margin:12px 0;">
-      ${h ? `
-        <div style="
-          display:grid;
-          grid-template-columns:90px 1fr;
-          gap:8px;
-          align-items:center;
-          margin-bottom:${i ? 6 : 0}px;
-        ">
-          <div style="font-size:20px;line-height:1;">${h}</div>
-          <div style="font-size:${size}px;opacity:.85;">Gesundheitsscore</div>
-        </div>
-      ` : ""}
-
-      ${i ? `
-        <div style="
-          display:grid;
-          grid-template-columns:90px 1fr;
-          gap:8px;
-          align-items:center;
-        ">
-          <div>${i}</div>
-          <div style="font-size:${size}px;opacity:.85;">Industrie-Verarbeitungsgrad</div>
-        </div>
-      ` : ""}
-    </div>
-  `;
-}
-
-
-function renderUserRating(avg, count) {
-  const c = Number.isFinite(+count) ? +count : 0;
-  const avgNum = Number.isFinite(+avg) ? +avg : 0;
-  const stars = Math.round(avgNum);
-  const avgText = avgNum ? avgNum.toFixed(1).replace(".", ",") : "0,0";
-
-  return `
-    <div class="user-rating">
-      <div style="font-size:20px;line-height:1;">
-        ${Array.from({ length: 5 }, (_, i) => i < stars ? "⭐" : "☆").join("")}
-      </div>
-
-      <button
-        type="button"
-        class="rating-trigger"
-        style="margin-top:4px;font-size:14px;background:none;border:0;cursor:pointer;text-decoration:underline;"
-      >
-        <strong>${avgText}</strong> von <strong>5</strong>
-        <span style="opacity:.75;">· ${c} Bewertung${c === 1 ? "" : "en"}</span>
-      </button>
-    </div>
-  `;
-}
-
-
-
-/* ================= LISTE ================= */
+/* ========== LISTE ========= */
 function renderList(data) {
   const box = $("results");
-  if (!box) return;
-  box.innerHTML = (data || []).map(e => `
+  box.innerHTML = data.map(e => `
     <div class="entry-card" data-id="${e.id}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
-      ${renderUserRating(e.rating_avg, e.rating_count)}
-      ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary))}
+      <strong>${escapeHtml(e.title)}</strong>
+      <div style="opacity:.8;font-size:14px;">
+        ${escapeHtml(e.summary.slice(0,120))}…
       </div>
     </div>
   `).join("");
-  bindEntryClicks(box);
+
+  box.querySelectorAll(".entry-card").forEach(card => {
+    card.onclick = () => {
+      const id = card.dataset.id;
+      history.pushState({}, "", "?id=" + id);
+      loadEntry(id);
+    };
+  });
 }
 
-/* ================= DETAIL ================= */
+/* ========== DETAIL ========= */
 async function loadEntry(id) {
   const box = $("results");
-  if (!box) return;
-
-  const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
-  const e = d[0];
+  const [e] = await supa(`entries_with_ratings?id=eq.${id}`);
   if (!e) return;
 
   currentEntryId = id;
 
+  const avg = Number(e.rating_avg)||0;
+  const cnt = Number(e.rating_count)||0;
+
   box.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-    <div id="inlineRating" style="margin:12px 0 18px;">
-  <div id="inlineStars" style="font-size:26px;cursor:pointer;">
-    ${[1,2,3,4,5].map(n => `
-      <span data-star="${n}">${Math.round(e.rating_avg || 0) >= n ? "⭐" : "☆"}</span>
-    `).join("")}
-  </div>
-  <div style="font-size:13px;opacity:.7;margin-top:4px;">
-    Bewertung abgeben (${e.rating_count || 0})
-  </div>
-</div>
 
-    ${renderScoreBlock(e.score, e.processing_score)}
+    <div id="ratingBox">
+      <div>
+        <strong>Nutzerbewertung:</strong>
+        ${avg.toFixed(1).replace(".",",")}/5 (${cnt})
+      </div>
+      <div id="ratingStars" style="font-size:26px;cursor:pointer;">
+        ${[1,2,3,4,5].map(n =>
+          `<span data-star="${n}">${Math.round(avg)>=n?"⭐":"☆"}</span>`
+        ).join("")}
+      </div>
+    </div>
+
     <h3>Zusammenfassung</h3>
     <div class="entry-summary">
-  ${e.summary}
-</div>
-
-
-    <div id="entryActions"></div>
-    <div id="similarEntries"></div>
+      ${renderSummary(e.summary)}
+    </div>
   `;
 
-  renderEntryActions(e.title);
-  await loadSimilarEntries(e);
-  bindEntryClicks(box);
-
-}
-
-/* ================= ÄHNLICHE EINTRÄGE ================= */
-async function loadSimilarEntries(entry) {
-  const box = document.getElementById("similarEntries");
-  if (!box || !entry?.category) return;
-
-  const data = await supa(
-    `entries_with_ratings?select=id,title,summary,rating_avg,rating_count` +
-    `&category=eq.${entry.category}` +
-    `&id=neq.${entry.id}` +
-    `&limit=5`
-  );
-
-  if (!data.length) { box.innerHTML = ""; return; }
-
-  box.innerHTML = `
-    <h3>Ähnliche Einträge</h3>
-    ${data.map(e => `
-      <div class="entry-card" data-id="${e.id}">
-        <strong>${escapeHtml(e.title)}</strong><br>
-        ${renderUserRating(e.rating_avg, e.rating_count)}
-        <div style="font-size:14px;opacity:.8;">
-          ${escapeHtml(shortText(e.summary))}
-        </div>
-      </div>
-    `).join("")}
-  `;
-  bindEntryClicks(box);
-}
-
-/* ================= SOCIAL / KOPIEREN / DRUCKEN ================= */
-function renderEntryActions(title) {
-  const box = $("entryActions");
-  if (!box) return;
-
-  const url = location.href;
-  const encUrl = encodeURIComponent(url);
-  const encTitle = encodeURIComponent(title + " – MarketShield");
-
-  box.innerHTML = `
-    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
-      <button type="button" onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
-      <button type="button" onclick="window.print()">🖨️ Drucken</button>
-      <button type="button" onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
-      <button type="button" onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
-      <button type="button" onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
-      <button type="button" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
-    </div>`;
-}
-
-/* ================= SEARCH ================= */
-async function logSearch(term) {
-  if (!term || term.length < 2 || term === lastSearchLogged) return;
-  lastSearchLogged = term;
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({ query: term })
-    });
-  } catch (e) { console.warn("Search logging failed:", e); }
-}
-
-async function smartSearch(q) {
-  const term = q.trim();
-  if (term.length < 2) return [];
-  const enc = encodeURIComponent(term);
-  return await supa(
-    `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&title=ilike.%25${enc}%25`
-  );
-}
-
-function initSearch() {
-  const input = $("searchInput");
-  const box = $("results");
-  if (!input || !box) return;
-
-  input.addEventListener("input", async () => {
-    const q = input.value.trim();
-    if (q.length < 2) return box.innerHTML = "";
-    const res = await smartSearch(q);
-    renderList(res);
-    logSearch(q);
-  });
-}
-
-/* ================= KATEGORIEN ================= */
-async function loadCategories() {
-  const grid = document.querySelector(".category-grid");
-  if (!grid) return;
-
-  const data = await fetch("categories.json").then(r => r.json());
-  grid.innerHTML = "";
-
-  (data.categories || []).forEach(c => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.textContent = c.title;
-    b.onclick = () => loadCategory(c.title);
-    grid.appendChild(b);
-  });
-}
-
-async function loadCategory(cat) {
-  const data = await supa(
-    `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${cat}`
-  );
-  renderList(data);
-}
-
-
-
-
-/* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded", () => {
-  loadCategories();
-  initSearch();
-
-  // Oberer "Zur Startseite"-Link (falls vorhanden)
-  const backHome = document.getElementById("backHome");
-  if (backHome) {
-    backHome.addEventListener("click", (e) => {
-      e.preventDefault();
-      history.pushState({}, "", location.pathname);
-      currentEntryId = null;
-      const input = $("searchInput"); if (input) input.value = "";
-      const results = $("results"); if (results) results.innerHTML = "";
-    });
-  }
-
-  const id = new URLSearchParams(location.search).get("id");
-  if (id) loadEntry(id);
-});
-
-/* ================= REPORT FAB – ROBUST ================= */
-document.addEventListener("click", (e) => {
-  const fab = e.target.closest("#msReportFab");
-  if (!fab) return;
-  e.preventDefault(); e.stopPropagation();
-  const modal = document.getElementById("reportModal");
-  if (!modal) { console.error("reportModal fehlt"); return; }
-  modal.classList.add("open");
-});
-
-/* ================= REPORT FORM – SENDEN ================= */
-document.addEventListener("DOMContentLoaded", () => {
-  const form  = document.getElementById("reportForm");
-  const modal = document.getElementById("reportModal");
-  if (!form) return;
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const textarea = form.querySelector("textarea[name='description']");
-    const desc = textarea ? textarea.value.trim() : "";
-    if (!desc) return;
-
-    //showProgress("Nachricht wird gesendet …");
-
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
-        method: "POST",
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal"
+  $("ratingStars").querySelectorAll("span").forEach(star => {
+    star.onclick = async ev => {
+      ev.stopPropagation();
+      const v = Number(star.dataset.star);
+      await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`,{
+        method:"POST",
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:`Bearer ${SUPABASE_KEY}`,
+          "Content-Type":"application/json"
         },
-        body: JSON.stringify({
-          description: desc,
-          source: "community",
-          entry_id: currentEntryId || null,
-          page: currentEntryId ? `entry:${currentEntryId}` : "home"
-        })
+        body:JSON.stringify({ entry_id:id, rating:v })
       });
-
-      if (!res.ok) throw new Error(await res.text());
-
-      form.reset();
-
-      // ✅ EINZIGES Feedback – intern, ruhig, ohne Browserfenster
-      const msg = document.createElement("div");
-      msg.textContent = "Nachricht gesendet.";
-      msg.style.cssText = `
-        margin-top:12px;
-        padding:10px;
-        background:#f1f8f3;
-        color:#2e7d32;
-        border-radius:6px;
-        font-size:14px;
-        text-align:center;
-      `;
-      form.appendChild(msg);
-
-      setTimeout(() => {
-        msg.remove();
-        if (modal) modal.classList.remove("open");
-      }, 1200);
-
-    } catch (err) {
-      console.error("Report submit failed:", err);
-    } finally {
-     // hideProgress();
-    }
-  });
-});
-
-
-/* =====================================================
-   REPORT MODAL – SCHLIESSEN (ROBUST)
-===================================================== */
-document.addEventListener("click", (e) => {
-  const closeBtn = e.target.closest("#closeReportModal");
-  if (!closeBtn) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  const modal = document.getElementById("reportModal");
-  if (modal) modal.classList.remove("open");
-});
-/* =====================================================
-   RATING – SAUBERES MODAL (FINAL)
-===================================================== */
-
-// Öffnen des Rating-Modals – PRIORITÄT
-
-
-
-
-// Schließen-Button
-document.getElementById("closeRatingModal")?.addEventListener("click", () => {
-  document.getElementById("ratingModal")?.classList.remove("open");
-});
-
-
-// Sterne einfärben
-function highlightStars(n) {
-  document.querySelectorAll("#ratingStars span").forEach(s => {
-    s.textContent = (Number(s.dataset.star) <= n) ? "⭐" : "☆";
+      loadEntry(id);
+    };
   });
 }
-// ⭐ Rating-Button öffnet Modal
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".rating-trigger");
-  if (!btn) return;
 
-  e.preventDefault();
-  e.stopPropagation();
-
-  const modal = document.getElementById("ratingModal");
-  if (modal) modal.classList.add("open");
-});
-// ⭐ STERN-KLICK → Bewertung speichern (FINAL)
-document.addEventListener("click", async (e) => {
-  const star = e.target.closest("#ratingStars span");
-  if (!star) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  const value = Number(star.dataset.star);
-  if (!value || !currentEntryId) return;
-
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        entry_id: currentEntryId,
-        rating: value
-      })
-    });
-
-    document.getElementById("ratingModal")?.classList.remove("open");
-    await loadEntry(currentEntryId);
-
-  } catch (err) {
-    console.error("Rating failed:", err);
-  }
-});
-// ❌❌ RATING MODAL – IMMER SCHLIESSEN (FINAL)
-document.addEventListener("click", (e) => {
-  const closeBtn = e.target.closest("#closeRatingModal");
-  if (!closeBtn) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  const modal = document.getElementById("ratingModal");
-  if (modal) modal.classList.remove("open");
-});
-// ⭐ INLINE RATING – SUPABASE (FINAL & ISOLIERT)
-document.addEventListener("click", async (e) => {
-  const star = e.target.closest("#inlineStars span");
-  if (!star) return;                 // 👈 ALLES andere ignorieren
-  if (!currentEntryId) return;
-
-  e.preventDefault();
-  e.stopPropagation();               // 👈 NUR HIER stoppen
-
-  const value = Number(star.dataset.star);
-  if (!value) return;
-
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        entry_id: currentEntryId,
-        rating: value
-      })
-    });
-
-    await loadEntry(currentEntryId);
-
-  } catch (err) {
-    console.error("Rating failed:", err);
+/* ========== START ========= */
+document.addEventListener("DOMContentLoaded", async () => {
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) {
+    loadEntry(id);
+  } else {
+    const data = await supa("entries_with_ratings?limit=20");
+    renderList(data);
   }
 });
