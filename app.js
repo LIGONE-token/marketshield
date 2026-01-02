@@ -506,8 +506,13 @@ async function loadCategory(cat) {
 
 /* ================= CARD CLICK ================= */
 document.addEventListener("click", (e) => {
+
+  // ⛔ Klick auf Bewertung? → IGNORIEREN
+  if (e.target.closest("[data-rating-star]")) return;
+
   const card = e.target.closest(".entry-card");
   if (!card) return;
+
   const id = card.dataset.id;
   history.pushState(null, "", "?id=" + id);
   loadEntry(id).catch(showFatal);
