@@ -232,18 +232,32 @@ function renderRatingBlock(avg = 0, count = 0) {
   const c = Number(count) || 0;
 
   return `
-    <div id="ratingBox" style="margin:10px 0;font-size:14px;">
-      <strong>Nutzerbewertung:</strong>
-      ${a.toFixed(1).replace(".", ",")}/5 (${c})
+    <div id="ratingBox"
+         style="margin:6px 0 10px 0;font-size:13px;line-height:1.3;"
+         itemprop="aggregateRating"
+         itemscope
+         itemtype="https://schema.org/AggregateRating">
+
+      <meta itemprop="ratingValue" content="${a.toFixed(1)}">
+      <meta itemprop="bestRating" content="5">
+      <meta itemprop="ratingCount" content="${c}">
+
+      <span style="opacity:.85;">
+        <strong>Nutzerbewertung:</strong>
+        ${a.toFixed(1).replace(".", ",")} von 5
+        <span style="opacity:.7;">(${c} Bewertungen)</span>
+      </span>
+
       <span id="ratingStars"
-            style="font-size:16px;margin-left:6px;cursor:pointer;user-select:none;">
+            style="font-size:14px;margin-left:6px;cursor:pointer;user-select:none;">
         ${[1,2,3,4,5].map(n =>
-          `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
+          `<span data-star="${n}" aria-label="${n} Sterne">${Math.round(a) >= n ? "★" : "☆"}</span>`
         ).join("")}
       </span>
     </div>
   `;
 }
+
 
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
