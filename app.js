@@ -1,271 +1,435 @@
 /* =====================================================
-   MarketShield – app.js
-   STABIL / FINAL / OHNE EXPERIMENTE
+   MarketShield – app.js (STABIL / CRASH-PROOF)
 ===================================================== */
 
-/* ========== GLOBAL ========= */
 let currentEntryId = null;
 
-/* ========== SUPABASE ========= */
+/* ================= SUPABASE ================= */
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JHb4LBhP26eI7BgDS1jIkw_4OYn3-F9";
 
 async function supa(query) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, {
-    headers: {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    }
+  const url = `${SUPABASE_URL}/rest/v1/${query}`;
+  const r = await fetch(url, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
   });
-  if (!r.ok) throw new Error(await r.text());
-  return await r.json();
-}
-
-/* ========== HELPERS ========= */
-const $ = id => document.getElementById(id);
-
-function escapeHtml(s = "") {
-  return String(s).replace(/[&<>]/g, c => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;"
-  })[c]);
-}
-
-function normalizeText(t = "") {
-  return t.replace(/\r/g, "").replace(/\n{3,}/g, "\n\n").trim();
-}
-
-/* ========== SUMMARY RENDER (ABSÄTZE + TABELLEN) ========= */
-function renderSummary(summary = "") {
-  const text = normalizeText(summary);
-  if (!text) return "";
-
-  const lines = text.split("\n");
-  let html = "";
-
-  let paragraph = [];
-  let kvBlock = [];
-  let pipeBlock = [];
-
-  const flushParagraph = () => {
-    if (!paragraph.length) return;
-    html += `<p style="margin:0 0 12px;line-height:1.55;">${
-      escapeHtml(paragraph.join(" ")).replace(/\n/g, "<br>")
-    }</p>`;
-    paragraph = [];
-  };
-
-  const flushKV = () => {
-    if (kvBlock.length < 2) {
-      paragraph.push(...kvBlock);
-    } else {
-      html += `
-        <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
-          <tbody>
-            ${kvBlock.map(l => {
-              const [k, v] = l.split(":");
-              return `
-                <tr>
-                  <td style="width:35%;padding:6px;border-bottom:1px solid #eee;"><strong>${escapeHtml(k)}</strong></td>
-                  <td style="padding:6px;border-bottom:1px solid #eee;">${escapeHtml(v)}</td>
-                </tr>`;
-            }).join("")}
-          </tbody>
-        </table>`;
-    }
-    kvBlock = [];
-  };
-
-  const flushPipe = () => {
-    const rows = pipeBlock
-      .map(l => l.split("|").map(c => c.trim()).filter(Boolean))
-      .filter(r => r.length >= 2);
-
-    if (rows.length < 2) {
-      paragraph.push(...pipeBlock);
-    } else {
-      const head = rows[0];
-      const body = rows.slice(1);
-
-      html += `
-        <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px;">
-          <thead>
-            <tr>
-              ${head.map(h => `<th style="text-align:left;border-bottom:2px solid #ccc;padding:6px;">${escapeHtml(h)}</th>`).join("")}
-            </tr>
-          </thead>
-          <tbody>
-            ${body.map(r => `
-              <tr>
-                ${r.map(c => `<td style="padding:6px;border-bottom:1px solid #eee;">${escapeHtml(c)}</td>`).join("")}
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>`;
-    }
-    pipeBlock = [];
-  };
-
-  for (const line of lines) {
-    const l = line.trim();
-
-    if (!l) {
-      flushPipe(); flushKV(); flushParagraph();
-      continue;
-    }
-
-    if (l.includes("|")) {
-      flushParagraph(); flushKV();
-      pipeBlock.push(l);
-      continue;
-    }
-
-    if (/^[^:]{2,40}:\s+.+$/.test(l)) {
-      flushParagraph(); flushPipe();
-      kvBlock.push(l);
-      continue;
-    }
-
-    flushPipe(); flushKV();
-    paragraph.push(l);
+  // Wenn Supabase Fehler liefert, zeigen wir ihn statt still weiterzumachen:
+  const txt = await r.text();
+  try {
+    const json = JSON.parse(txt || "[]");
+    if (!r.ok) throw new Error(`Supabase ${r.status}: ${txt}`);
+    return json;
+  } catch (e) {
+    if (!r.ok) throw new Error(`Supabase ${r.status}: ${txt}`);
+    throw e;
   }
-
-  flushPipe(); flushKV(); flushParagraph();
-  return html;
 }
-function renderScoreBlock(score, processing) {
-  if (score == null && processing == null) return "";
 
-  const bar = v => `
-    <div style="background:#eee;border-radius:6px;height:10px;overflow:hidden;margin-top:4px;">
-      <div style="
-        width:${Math.min(Math.max(v,0),10) * 10}%;
-        height:100%;
-        background:${v >= 7 ? "#c62828" : v >= 4 ? "#f9a825" : "#2e7d32"};
-      "></div>
+/* ================= SAFE DOM ================= */
+const getEl = (id) => document.getElementById(id);
+const getResultsEl = () => getEl("results");
+
+function showFatal(msg) {
+  const box = getResultsEl();
+  if (box) {
+    box.innerHTML = `
+      <div style="padding:12px;border:2px solid #c00;background:#fff3f3;border-radius:10px;">
+        <div style="font-weight:900;margin-bottom:6px;">MarketShield Fehler</div>
+        <div style="white-space:pre-wrap;line-height:1.5;">${escapeHtml(String(msg))}</div>
+        <div style="margin-top:8px;opacity:.75;">Tipp: Öffne die Browser-Konsole (F12) für Details.</div>
+      </div>
+    `;
+  } else {
+    alert("MarketShield Fehler: " + msg);
+  }
+}
+
+window.addEventListener("error", (e) => showFatal(e.message || e.error || "Unbekannter JS-Fehler"));
+window.addEventListener("unhandledrejection", (e) => showFatal(e.reason || "Promise Fehler"));
+
+/* ================= HELPERS ================= */
+function escapeHtml(s = "") {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function shortText(text, max = 160) {
+  if (!text) return "";
+  return text.length > max ? text.slice(0, max) + " …" : text;
+}
+function normalizeText(text) {
+  if (!text) return "";
+  return String(text)
+    // doppelt oder einfach escapte Zeilenumbrüche → echte Umbrüche
+    .replace(/\\n\\n/g, "\n\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .trim();
+}
+
+function renderTextBlock(title, text) {
+  if (!text) return "";
+  return `
+    <h3>${escapeHtml(title)}</h3>
+    <div style="white-space:pre-wrap;line-height:1.6;">
+      ${escapeHtml(normalizeText(text))}
     </div>
   `;
+}
+function renderJsonList(title, data) {
+  if (!data) return "";
+  let arr;
+  try { arr = Array.isArray(data) ? data : JSON.parse(data); } catch { return ""; }
+  if (!arr.length) return "";
+  return `
+    <h3>${escapeHtml(title)}</h3>
+    <ul style="line-height:1.6;padding-left:18px;">
+      ${arr.map(v => `<li>${escapeHtml(v)}</li>`).join("")}
+    </ul>
+  `;
+}
+
+async function saveSearchQuery(query) {
+  if (!query || query.length < 2) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/search_queue`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ query: query.trim() })
+    });
+  } catch {
+    // niemals blockieren
+  }
+}
+function ensureLegalPopup() {
+  if (document.getElementById("legalPopup")) return;
+
+  const div = document.createElement("div");
+  div.id = "legalPopup";
+  div.style.cssText = `
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    z-index:99999;
+    align-items:center;
+    justify-content:center;
+  `;
+
+  div.innerHTML = `
+    <div style="
+      background:#fff;
+      max-width:420px;
+      padding:18px 20px;
+      border-radius:12px;
+      font-size:14px;
+      line-height:1.45;
+    ">
+      <div style="font-weight:900;margin-bottom:8px;">
+        Rechtlicher Hinweis
+      </div>
+
+      <div style="margin-bottom:14px;">
+        MarketShield darf rechtlich keine absolute Wahrheit darstellen.
+        Alle Inhalte dienen der sachlichen Einordnung auf Basis verfügbarer
+        Informationen, typischer Zusammensetzungen und öffentlicher Quellen.
+        Rezepturen, Chargen, Herstellerangaben und individuelle Verträglichkeiten
+        können abweichen. Inhalte ersetzen keine medizinische oder rechtliche Beratung.
+      </div>
+
+      <button type="button" onclick="closeLegalPopup()">Schließen</button>
+    </div>
+  `;
+
+  document.body.appendChild(div);
+}
+
+function openLegalPopup() {
+  ensureLegalPopup();
+  const p = document.getElementById("legalPopup");
+  if (p) p.style.display = "flex";
+}
+
+function closeLegalPopup() {
+  const p = document.getElementById("legalPopup");
+  if (p) p.style.display = "none";
+}
+function renderMiniLegalPopupLink() {
+  return `
+    <div style="
+      font-size:11px;
+      line-height:1.2;
+      opacity:0.6;
+      margin:4px 0 6px 0;
+      cursor:pointer;
+      text-decoration:underline;"
+      onclick="openLegalPopup()">
+      Rechtlicher Hinweis!
+    </div>
+  `;
+}
+
+/* ================= SCORES ================= */
+function renderHealth(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  if (n >= 80) return "💚💚💚";
+  if (n >= 60) return "💚💚";
+  if (n >= 40) return "💚";
+  if (n >= 20) return "💛";
+  return "⚠️❗⚠️";
+}
+function renderIndustry(score) {
+  const n = Number(score);
+  if (!Number.isFinite(n) || n <= 0) return "";
+  const w = Math.round((n / 10) * 80);
+  return `
+    <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;overflow:hidden;">
+      <div style="width:${w}px;height:8px;background:#2e7d32;"></div>
+    </div>
+  `;
+}
+function renderScoreBlock(score, processing, size = 13) {
+  const h = renderHealth(score);
+  const i = renderIndustry(processing);
+  if (!h && !i) return "";
+
+  const colW = 90;
+  const labelStyle = `font-size:${size}px;opacity:0.85;line-height:1.2;`;
+  const rowGap = 6;
+  const colGap = 8;
 
   return `
     <div style="margin:12px 0;">
-      ${score != null ? `
-        <div style="margin-bottom:6px;">
-          <strong>Gesundheit:</strong> ${score}/10
-          ${bar(score)}
-        </div>` : ""}
-      ${processing != null ? `
-        <div>
-          <strong>Industrie:</strong> ${processing}/10
-          ${bar(processing)}
-        </div>` : ""}
+      ${h ? `
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;margin-bottom:${i ? rowGap : 0}px;">
+          <div style="white-space:nowrap;">${h}</div>
+          <div style="${labelStyle}">Gesundheitsscore</div>
+        </div>
+      ` : ""}
+
+      ${i ? `
+        <div style="display:grid;grid-template-columns:${colW}px 1fr;column-gap:${colGap}px;align-items:center;">
+          <div style="white-space:nowrap;">${i}</div>
+          <div style="${labelStyle}">Industrie-Verarbeitungsgrad</div>
+        </div>
+      ` : ""}
     </div>
   `;
 }
 
-/* ========== LISTE ========= */
-function renderList(data) {
-  const box = $("results");
-  if (!box) return;
+/* ================= KATEGORIEN ================= */
+async function loadCategories() {
+  const grid = document.querySelector(".category-grid");
+  if (!grid) return; // wenn es nicht existiert, bricht nichts
 
-  if (!data.length) {
-    box.innerHTML = "<p>Keine Einträge gefunden.</p>";
-    return;
-  }
+  const data = await fetch("categories.json").then(r => r.json());
+  grid.innerHTML = "";
 
-  box.innerHTML = data.map(e => `
-    <div class="entry-card" data-id="${e.id}">
-      <strong>${escapeHtml(e.title)}</strong>
-      <div style="opacity:.8;font-size:14px;">
-        ${escapeHtml((e.summary || "").slice(0,120))}…
-      </div>
-    </div>
-  `).join("");
-
-  box.querySelectorAll(".entry-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const id = card.dataset.id;
-      history.pushState({}, "", "?id=" + id);
-      loadEntry(id);
-    });
+  (data.categories || []).forEach(c => {
+    const b = document.createElement("button");
+    b.textContent = c.title;
+    b.onclick = () => loadCategory(c.title);
+    grid.appendChild(b);
   });
 }
 
-/* ========== DETAIL ========= */
-async function loadEntry(id) {
-  const box = $("results");
-  if (!box) return;
+/* ================= LISTE ================= */
+function renderList(data) {
+  const results = getResultsEl();
+  if (!results) return;
 
-  const data = await supa(`entries_with_ratings?id=eq.${id}`);
-  const e = data[0];
-  if (!e) {
-    box.innerHTML = "<p>Eintrag nicht gefunden.</p>";
-    return;
-  }
+  results.innerHTML = (data || []).map(e => `
+    <div class="entry-card" data-id="${e.id}">
+      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
+      ${renderScoreBlock(e.score, e.processing_score, 13)}
+      <div style="font-size:15px;line-height:1.4;">${escapeHtml(shortText(e.summary, 160))}</div>
+    </div>
+  `).join("");
+}
+
+/* ================= DETAIL ================= */
+async function loadEntry(id) {
+  const results = getResultsEl();
+  if (!results) return;
+
+  const data = await supa(`entries?select=*&id=eq.${id}`);
+  const e = data && data[0];
+  if (!e) return;
 
   currentEntryId = id;
 
-  const avg = Number(e.rating_avg) || 0;
-  const cnt = Number(e.rating_count) || 0;
-
-  box.innerHTML = `
+  results.innerHTML = `
     <h2>${escapeHtml(e.title)}</h2>
-
-    <div id="ratingBox" style="margin:8px 0;">
-      <span style="font-size:14px;">
-        <strong>Nutzerbewertung:</strong>
-        ${avg.toFixed(1).replace(".", ",")}/5 (${cnt})
-      </span>
-      <span id="ratingStars" style="font-size:22px;cursor:pointer;margin-left:6px;">
-        ${[1,2,3,4,5].map(n =>
-          `<span data-star="${n}">${Math.round(avg) >= n ? "⭐" : "☆"}</span>`
-        ).join("")}
-      </span>
-    </div>
-
-    <h3>Zusammenfassung</h3>
-    <div class="entry-summary">
-      ${renderSummary(e.summary)}
-    </div>
+    ${renderScoreBlock(e.score, e.processing_score, 14)}
+    ${renderMiniLegalPopupLink()}
+    ${renderTextBlock("Zusammenfassung", e.summary)}
+    ${renderTextBlock("Wirkmechanismus", e.mechanism)}
+    ${renderTextBlock("Wissenschaftlicher Hinweis", e.scientific_note)}
+    ${renderJsonList("Positive Effekte", e.effects_positive)}
+    ${renderJsonList("Negative Effekte", e.effects_negative)}
+    ${renderJsonList("Risikogruppen", e.risk_groups)}
+    ${renderJsonList("Synergien / Wechselwirkungen", e.synergy)}
+    ${renderJsonList("Natürliche Quellen", e.natural_sources)}
+    ${renderJsonList("Tags", e.tags)}
+    <div id="entryActions"></div>
   `;
 
-  const stars = $("ratingStars");
-  if (stars) {
-    stars.querySelectorAll("span").forEach(star => {
-      star.addEventListener("click", async ev => {
-        ev.stopPropagation();
-        const v = Number(star.dataset.star);
-        await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ entry_id: id, rating: v })
-        });
-        loadEntry(id);
-      });
+  renderEntryActions(e.title);
+  updateBackHome();
+}
+
+/* ================= SHARE / ACTIONS ================= */
+function renderEntryActions(title) {
+  const box = document.getElementById("entryActions");
+  if (!box) return;
+
+  const url = location.href;
+  const encUrl = encodeURIComponent(url);
+  const encTitle = encodeURIComponent(title + " – MarketShield");
+
+  box.innerHTML = `
+    <div style="margin-top:32px;border-top:1px solid #ddd;padding-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button type="button" onclick="navigator.clipboard.writeText('${url}')">🔗 Kopieren</button>
+      <button type="button" onclick="window.print()">🖨️ Drucken</button>
+      <button type="button" onclick="window.open('https://wa.me/?text=${encTitle}%20${encUrl}','_blank')">WhatsApp</button>
+      <button type="button" onclick="window.open('https://t.me/share/url?url=${encUrl}&text=${encTitle}','_blank')">Telegram</button>
+      <button type="button" onclick="window.open('https://twitter.com/intent/tweet?url=${encUrl}&text=${encTitle}','_blank')">X</button>
+      <button type="button" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
+    </div>
+  `;
+}
+
+/* ================= REPORT ================= */
+function initReport() {
+  const btn = document.getElementById("reportBtn");
+  const modal = document.getElementById("reportModal");
+  const close = document.getElementById("closeReportModal");
+  const form = document.getElementById("reportForm");
+  if (!btn || !modal || !form || !close) return;
+
+  btn.onclick = () => modal.classList.add("active");
+  close.onclick = () => modal.classList.remove("active");
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const description = (form.description?.value || "").trim();
+    if (!description) return alert("Bitte Beschreibung eingeben.");
+
+    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        description,
+        source: "community",
+        status: "new",
+        entry_id: currentEntryId || null
+      })
     });
+
+    form.reset();
+    modal.classList.remove("active");
+    alert("Meldung gesendet. Danke!");
+  };
+}
+
+/* ================= BACK HOME ================= */
+function initBackHome() {
+  const back = document.getElementById("backHome");
+  if (!back) return;
+
+  back.onclick = () => {
+    history.pushState(null, "", location.pathname);
+    const results = getResultsEl();
+    if (results) results.innerHTML = "";
+    updateBackHome();
+  };
+
+  window.addEventListener("popstate", updateBackHome);
+}
+
+function updateBackHome() {
+  const back = document.getElementById("backHome");
+  if (!back) return;
+  back.style.display = location.search.includes("id=") ? "block" : "none";
+}
+
+/* ================= SEARCH ================= */
+function initSearch() {
+  const input = document.getElementById("searchInput");
+  const results = getResultsEl();
+
+  if (!input || !results) return;
+
+  input.addEventListener("input", async () => {
+    try {
+      const q = input.value.trim();
+      if (q.length < 2) { results.innerHTML = ""; return; }
+      const enc = encodeURIComponent(q);
+      const data = await supa(
+        `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+      );
+      renderList(data);
+    } catch (err) {
+      showFatal(err);
+    }
+  });
+
+  input.addEventListener("keydown", async (e) => {
+    if (e.key !== "Enter") return;
+    try {
+      const q = input.value.trim();
+      if (q.length < 2) return;
+      saveSearchQuery(q);
+      const enc = encodeURIComponent(q);
+      const data = await supa(
+        `entries?select=id,title,summary,score,processing_score&or=(title.ilike.%25${enc}%25,summary.ilike.%25${enc}%25)`
+      );
+      renderList(data);
+    } catch (err) {
+      showFatal(err);
+    }
+  });
+}
+
+/* ================= LOAD CATEGORY ================= */
+async function loadCategory(cat) {
+  try {
+    const data = await supa(`entries?select=id,title,summary,score,processing_score&category=eq.${cat}`);
+    renderList(data);
+  } catch (err) {
+    showFatal(err);
   }
 }
 
-/* ========== START ========= */
-document.addEventListener("DOMContentLoaded", async () => {
-  const box = $("results");
-  if (!box) return;
+/* ================= CARD CLICK ================= */
+document.addEventListener("click", (e) => {
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
+  const id = card.dataset.id;
+  history.pushState(null, "", "?id=" + id);
+  loadEntry(id).catch(showFatal);
+});
 
-  const id = new URLSearchParams(location.search).get("id");
-
+/* ================= INIT ================= */
+document.addEventListener("DOMContentLoaded", () => {
   try {
-    if (id) {
-      await loadEntry(id);
-    } else {
-      const data = await supa("entries_with_ratings?limit=20");
-      renderList(data);
-    }
+    loadCategories().catch(showFatal);
+    initSearch();
+    initReport();
+    initBackHome();
+
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+    if (id) loadEntry(id).catch(showFatal);
   } catch (err) {
-    box.innerHTML = `<p style="color:red;">Fehler beim Laden der Daten.</p>`;
-    console.error(err);
+    showFatal(err);
   }
 });
