@@ -530,13 +530,10 @@ async function loadCategory(cat) {
 /* ================= CARD CLICK ================= */
 document.addEventListener("click", (e) => {
 
-  // 🚫 Klicks im Rating-Modal komplett ignorieren
-  if (e.target.closest("#ratingModal")) {
-    e.stopPropagation();
-    return;
-  }
+  // ⛔ Modal komplett ausnehmen – NICHT blockieren!
+  if (e.target.closest("#ratingModal")) return;
 
-  // 🚫 Klick auf Sterne im Eintrag nicht als Card-Klick behandeln
+  // ⭐ Sterne im Eintrag ausnehmen
   if (e.target.closest("[data-rating-star]")) return;
 
   const card = e.target.closest(".entry-card");
