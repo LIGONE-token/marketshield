@@ -437,3 +437,78 @@ document.addEventListener("click", (e) => {
   const modal = document.getElementById("reportModal");
   if (modal) modal.classList.remove("open");
 });
+/* =====================================================
+   RATING – SAUBERES MODAL (FINAL)
+===================================================== */
+
+// Öffnen des Rating-Modals
+document.addEventListener("click", (e) => {
+  const trigger = e.target.closest(".rating-open");
+  if (!trigger) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (!currentEntryId) return;
+
+  const modal = document.getElementById("ratingModal");
+  if (modal) modal.classList.add("open");
+});
+
+// Schließen-Button
+document.getElementById("closeRatingModal")?.addEventListener("click", () => {
+  document.getElementById("ratingModal")?.classList.remove("open");
+});
+
+// Sterne-Logik
+document.querySelectorAll("#ratingStars span").forEach(star => {
+
+  // Hover-Vorschau
+  star.addEventListener("mouseenter", () => {
+    const n = Number(star.dataset.star);
+    highlightStars(n);
+  });
+
+  star.addEventListener("mouseleave", () => {
+    highlightStars(0);
+  });
+
+  // Klick = Bewertung speichern
+  star.addEventListener("click", async () => {
+    const value = Number(star.dataset.star);
+    if (!value || !currentEntryId) return;
+
+    showProgress("Bewertung wird gespeichert …");
+
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          entry_id: currentEntryId,
+          rating: value
+        })
+      });
+
+      document.getElementById("ratingModal")?.classList.remove("open");
+      await loadEntry(currentEntryId);
+
+    } catch (err) {
+      console.error("Rating failed:", err);
+    } finally {
+      hideProgress();
+    }
+  });
+});
+
+// Sterne einfärben
+function highlightStars(n) {
+  document.querySelectorAll("#ratingStars span").forEach(s => {
+    s.textContent = (Number(s.dataset.star) <= n) ? "⭐" : "☆";
+  });
+}
