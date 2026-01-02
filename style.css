@@ -1742,3 +1742,40 @@ input {
 .entry-card * {
   pointer-events: auto;
 }
+/* ================================
+   ENTRY CONTENT – TEXT & TABELLEN
+================================ */
+
+.entry-summary {
+  line-height: 1.6;
+  font-size: 15px;
+  color: #222;
+}
+
+.entry-summary p {
+  margin: 0.6em 0;
+}
+
+.entry-summary ul,
+.entry-summary ol {
+  margin: 0.6em 0 0.6em 1.2em;
+}
+
+.entry-summary table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.entry-summary th,
+.entry-summary td {
+  border: 1px solid #ccc;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.entry-summary th {
+  background: #f3f3f3;
+  font-weight: 600;
+}
