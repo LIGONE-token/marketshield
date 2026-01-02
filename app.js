@@ -80,23 +80,26 @@ function renderJsonList(title, data) {
 
   let arr = [];
 
-  // 🔹 Fall 1: echtes Array
+  // Fall 1: echtes Array
   if (Array.isArray(data)) {
     arr = data;
   }
 
-  // 🔹 Fall 2: String mit Trennzeichen |
+  // Fall 2: String mit | getrennt  ← DAS IST DEIN FALL
   else if (typeof data === "string" && data.includes("|")) {
-    arr = data.split("|").map(v => v.trim()).filter(Boolean);
+    arr = data
+      .split("|")
+      .map(v => v.trim())
+      .filter(v => v.length > 0);
   }
 
-  // 🔹 Fall 3: JSON-String
+  // Fall 3: JSON-String
   else if (typeof data === "string") {
     try {
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed)) arr = parsed;
+      else arr = [data];
     } catch {
-      // Fallback: Einzelwert
       arr = [data];
     }
   }
