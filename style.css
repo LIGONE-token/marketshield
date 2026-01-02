@@ -1794,3 +1794,16 @@ input {
   border: 1px solid #ccc;
   padding: 6px 8px;
 }
+/* 🔥 Progress-/Overlay darf NICHT klicken blockieren */
+#msProgressBox,
+.progress,
+.overlay {
+  pointer-events: none;
+}
+
+/* NUR wenn aktiv, darf es klicken blockieren */
+#msProgressBox.active,
+.progress.active,
+.overlay.active {
+  pointer-events: auto;
+}
