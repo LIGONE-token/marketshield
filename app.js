@@ -261,9 +261,10 @@ function renderRatingBlock(avg = 0, count = 0) {
        color:inherit;
      ">
 
-        ${[1,2,3,4,5].map(n =>
-          `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
-        ).join("")}
+       ${[1,2,3,4,5].map(n =>
+  `<span data-star="${n}">${a >= n ? "★" : "☆"}</span>`
+).join("")}
+
       </div>
     </div>
   `;
