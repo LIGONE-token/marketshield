@@ -1816,3 +1816,57 @@ input {
   display: none !important;
   pointer-events: none !important;
 }
+/* =========================================
+   MARKETSHIELD – FINAL OVERRIDE (CLEAN)
+   DIESE REGELN GEWINNEN IMMER
+========================================= */
+
+/* 🔥 Progress / Overlay endgültig TOT */
+#msProgressBox,
+.progress,
+.overlay {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* 🔥 ALLE Klicks wieder erlauben */
+html, body,
+#results, #results *,
+.entry-card, .entry-card *,
+.rating-open, .rating-open * {
+  pointer-events: auto !important;
+}
+
+/* 🔥 TEXTE ENDLICH NORMAL */
+.entry-summary {
+  white-space: normal !important;
+  line-height: 1.7 !important;
+  font-size: 16px !important;
+}
+
+/* echte Absätze */
+.entry-summary p {
+  display: block !important;
+  margin: 0 0 1.2em 0 !important;
+}
+
+/* 🔥 TABELLEN SICHTBAR */
+.entry-summary table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 12px 0 !important;
+}
+
+.entry-summary th,
+.entry-summary td {
+  border: 1px solid #ccc !important;
+  padding: 8px !important;
+  text-align: left !important;
+}
+
+/* 🔥 SUCHFELD NACH OBEN (MOBILE) */
+@media (max-width: 600px) {
+  #searchInput {
+    margin-top: -12px !important;
+  }
+}
