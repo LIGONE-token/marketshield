@@ -605,6 +605,9 @@ function closeRatingModal() {
   const modal = document.getElementById("ratingModal");
   if (modal) modal.classList.remove("open");
 }
+window.addEventListener("popstate", () => {
+  closeRatingModal();
+});
 
 
 /* ================= INIT ================= */
