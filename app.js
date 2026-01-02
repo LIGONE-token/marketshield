@@ -132,7 +132,6 @@ function renderScoreBlock(score, processing, size = 13) {
 function renderUserRating(avg, count) {
   const c = Number.isFinite(+count) ? +count : 0;
   const avgNum = Number.isFinite(+avg) ? +avg : 0;
-
   const stars = Math.round(avgNum);
   const avgText = avgNum ? avgNum.toFixed(1).replace(".", ",") : "0,0";
 
@@ -142,10 +141,17 @@ function renderUserRating(avg, count) {
         ${Array.from({ length: 5 }, (_, i) => i < stars ? "⭐" : "☆").join("")}
       </div>
 
-      <div class="rating-open"
-     data-rating-trigger="1"
-     style="margin-top:4px;font-size:14px;cursor:pointer;text-decoration:underline;">
-
+      <!-- 🔑 DAS ist der klickbare Trigger -->
+      <div
+        data-rating-trigger="1"
+        style="
+          margin-top:4px;
+          font-size:14px;
+          cursor:pointer;
+          text-decoration:underline;
+          display:inline-block;
+        "
+      >
         <strong>${avgText}</strong> von <strong>5</strong>
         <span style="opacity:.75;">
           · ${c} Bewertung${c === 1 ? "" : "en"}
