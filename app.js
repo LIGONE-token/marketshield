@@ -514,3 +514,60 @@ document.addEventListener("DOMContentLoaded", () => {
     showFatal(err);
   }
 });
+function initReportFabFinal() {
+  const fab   = document.getElementById("msReportFab");
+  const modal = document.getElementById("reportModal");
+  const close = document.getElementById("closeReportModal");
+  const form  = document.getElementById("reportForm");
+
+  if (!fab || !modal || !form) {
+    console.error("ReportFab: Elemente fehlen");
+    return;
+  }
+
+  // 🔹 FAB klickbar erzwingen
+  fab.style.pointerEvents = "auto";
+  fab.style.cursor = "pointer";
+  fab.style.zIndex = "99999";
+
+  // 🔹 Modal öffnen
+  fab.onclick = (e) => {
+    e.preventDefault();
+    modal.classList.add("open");
+  };
+
+  // 🔹 Modal schließen
+  if (close) {
+    close.onclick = () => modal.classList.remove("open");
+  }
+
+  // 🔹 Report senden → Supabase
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+
+    const description = form.description?.value?.trim();
+    if (!description) {
+      alert("Bitte Beschreibung eingeben.");
+      return;
+    }
+
+    await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        description,
+        source: "community",
+        status: "new",
+        entry_id: currentEntryId || null
+      })
+    });
+
+    form.reset();
+    modal.classList.remove("open");
+    alert("Meldung gesendet. Danke!");
+  };
+}
