@@ -56,6 +56,20 @@ function shortText(t, max = 160) {
   t = normalizeText(t);
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
+/* ================= ENTRY KLICK (FINAL) ================= */
+function bindEntryClicks(container) {
+  if (!container) return;
+
+  container.querySelectorAll(".entry-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const id = card.dataset.id;
+      if (!id) return;
+
+      history.pushState({}, "", "?id=" + id);
+      loadEntry(id);
+    });
+  });
+}
 
 /* ================= SCORES ================= */
 function renderHealth(score) {
