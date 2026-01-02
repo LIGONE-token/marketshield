@@ -283,8 +283,9 @@ function renderRatingBlock(avg = 0, count = 0) {
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
+
   if (!grid) {
-    // ⏳ DOM noch nicht bereit → später nochmal versuchen
+    // DOM noch nicht bereit → retry
     setTimeout(loadCategories, 100);
     return;
   }
