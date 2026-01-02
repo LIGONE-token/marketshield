@@ -343,18 +343,23 @@ async function loadCategory(cat) {
 }
 
 /* ================= PROGRESS ================= */
-function showProgress(text = "Wird gesendet …") {
+function showProgress(text) {
   const box = document.getElementById("msProgressBox");
   if (!box) return;
-  box.innerHTML = `<div class="box">${text}</div>`;
+
+  box.textContent = text || "Bitte warten …";
   box.style.display = "flex";
+  box.classList.add("open");
 }
+
 function hideProgress() {
   const box = document.getElementById("msProgressBox");
   if (!box) return;
+
+  box.classList.remove("open");
   box.style.display = "none";
-  box.innerHTML = "";
 }
+
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
