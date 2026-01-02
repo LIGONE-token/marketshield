@@ -1,4 +1,3 @@
-alert("APP.JS LÄUFT");
 
 /* =====================================================
    MarketShield – app.js (FINAL / KOMPLETT / STABIL)
