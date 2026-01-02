@@ -562,8 +562,6 @@ function openRatingModal(prefill = null) {
 
   // Modal anzeigen
   modal.classList.add("open");
-modal.style.display = "flex";
-modal.style.pointerEvents = "auto";
 
    
   // ⭐ Sterne klickbar machen
@@ -623,14 +621,9 @@ window.openRatingModal = openRatingModal;
 function closeRatingModal() {
   const modal = document.getElementById("ratingModal");
   if (!modal) return;
-
-  // 1) Klasse weg
   modal.classList.remove("open");
-
-  // 2) INLINE-FORCE AUS (falls irgendwo display:flex gesetzt wurde)
-  modal.style.display = "none";
-  modal.style.pointerEvents = "none";
 }
+
 
 window.addEventListener("popstate", () => {
   closeRatingModal();
