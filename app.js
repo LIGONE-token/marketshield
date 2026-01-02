@@ -294,17 +294,25 @@ function renderRatingBlock(avg = 0, count = 0) {
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
-  if (!grid) return; // wenn es nicht existiert, bricht nichts
+  if (!grid) {
+    // ⏳ DOM noch nicht bereit → später nochmal versuchen
+    setTimeout(loadCategories, 100);
+    return;
+  }
 
-  const data = await fetch("categories.json").then(r => r.json());
-  grid.innerHTML = "";
+  try {
+    const data = await fetch("categories.json").then(r => r.json());
+    grid.innerHTML = "";
 
-  (data.categories || []).forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c.title;
-    b.onclick = () => loadCategory(c.title);
-    grid.appendChild(b);
-  });
+    (data.categories || []).forEach(c => {
+      const b = document.createElement("button");
+      b.textContent = c.title;
+      b.onclick = () => loadCategory(c.title);
+      grid.appendChild(b);
+    });
+  } catch (err) {
+    showFatal(err);
+  }
 }
 
 /* ================= LISTE ================= */
