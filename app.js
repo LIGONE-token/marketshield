@@ -549,20 +549,44 @@ let pendingRating = null;
 function openRatingModal(prefill = null) {
   const modal = document.getElementById("ratingModal");
   const stars = document.getElementById("ratingModalStars");
+  const close = document.getElementById("closeRatingModal");
   if (!modal || !stars) return;
 
-  // ⭐ SOFORT sichtbar machen
+  // Modal anzeigen
   modal.classList.add("open");
 
-  // ⭐ Sterne sofort rendern (ohne Abhängigkeit)
+  // ⭐ Sterne sofort setzen
   stars.querySelectorAll("span").forEach(s => {
     const n = Number(s.dataset.star);
-    s.textContent = (prefill && prefill >= n) ? "★" : "☆";
-    s.style.fontSize = "28px";
+    s.textContent = prefill && prefill >= n ? "★" : "☆";
     s.style.cursor = "pointer";
-    s.style.color = "#f4b400";
-    s.style.margin = "0 4px";
+
+    // ⭐ Bewertung speichern
+    s.onclick = async () => {
+      if (!currentEntryId) return;
+
+      await fetch(`${SUPABASE_URL}/rest/v1/entry_ratings`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          entry_id: currentEntryId,
+          rating: n
+        })
+      });
+
+      modal.classList.remove("open");
+      loadEntry(currentEntryId);
+    };
   });
+
+  // ❌ Schließen-Button
+  if (close) {
+    close.onclick = () => modal.classList.remove("open");
+  }
 }
 
 
