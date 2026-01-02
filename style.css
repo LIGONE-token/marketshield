@@ -2173,3 +2173,6 @@ html, body,
 #ratingModal.open {
   display: flex;
 }
+#reportModal {
+  display: flex;
+}
