@@ -621,7 +621,7 @@ form.onsubmit = async (e) => {
   e.preventDefault();
 
   const description = form.description?.value?.trim();
-  if (!description) return; // ❌ KEIN Alert, einfach nichts tun
+  if (!description) return; // ❌ kein Alert
 
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/reports`, {
@@ -639,28 +639,13 @@ form.onsubmit = async (e) => {
       })
     });
 
-    // Formular leeren
     form.reset();
-
-    // 🔕 Leises visuelles Feedback (kein Popup, keine URL)
-    const note = document.createElement("div");
-    note.textContent = "Meldung wurde gesendet ✓";
-    note.style.cssText = `
-      margin-top:10px;
-      font-size:13px;
-      color:#2e7d32;
-    `;
-    form.appendChild(note);
-
-    setTimeout(() => note.remove(), 3000);
-
-    // Modal schließen
     modal.classList.remove("open");
 
+    showReportToast("Meldung wurde gesendet ✓");
+
   } catch {
-    // ❌ KEIN alert, ❌ KEIN popup
-    // Fehler bewusst still
+    showReportToast("Senden fehlgeschlagen", true);
   }
 };
-  };
 }
