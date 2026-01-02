@@ -1662,7 +1662,7 @@ input {
 }
 @media (max-width: 600px) {
   header { padding-top: 6px; } /* falls der Header oben zu viel Luft hat */
-  #searchInput { margin-top: -10px; }
+  #searchInput { margin-top: -13px; }
 }
 /* REPORT FAB – CLICK FORCE */
 #msReportFab {
