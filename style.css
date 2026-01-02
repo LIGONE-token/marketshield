@@ -2023,3 +2023,45 @@ html, body,
   margin-top: 16px !important;
   font-size: 16px !important;
 }
+/* ================= RATING MODAL ================= */
+
+#ratingModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);   /* dunkler Hintergrund */
+  z-index: 100000;
+  align-items: center;
+  justify-content: center;
+}
+
+#ratingModal.open {
+  display: flex;
+}
+
+#ratingModal > .modal-box {
+  background: #ffffff;
+  width: 90%;
+  max-width: 360px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+  text-align: center;
+}
+
+#ratingModalStars {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  font-size: 26px;
+  margin: 12px 0;
+  cursor: pointer;
+}
+
+#ratingModalStars span {
+  color: #f4b400;
+}
+
+#closeRatingModal {
+  margin-top: 10px;
+}
