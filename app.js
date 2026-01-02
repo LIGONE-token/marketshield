@@ -249,11 +249,21 @@ function renderRatingBlock(avg = 0, count = 0) {
       </span>
 
       <span id="ratingStars"
-            style="font-size:14px;margin-left:6px;cursor:pointer;user-select:none;">
-        ${[1,2,3,4,5].map(n =>
-          `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
-        ).join("")}
-      </span>
+      style="
+        font-size:14px;
+        margin-left:6px;
+        cursor:pointer;
+        user-select:none;
+        vertical-align:baseline;
+        position:relative;
+        top:1px;
+        line-height:1;
+      ">
+  ${[1,2,3,4,5].map(n =>
+    `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
+  ).join("")}
+</span>
+
     </div>
   `;
 }
