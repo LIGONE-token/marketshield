@@ -4269,3 +4269,24 @@ html, body,
   resize: vertical;
   box-sizing: border-box;
 }
+/* ===============================
+   MarketShield – ReportModal FIX
+   =============================== */
+
+#reportModal textarea,
+#reportModal textarea[name="description"] {
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+
+  font-size: 14px;
+  line-height: 1.5;
+
+  padding: 10px 12px;
+  box-sizing: border-box;
+
+  border-radius: 8px;
+  border: 1px solid #bbb;
+
+  font-family: inherit;
+}
