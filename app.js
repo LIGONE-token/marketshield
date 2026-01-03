@@ -324,24 +324,26 @@ function renderEntryActions(title) {
 /* ================= AFFILIATE ================= */
 function renderAffiliateBox(entry) {
   const box = $("affiliateBox");
-  if (!box) return;
+  if (!box || !entry?.title) return;
 
-  const affiliate = {
-    title: "Empfohlene Alternative",
-    product: "Bessere & verträglichere Option",
-    link: "https://www.amazon.de/?tag=DEINPARTNERTAG-21"
-  };
+  const query = encodeURIComponent(entry.title);
+  const link = `https://www.amazon.de/s?k=${query}&tag=ligone-21`;
 
   box.innerHTML = `
     <div style="margin-top:40px;padding:16px;border:1px solid #ddd;border-radius:10px;">
-      <strong>🛒 ${escapeHtml(affiliate.title)}</strong>
+      <strong>🛒 Passende Angebote bei Amazon</strong>
+
       <div style="margin:8px 0;font-weight:600;">
-        ${escapeHtml(affiliate.product)}
+        Produkte zum Thema „${escapeHtml(entry.title)}“
       </div>
-      <a href="${affiliate.link}" target="_blank" rel="noopener"
+
+      <a href="${link}"
+         target="_blank"
+         rel="noopener sponsored"
          style="display:inline-block;padding:10px 14px;background:#ff9900;color:#000;border-radius:6px;text-decoration:none;font-weight:700;">
         Bei Amazon ansehen
       </a>
+
       <div style="margin-top:8px;font-size:12px;opacity:.7;">
         Hinweis: Affiliate-Link – unterstützt MarketShield ohne Mehrkosten.
       </div>
