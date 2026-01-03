@@ -73,11 +73,22 @@ function shortText(t, max = 160) {
 }
 function renderParagraphs(text = "") {
   if (!text) return "";
+
   return text
     .split(/\n{2,}/)
-    .map(p => `<p>${escapeHtml(p.trim())}</p>`)
+    .map(p => {
+      const t = p.trim();
+
+      // Großgeschriebene Abschnittsüberschriften hervorheben
+      if (/^[A-ZÄÖÜ\s:]+$/.test(t)) {
+        return `<p><strong>${escapeHtml(t)}</strong></p>`;
+      }
+
+      return `<p>${escapeHtml(t)}</p>`;
+    })
     .join("");
 }
+
 function renderListSection(title, jsonString) {
   if (!jsonString) return "";
 
