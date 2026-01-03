@@ -157,6 +157,42 @@ function renderEntryActions(title) {
       <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${encUrl}','_blank')">Facebook</button>
     </div>`;
 }
+function renderAffiliateBox(entry) {
+  const box = document.getElementById("affiliateBox");
+  if (!box) return;
+
+  // Beispiel – später datengetrieben
+  const affiliate = {
+    title: "Bessere Alternative",
+    product: "Sensitiv Duschgel ohne Duftstoffe",
+    shop: "dm",
+    link: "https://www.dm.de/", // Affiliate-Link
+    reasons: [
+      "ohne problematische Duftstoffe",
+      "für empfindliche Haut geeignet"
+    ]
+  };
+
+  box.innerHTML = `
+    <div style="margin-top:40px;padding:16px;border:1px solid #ddd;border-radius:10px;">
+      <strong>✅ ${affiliate.title}</strong>
+      <div style="margin:8px 0;font-weight:600;">
+        ${affiliate.product} (${affiliate.shop})
+      </div>
+      <ul style="margin:6px 0 12px 18px;padding:0;">
+        ${affiliate.reasons.map(r => `<li>${r}</li>`).join("")}
+      </ul>
+      <a href="${affiliate.link}" target="_blank" rel="noopener"
+         style="display:inline-block;padding:10px 14px;background:#2e7d32;color:#fff;border-radius:6px;text-decoration:none;">
+        🛒 Bei ${affiliate.shop} ansehen
+      </a>
+      <div style="margin-top:8px;font-size:12px;opacity:.7;">
+        Hinweis: Affiliate-Link – für dich entstehen keine Mehrkosten.
+      </div>
+    </div>
+  `;
+}
+
 
 /* ================= SEARCH ================= */
 async function smartSearch(q) {
