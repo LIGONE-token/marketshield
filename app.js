@@ -213,14 +213,23 @@ async function smartSearch(q) {
 function initSearch() {
   const input = $("searchInput");
   const box = $("results");
+  const staticBlock = document.getElementById("static-entries");
   if (!input || !box) return;
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-    if (q.length < 2) return box.innerHTML = "";
+
+    if (staticBlock) staticBlock.style.display = "none";
+
+    if (q.length < 2) {
+      box.innerHTML = "";
+      return;
+    }
+
     renderList(await smartSearch(q));
   });
 }
+
 
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
