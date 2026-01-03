@@ -129,6 +129,9 @@ async function loadEntry(id) {
       ${escapeHtml(normalizeText(e.summary))}
     </div>
 
+<div id="affiliateBox"></div>
+
+
     <div id="entryActions"></div>
   `;
 
