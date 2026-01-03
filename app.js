@@ -248,15 +248,18 @@ async function loadCategories() {
 }
 
 async function loadCategory(cat) {
-  console.log("Kategorie:", `"${cat}"`);
+  const staticBlock = document.getElementById("static-entries");
+  if (staticBlock) staticBlock.style.display = "none";
+
+  history.pushState(null, "", location.pathname);
 
   const data = await supa(
     `entries?select=id,title,summary,score,processing_score&category=eq.${cat}`
   );
 
-  console.log("Treffer:", data.length);
   renderList(data);
 }
+
 
 
 /* ================= NAV ================= */
