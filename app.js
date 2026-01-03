@@ -213,8 +213,12 @@ function renderScoreBlock(score, processing, size = 13) {
 
 /* ================= RATING ================= */
 function renderRatingBlock(avg = 0, count = 0, title = "") {
-  const a = Number(avg) || 0;
-  const c = Number(count) || 0;
+  const a = Number(avg);
+  const c = Number(count);
+
+  // ❗ KEINE Bewertung → GAR NICHT anzeigen
+  if (!a || !c) return "";
+
   const filled = Math.floor(a);
 
   return `
@@ -229,28 +233,20 @@ function renderRatingBlock(avg = 0, count = 0, title = "") {
            itemscope
            itemtype="https://schema.org/AggregateRating">
 
-        <!-- SEO-relevant (Google liest NUR das hier) -->
         <meta itemprop="ratingValue" content="${a}">
         <meta itemprop="ratingCount" content="${c}">
         <meta itemprop="bestRating" content="5">
         <meta itemprop="worstRating" content="1">
 
-        <!-- Sichtbare Sterne -->
-        <div id="ratingStars" class="rating-stars" aria-label="Bewertung ${a} von 5">
+        <div class="rating-stars" aria-label="Bewertung ${a} von 5">
           ${[1,2,3,4,5].map(n => `
-            <span
-              class="rating-star ${n <= filled ? "filled" : ""}"
-              data-star="${n}"
-              aria-hidden="true">
-              ★
-            </span>
+            <span class="rating-star ${n <= filled ? "filled" : ""}">★</span>
           `).join("")}
         </div>
 
-        <!-- Sichtbarer Text -->
         <span class="rating-info">
-          ${a ? a.toFixed(1).replace(".", ",") : "–"} von 5
-          ${c ? `(${c} Bewertung${c > 1 ? "en" : ""})` : ""}
+          ${a.toFixed(1).replace(".", ",")} von 5
+          (${c} Bewertung${c > 1 ? "en" : ""})
         </span>
 
       </div>
