@@ -1819,3 +1819,13 @@ footer {
   -webkit-line-clamp: unset !important;
   -webkit-box-orient: unset !important;
 }
+/* === FIX: Sterne nebeneinander anzeigen === */
+.rating-stars {
+  display: inline-flex !important;
+  gap: 2px;
+}
+
+.rating-stars .rating-star {
+  display: inline-block !important;
+  line-height: 1;
+}
