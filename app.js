@@ -173,13 +173,23 @@ function renderEntryBlock(key, value) {
   const title = ENTRY_LABELS[key] || key;
   const clean = normalizeText(value);
 
+  const lines = clean.split("\n").filter(Boolean);
+  const isComparison =
+    lines.length >= 2 &&
+    lines.every(l => (l.match(/\|/g) || []).length >= 2);
+
   return `
     <section class="entry-block">
       <h3>${title}</h3>
-      ${renderParagraphs(clean)}
+      ${
+        isComparison
+          ? `<div class="comparison-box">${escapeHtml(clean)}</div>`
+          : renderParagraphs(clean)
+      }
     </section>
   `;
 }
+
 function parseArray(val) {
   if (!val) return "";
   try {
