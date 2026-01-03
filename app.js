@@ -122,6 +122,18 @@ const ENTRY_LABELS = {
   sources:       "Quellen & Studien",
   notes:         "Zusätzliche Hinweise"
 };
+function renderEntryBlock(key, value) {
+  if (!value || String(value).trim() === "") return "";
+
+  const title = ENTRY_LABELS[key] || key;
+
+  return `
+    <section class="entry-block">
+      <h3>${title}</h3>
+      <p>${escapeHtml(value).replace(/\n/g, "<br>")}</p>
+    </section>
+  `;
+}
 
 /* ================= USER HASH (RATING) ================= */
 function getUserHash() {
@@ -275,33 +287,22 @@ async function loadEntry(id) {
   currentEntryId = id;
 
   box.innerHTML = `
-    <article class="entry-detail">
+  <h2>${escapeHtml(e.title)}</h2>
 
-      <h2>${escapeHtml(e.title)}</h2>
+  ${renderUserRating(e.rating_avg, e.rating_count)}
+  ${renderScoreBlock(e.score, e.processing_score, 14)}
 
-      ${renderRatingBlock(e.rating_avg, e.rating_count, e.title)}
-      ${renderScoreBlock(e.score, e.processing_score)}
-
-      <section class="entry-content">
-        <h3>Zusammenfassung</h3>
-        ${renderParagraphs(e.summary)}
-
-        ${e.mechanism ? `
-          <h3>Wirkmechanismus</h3>
-          ${renderParagraphs(e.mechanism)}
-        ` : ""}
-
-        ${e.scientific_note ? `
-          <h3>Wissenschaftliche Einordnung</h3>
-          ${renderParagraphs(e.scientific_note)}
-        ` : ""}
-      </section>
-
-      ${renderListSection("Positive Effekte", e.effects_positive)}
-      ${renderListSection("Mögliche Nachteile", e.effects_negative)}
-      ${renderListSection("Risikogruppen", e.risk_groups)}
-      ${renderListSection("Natürliche Quellen", e.natural_sources)}
-      ${renderListSection("Synergien", e.synergy)}
+  ${renderEntryBlock("summary", e.summary)}
+  ${renderEntryBlock("mechanism", e.mechanism)}
+  ${renderEntryBlock("benefits", e.benefits)}
+  ${renderEntryBlock("risks", e.risks)}
+  ${renderEntryBlock("warnings", e.warnings)}
+  ${renderEntryBlock("target_groups", e.target_groups)}
+  ${renderEntryBlock("alternatives", e.alternatives)}
+  ${renderEntryBlock("legal", e.legal)}
+  ${renderEntryBlock("sources", e.sources)}
+  ${renderEntryBlock("notes", e.notes)}
+`;
 
       <div id="affiliateBox"></div>
       <div id="entryActions"></div>
