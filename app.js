@@ -203,9 +203,10 @@ function renderEntryBlock(key, value) {
   if (!value || String(value).trim() === "") return "";
 
   const title = ENTRY_LABELS[key] || key;
-  const clean = normalizeText(value);
 
-  const table = renderPipeTable(clean);
+  const raw   = String(value);
+  const table = renderPipeTable(raw);
+  const clean = normalizeText(value);
 
   return `
     <section class="entry-block">
