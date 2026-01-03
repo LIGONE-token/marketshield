@@ -343,6 +343,8 @@ async function loadEntry(id) {
 
       ${renderRatingBlock(e.rating_avg, e.rating_count, e.title)}
       ${renderScoreBlock(e.score, e.processing_score, 14)}
+      ${renderIndustry(e.processing_score)}
+
 
       ${renderEntryBlock("summary", e.summary)}
       ${renderEntryBlock("mechanism", e.mechanism)}
