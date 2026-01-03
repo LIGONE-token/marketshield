@@ -94,6 +94,40 @@ function renderParagraphs(text = "") {
     .join("");
 }
 
+function renderMarkdownTables(text) {
+  if (!text.includes("|")) return null;
+
+  const lines = text.split("\n").map(l => l.trim());
+  const sepIndex = lines.findIndex(l => /^[-| ]+$/.test(l));
+  if (sepIndex <= 0) return null;
+
+  const header = lines[sepIndex - 1].split("|").map(s => s.trim()).filter(Boolean);
+  const rows = [];
+
+  for (let i = sepIndex + 1; i < lines.length; i++) {
+    if (!lines[i].includes("|")) break;
+    const cols = lines[i].split("|").map(s => s.trim()).filter(Boolean);
+    if (cols.length) rows.push(cols);
+  }
+
+  if (!rows.length) return null;
+
+  return `
+    <div class="table-wrapper">
+      <table class="ms-table">
+        <thead>
+          <tr>${header.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${rows.map(r =>
+            `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
+          ).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderListSection(title, jsonString) {
   if (!jsonString) return "";
 
