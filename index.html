@@ -2,35 +2,47 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>MarketShield</title>
-
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body{margin:0;font-family:system-ui,Arial,sans-serif;background:#f4f6f8;color:#1f2933}
+    .wrap{max-width:1100px;margin:32px auto;background:#fff;padding:20px;border-radius:8px}
+    .entry{border-bottom:1px solid #e5e7eb;padding:14px 0}
+    .entry:last-child{border-bottom:none}
+    .cat{font-size:12px;color:#6b7280}
+    .title{font-size:18px;font-weight:600}
+    .summary{font-size:15px;line-height:1.6}
+    .err{color:#b91c1c}
+  </style>
 </head>
-
 <body>
+<div class="wrap">
+  <h1>MarketShield</h1>
+  <p>Transparente Hinweise für Verbraucher</p>
+  <div id="out">Lade Einträge…</div>
+  <p style="font-size:12px;color:#6b7280">© MarketShield</p>
+</div>
 
-  <div id="ms-page">
+<script>
+/* WICHTIG: KEINE EINGABEN NÖTIG
+   Nutzt die öffentliche REST-API, wenn vorhanden.
+   Falls nicht, zeigt es einen klaren Fehler (kein Leerzustand). */
+const url = "/rest/v1/entries?select=title,summary,category&order=title.asc";
 
-    <header class="ms-header">
-      <h1>MarketShield</h1>
-      <p>Transparente Hinweise für Verbraucher</p>
-    </header>
-
-    <nav class="ms-categories">
-      <strong>Kategorien</strong>
-    </nav>
-
-    <main id="content">
-      <p>Seite wird geladen …</p>
-    </main>
-
-    <footer class="ms-footer">
-      <p>© MarketShield</p>
-    </footer>
-
-  </div>
-
+fetch(url)
+  .then(r=>r.ok?r.json():Promise.reject(r.status))
+  .then(rows=>{
+    const out=document.getElementById("out");
+    if(!rows||!rows.length){ out.innerHTML="<p>Keine Einträge gefunden.</p>"; return; }
+    out.innerHTML = rows.map(e=>`
+      <div class="entry">
+        <div class="cat">Kategorie: ${e.category||""}</div>
+        <div class="title">${e.title||""}</div>
+        <div class="summary">${e.summary||""}</div>
+      </div>`).join("");
+  })
+  .catch(()=>{ document.getElementById("out").innerHTML =
+    "<p class='err'>Einträge konnten gerade nicht geladen werden.</p>"; });
+</script>
 </body>
 </html>
