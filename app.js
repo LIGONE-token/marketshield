@@ -78,6 +78,27 @@ function renderParagraphs(text = "") {
     .map(p => `<p>${escapeHtml(p.trim())}</p>`)
     .join("");
 }
+function renderListSection(title, jsonString) {
+  if (!jsonString) return "";
+
+  let arr;
+  try {
+    arr = JSON.parse(jsonString);
+  } catch {
+    return "";
+  }
+
+  if (!Array.isArray(arr) || arr.length === 0) return "";
+
+  return `
+    <section class="entry-list">
+      <h3>${escapeHtml(title)}</h3>
+      <ul>
+        ${arr.map(i => `<li>${escapeHtml(i)}</li>`).join("")}
+      </ul>
+    </section>
+  `;
+}
 
 /* ================= USER HASH (RATING) ================= */
 function getUserHash() {
