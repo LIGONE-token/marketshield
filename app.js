@@ -235,7 +235,7 @@ function renderRatingBlock(avg = 0, count = 0, title = "") {
         <span class="rating-info">
           ${c > 0
             ? `${a.toFixed(1).replace(".", ",")} von 5 (${c} Bewertung${c > 1 ? "en" : ""})`
-            : "Noch keine Bewertungen"}
+            : "Bitte Eintrag bewerten!"}
         </span>
 
       </div>
