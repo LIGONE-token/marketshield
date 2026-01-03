@@ -45,6 +45,11 @@ function hideStaticEntries() {
   if (s) s.style.display = "none";
 }
 
+function showCategories() {
+  const grid = document.querySelector(".category-grid");
+  if (grid) grid.style.display = "grid";
+}
+
 function escapeHtml(s = "") {
   return String(s)
     .replace(/&/g, "&amp;")
@@ -533,6 +538,7 @@ function initReport() {
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
   loadCategories();
+   showCategories();
   initSearch();
   initReport();
 
