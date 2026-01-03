@@ -245,13 +245,13 @@ function renderRatingBlock(avg = 0, count = 0, title = "") {
 
 
 
-async function bindRatingClicks() {
-  const stars = $("ratingStars");
-  if (!stars || !currentEntryId) return;
+function bindRatingClicks() {
+  const box = document.querySelector(".rating-stars");
+  if (!box || !currentEntryId) return;
 
-  stars.querySelectorAll("[data-star]").forEach(el => {
-    el.addEventListener("click", async () => {
-      const rating = Number(el.dataset.star);
+  box.querySelectorAll(".rating-star").forEach(star => {
+    star.addEventListener("click", async () => {
+      const rating = Number(star.dataset.star);
       if (!rating) return;
 
       await supaPost("entry_ratings", {
@@ -260,10 +260,11 @@ async function bindRatingClicks() {
         user_hash: getUserHash()
       });
 
-      loadEntry(currentEntryId); // refresh Ø & count
+      loadEntry(currentEntryId); // sofort aktualisieren
     });
   });
 }
+
 
 /* ================= LISTE ================= */
 function renderList(data) {
