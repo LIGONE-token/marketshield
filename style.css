@@ -1850,3 +1850,15 @@ footer {
 .rating-star.filled {
   color: #f9a825;
 }
+/* === FIX: Social Buttons nebeneinander === */
+#entryActions > div {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#entryActions button {
+  display: inline-flex !important;
+  align-items: center;
+  white-space: nowrap;
+}
