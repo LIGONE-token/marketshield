@@ -4475,3 +4475,24 @@ html, body,
     font-size:12px;
   }
 }
+/* ===============================
+   GLOBAL LAYOUT FIX – Phase 1
+   =============================== */
+
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color:#1f2933;
+  background:#ffffff;
+}
+
+/* ZENTRALE SEITENBREITE */
+.ms-header,
+.ms-context,
+.ms-categories,
+#content,
+.ms-footer{
+  max-width:1100px;
+  margin-left:auto;
+  margin-right:auto;
+}
