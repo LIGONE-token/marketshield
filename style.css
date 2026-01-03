@@ -1702,3 +1702,17 @@ footer {
 #static-entries {
   pointer-events: none;
 }
+.category-grid {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;
+  padding: 12px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#results {
+  min-height: 300px;
+}
