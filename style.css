@@ -1614,3 +1614,13 @@ svg,
   min-width: 18px !important;
   min-height: 18px !important;
 }
+.category-grid {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.category-grid button {
+  pointer-events: auto;
+  cursor: pointer;
+}
