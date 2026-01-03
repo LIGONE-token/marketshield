@@ -1,141 +1,76 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Market Shield – Fair informiert</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="icon.png" type="image/png">
+  <title>MarketShield – Transparente Hinweise für Verbraucher</title>
+  <meta name="description"
+        content="MarketShield macht Risiken, Hinweise und Auffälligkeiten sichtbar – schnell, transparent und zielgruppenspezifisch." />
 
-  <meta property="og:title" content="Market Shield – Fair informiert">
-  <meta property="og:description" content="Transparente Infos zu Inhaltsstoffen, Risiken und Verbraucherschutz.">
-  <meta property="og:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
-  <meta property="og:url" content="https://ligone-token.github.io/marketshield/">
-  <meta property="og:type" content="website">
+  <!-- CSS zuerst, klein & renderfreundlich -->
+  <link rel="stylesheet" href="style.css" />
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
+  <!-- JS blockiert NICHT -->
+  <script src="app.js" defer></script>
 </head>
 
 <body>
 
-<header>
-  <h1>Market Shield</h1>
-  <p class="subtitle">Fair informiert.</p>
-</header>
-  <div id="backHome" class="back-home" style="display:none;">
-  ← Zur Startseite
-</div>
+  <!-- ================= HEADER (sofort sichtbar) ================= -->
+  <header class="ms-header">
+    <h1>MarketShield</h1>
+    <p class="ms-tagline">
+      Hinweise & Auffälligkeiten – transparent, aktuell, gemeinschaftlich
+    </p>
+  </header>
 
-<div class="search-container">
-  <input id="searchInput" type="text" placeholder="Produkt, Stoff oder Kategorie eingeben ...">
-</div>
-
-<div id="results">
-  <div id="shareBox"></div>
-</div>
-
-<div id="similarEntries"></div>
-
-
-<div class="sub-info">
-  Über <strong>100.000 Einträge</strong> – fair informiert.
-</div>
-
-<div class="ligone-links">
-  <a href="https://ligone.ch" target="_blank">Offizielle Seite</a> |
-  <a href="https://ligone-token.github.io/ligone-web/" target="_blank">Token App</a>
-</div>
-
-<div class="category-grid"></div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-main">
-    MarketShield © 2025 – Ein Projekt für faire und klare Verbraucherinformationen.
-  </div>
-
-  <div class="footer-links">
-    <a href="about.html">Über MarketShield</a> ·
-    <a href="stiftung.html">Über die LIGONE Stiftung</a> ·
-    <a href="impressum.html">Impressum</a> ·
-    <a href="datenschutz.html">Datenschutz</a>
-  </div>
-</footer>
-
-<script src="./app.js"></script>
-
-  
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-QBT1L9DKNW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-QBT1L9DKNW');
-</script>
-
-<!-- REPORT MODAL -->
-<div id="reportModal">
-  <div class="report-modal-box">
-
-    <h2>Problem / Produkt melden</h2>
-
-    <form id="reportForm">
-      <label>
-        Beschreibung:<br>
-        <textarea name="description" rows="4" required></textarea>
-      </label>
-
-      <div class="actions">
-        <button type="submit">Senden</button>
-        <button type="button" id="closeReportModal">Schließen</button>
-      </div>
-    </form>
-
-  </div>
-</div>
-
-
-
-<div id="msReportFab"
-     title="Problem oder Anregung melden"
-     style="
-       position:fixed;
-       bottom:16px;
-       left:16px;
-       width:44px;
-       height:44px;
-       border-radius:50%;
-       background:#c62828;
-       color:#fff;
-       display:flex;
-       align-items:center;
-       justify-content:center;
-       font-size:20px;
-       cursor:pointer;
-       z-index:999;
-       box-shadow:0 4px 12px rgba(0,0,0,.25);
-     ">
-  ⚠️
-</div>
-<div id="ratingModal" class="modal">
-  <div class="modal-box">
-    <h3>Bewertung abgeben</h3>
-
-<div id="ratingModalStars" style="font-size:28px;cursor:pointer;">
-      <span data-star="1">☆</span>
-      <span data-star="2">☆</span>
-      <span data-star="3">☆</span>
-      <span data-star="4">☆</span>
-      <span data-star="5">☆</span>
+  <!-- ================= STATUS + ZEIT (D1/D1+) ================= -->
+  <section class="ms-context">
+    <div class="ms-status ms-status-build">
+      <span class="dot"></span>
+      <span class="label">Hinweislage im Aufbau</span>
     </div>
 
-    <button id="closeRatingModal">Abbrechen</button>
-  </div>
-</div>
+    <div class="ms-time">
+      Zuletzt aktualisiert: wird geladen …
+    </div>
+  </section>
 
-  
+  <!-- ================= KATEGORIEN (HTML-FIRST) ================= -->
+  <nav class="ms-categories">
+    <ul>
+      <li><a href="?cat=ernaehrung">Ernährung</a></li>
+      <li><a href="?cat=gesundheit">Gesundheit</a></li>
+      <li><a href="?cat=kosmetik">Kosmetik</a></li>
+      <li><a href="?cat=haushalt">Haushalt</a></li>
+      <li><a href="?cat=risiken">Risiken</a></li>
+    </ul>
+  </nav>
+
+  <!-- ================= HAUPTINHALT ================= -->
+  <main id="content">
+
+    <!-- Skeleton / Platzhalter -->
+    <article class="ms-card ms-skeleton">
+      <h2>Lädt Eintrag …</h2>
+      <p>Hinweise und Details werden geladen.</p>
+    </article>
+
+    <article class="ms-card ms-skeleton">
+      <h2>Lädt Eintrag …</h2>
+      <p>Hinweise und Details werden geladen.</p>
+    </article>
+
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="ms-footer">
+    <p>
+      MarketShield ist ein Informations- & Orientierungssystem.
+      Keine Bewertung ersetzt eigene Verantwortung.
+    </p>
+  </footer>
+
 </body>
 </html>
