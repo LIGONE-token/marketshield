@@ -2,33 +2,35 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Market Shield – Fair informiert</title>
 
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="icon.png" type="image/png">
 
+  <!-- Open Graph -->
   <meta property="og:title" content="Market Shield – Fair informiert">
   <meta property="og:description" content="Transparente Infos zu Inhaltsstoffen, Risiken und Verbraucherschutz.">
   <meta property="og:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
   <meta property="og:url" content="https://ligone-token.github.io/marketshield/">
   <meta property="og:type" content="website">
 
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://ligone-token.github.io/marketshield/preview.jpg">
 </head>
 
 <body>
 
-<header>
+<header class="ms-header">
   <h1>Market Shield</h1>
   <p class="subtitle">Fair informiert.</p>
 </header>
-  <div id="backHome" class="back-home" style="display:none;">
+
+<div id="backHome" class="back-home" style="display:none;">
   ← Zur Startseite
 </div>
 
-<!-- COMMUNITY MELDEN BUTTON -->
 <section class="community-report">
   <button id="reportBtn" class="report-btn">
     <span class="report-title">Produkt / Problem melden</span>
@@ -37,32 +39,28 @@
 </section>
 
 <div class="search-container">
-  <input id="searchInput" type="text" placeholder="Produkt, Stoff oder Kategorie eingeben ...">
+  <input id="searchInput" type="text" placeholder="Produkt, Stoff oder Kategorie eingeben …">
 </div>
 
-<div id="results">
+<main id="results">
   <div id="shareBox"></div>
-</div>
-
-
+</main>
 
 <div class="sub-info">
   Über <strong>100.000 Einträge</strong> – fair informiert.
 </div>
 
 <div class="ligone-links">
-  <a href="https://ligone.ch" target="_blank">Offizielle Seite</a> |
-  <a href="https://ligone-token.github.io/ligone-web/" target="_blank">Token App</a>
+  <a href="https://ligone.ch" target="_blank" rel="noopener">Offizielle Seite</a> |
+  <a href="https://ligone-token.github.io/ligone-web/" target="_blank" rel="noopener">Token App</a>
 </div>
 
 <div class="category-grid"></div>
 
-<!-- FOOTER -->
 <footer>
   <div class="footer-main">
     MarketShield © 2025 – Ein Projekt für faire und klare Verbraucherinformationen.
   </div>
-
   <div class="footer-links">
     <a href="about.html">Über MarketShield</a> ·
     <a href="stiftung.html">Über die LIGONE Stiftung</a> ·
@@ -71,9 +69,27 @@
   </div>
 </footer>
 
-<script src="app.js"></script>
+<!-- REPORT MODAL -->
+<div id="reportModal" class="report-modal">
+  <div class="report-modal-box">
+    <h2>Problem / Produkt melden</h2>
+    <form id="reportForm">
+      <label>
+        Beschreibung:<br>
+        <textarea name="description" rows="4" required></textarea>
+      </label>
+      <div class="actions">
+        <button type="submit">Senden</button>
+        <button type="button" id="closeReportModal">Schließen</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-<!-- Google Analytics -->
+<!-- APP -->
+<script src="app.js" defer></script>
+
+<!-- Google Analytics (unverändert, korrekt) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-QBT1L9DKNW"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -82,33 +98,5 @@
   gtag('config', 'G-QBT1L9DKNW');
 </script>
 
-<!-- REPORT MODAL -->
-<div id="reportModal" class="report-modal">
-  <div class="report-modal-box">
-
-    <h2>Problem / Produkt melden</h2>
-
-    <form id="reportForm">
-      <label>
-        Beschreibung:<br>
-        <textarea name="description" rows="4" required></textarea>
-      </label>
-
-      <div class="actions">
-        <button type="submit">Senden</button>
-        <button type="button" id="closeReportModal">Schließen</button>
-      </div>
-    </form>
-
-  </div>
-</div>
-
-
-  </div>
-</div>
-
-
-
-  
 </body>
 </html>
