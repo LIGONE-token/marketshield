@@ -1893,3 +1893,14 @@ footer {
 .rating-star {
   pointer-events: auto !important;
 }
+/* === FINAL FIX: Kategorien IMMER sichtbar === */
+.category-grid {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 10 !important;
+
+  max-height: none !important;
+  overflow: visible !important;
+}
