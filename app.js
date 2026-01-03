@@ -213,40 +213,29 @@ function renderScoreBlock(score, processing, size = 13) {
 
 /* ================= RATING ================= */
 function renderRatingBlock(avg = 0, count = 0, title = "") {
-  const a = Number(avg);
-  const c = Number(count);
-
-  // ❗ KEINE Bewertung → GAR NICHT anzeigen
-  if (!a || !c) return "";
+  const a = Number(avg) || 0;
+  const c = Number(count) || 0;
 
   const filled = Math.floor(a);
 
   return `
-    <div class="rating-wrapper"
-         itemscope
-         itemtype="https://schema.org/Thing">
+    <div class="rating-wrapper">
 
-      <meta itemprop="name" content="${escapeHtml(title)}">
+      <div class="rating-box">
 
-      <div class="rating-box"
-           itemprop="aggregateRating"
-           itemscope
-           itemtype="https://schema.org/AggregateRating">
-
-        <meta itemprop="ratingValue" content="${a}">
-        <meta itemprop="ratingCount" content="${c}">
-        <meta itemprop="bestRating" content="5">
-        <meta itemprop="worstRating" content="1">
-
-        <div class="rating-stars" aria-label="Bewertung ${a} von 5">
+        <div class="rating-stars" aria-label="Bewertung">
           ${[1,2,3,4,5].map(n => `
-            <span class="rating-star ${n <= filled ? "filled" : ""}">★</span>
+            <span class="rating-star ${n <= filled ? "filled" : ""}"
+                  data-star="${n}">
+              ★
+            </span>
           `).join("")}
         </div>
 
         <span class="rating-info">
-          ${a.toFixed(1).replace(".", ",")} von 5
-          (${c} Bewertung${c > 1 ? "en" : ""})
+          ${c > 0
+            ? `${a.toFixed(1).replace(".", ",")} von 5 (${c} Bewertung${c > 1 ? "en" : ""})`
+            : "Noch keine Bewertungen"}
         </span>
 
       </div>
