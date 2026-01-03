@@ -1716,3 +1716,12 @@ footer {
 #results {
   min-height: 300px;
 }
+#results {
+  margin-top: 8px;
+}
+
+.category-grid {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
