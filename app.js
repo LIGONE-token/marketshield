@@ -111,7 +111,7 @@ function renderListSection(title, jsonString) {
   `;
 }
 const ENTRY_LABELS = {
-  summary:        "Kurzfassung",
+  summary:       "Einordnung & Hintergrund",
   mechanism:     "Wirkweise",
   benefits:      "Vorteile",
   risks:         "Risiken",
