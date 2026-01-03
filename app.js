@@ -5,6 +5,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+document.addEventListener("DOMContentLoaded", initApp);
+
+function initApp() {
+  initCategories();
+  initSearch();
+  initReport();
+}
+
 
 /* =====================================================
    MarketShield – app.js (STABIL / REPARIERT)
