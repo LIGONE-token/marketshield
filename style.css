@@ -4430,3 +4430,40 @@ html, body,
 .ms-cat-main a:hover{
   background:#e5e7eb;
 }
+.ms-cat-all{
+  margin-top:4px;
+}
+
+.ms-cat-all summary{
+  font-size:13px;
+  color:var(--ms-accent);
+  cursor:pointer;
+  list-style:none;
+}
+
+.ms-cat-all summary::-webkit-details-marker{
+  display:none;
+}
+
+.ms-cat-all[open] summary{
+  margin-bottom:6px;
+}
+
+.ms-cat-all ul{
+  list-style:none;
+  padding:6px 0 0 0;
+  margin:0;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:4px 10px;
+}
+
+.ms-cat-all a{
+  font-size:13px;
+  color:var(--ms-text);
+  text-decoration:none;
+}
+
+.ms-cat-all a:hover{
+  text-decoration:underline;
+}
