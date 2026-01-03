@@ -195,16 +195,18 @@ function renderEntryBlock(key, value) {
 
   const title = ENTRY_LABELS[key] || key;
 
-  const table = renderPipeTable(String(value));
-  const clean = normalizeText(value);
+  const raw   = String(value);          // für Tabellen-Erkennung
+  const table = renderPipeTable(raw);   // echte Tabelle, wenn erkannt
+  const clean = normalizeText(value);   // normaler Text
 
   return `
     <section class="entry-block">
       <h3>${title}</h3>
-      ${table}
+      ${table ? table : renderParagraphs(clean)}
     </section>
   `;
 }
+
 
 
 function parseArray(val) {
