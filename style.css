@@ -1940,3 +1940,12 @@ footer {
 .score-block div[style*="grid-template-columns"] {
   display: grid !important;
 }
+.comparison-box {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  background: #f9f9f9;
+  border-left: 4px solid #2e7d32;
+  padding: 12px;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
