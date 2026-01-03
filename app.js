@@ -201,24 +201,31 @@ async function smartSearch(q) {
 }
 
 
+function debounce(fn, delay = 300) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), delay);
+  };
+}
+
 function initSearch() {
   const input = document.getElementById("searchInput");
   const box = document.getElementById("results");
   const staticBlock = document.getElementById("static-entries");
   if (!input || !box) return;
 
-  input.addEventListener("focus", () => {
-    if (staticBlock) staticBlock.style.display = "none";
-  });
-
-  input.addEventListener("input", async () => {
+  const runSearch = debounce(async () => {
     const q = input.value.trim();
     if (q.length < 2) {
       box.innerHTML = "";
       return;
     }
+    if (staticBlock) staticBlock.style.display = "none";
     renderList(await smartSearch(q));
-  });
+  }, 350);
+
+  input.addEventListener("input", runSearch);
 }
 
 
