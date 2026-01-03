@@ -1889,3 +1889,7 @@ footer {
   font-size: 14px;
   opacity: 0.85;
 }
+.rating-stars,
+.rating-star {
+  pointer-events: auto !important;
+}
