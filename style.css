@@ -1758,3 +1758,25 @@ footer {
   font-size: 13px;
   opacity: 0.75;
 }
+.rating-stars {
+  font-size: 20px;   /* leicht größer, hochwertig */
+  line-height: 1;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.rating-star {
+  color: #ccc;      /* leer */
+  cursor: pointer;
+  user-select: none;
+}
+
+.rating-star.filled {
+  color: #f9a825;   /* gelb */
+}
+
+.rating-info {
+  font-size: 13px;
+  margin-left: 6px;
+  color: #555;
+}
