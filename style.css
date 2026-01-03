@@ -4496,3 +4496,12 @@ body{
   margin-left:auto;
   margin-right:auto;
 }
+@media (min-width:1400px){
+  .ms-header,
+  .ms-context,
+  .ms-categories,
+  #content,
+  .ms-footer{
+    max-width:1200px;
+  }
+}
