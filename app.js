@@ -127,19 +127,31 @@ function renderScoreBlock(score, processing, size = 13) {
 function renderRatingBlock(avg = 0, count = 0) {
   const a = Number(avg) || 0;
   const c = Number(count) || 0;
+
   return `
-    <div class="rating-box" style="margin:8px 0;display:flex;align-items:center;gap:8px;">
-      <span id="ratingStars" style="font-size:16px;cursor:pointer;user-select:none;">
+    <div class="rating-box"
+         itemscope
+         itemtype="https://schema.org/AggregateRating"
+         style="margin:8px 0;display:flex;align-items:center;gap:8px;">
+
+      <meta itemprop="ratingValue" content="${a || 0}">
+      <meta itemprop="ratingCount" content="${c || 0}">
+      <meta itemprop="bestRating" content="5">
+
+      <span id="ratingStars"
+            style="font-size:16px;cursor:pointer;user-select:none;">
         ${[1,2,3,4,5].map(n =>
           `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
         ).join("")}
       </span>
+
       <span style="font-size:13px;opacity:.75;">
         ${a ? a.toFixed(1) : "–"} (${c})
       </span>
     </div>
   `;
 }
+
 
 async function bindRatingClicks() {
   const stars = $("ratingStars");
