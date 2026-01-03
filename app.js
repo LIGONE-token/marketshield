@@ -1,3 +1,11 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const staticBlock = document.getElementById("static-entries");
+  if (staticBlock) {
+    staticBlock.style.display = "none";
+  }
+});
+
+
 /* =====================================================
    MarketShield – app.js (STABIL / REPARIERT)
 ===================================================== */
