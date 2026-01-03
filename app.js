@@ -207,34 +207,53 @@ function renderList(data) {
 
 /* ================= DETAIL ================= */
 async function loadEntry(id) {
-  const box = $("results");
+  const box = document.getElementById("results");
   if (!box) return;
 
-  hideStaticEntries();
-
-  const d = await supa(`entries_with_ratings?select=*&id=eq.${encodeURIComponent(id)}`);
-  const e = d && d[0];
+  // Entry inkl. Ratings laden
+  const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
+  const e = d[0];
   if (!e) return;
 
   currentEntryId = id;
 
   box.innerHTML = `
-    <h2>${escapeHtml(e.title)}</h2>
-    ${renderRatingBlock(e.rating_avg, e.rating_count)}
-    ${renderScoreBlock(e.score, e.processing_score)}
+    <article class="entry-detail">
 
-    <h3>Zusammenfassung</h3>
-    <div style="white-space:pre-wrap;line-height:1.6;">
-      ${escapeHtml(normalizeText(e.summary))}
-    </div>
+      <h2>${escapeHtml(e.title)}</h2>
 
-    <div id="affiliateBox"></div>
-    <div id="entryActions"></div>
+      ${renderRatingBlock(e.rating_avg, e.rating_count, e.title)}
+      ${renderScoreBlock(e.score, e.processing_score)}
+
+      <section class="entry-content">
+        <h3>Zusammenfassung</h3>
+        ${renderParagraphs(e.summary)}
+
+        ${e.mechanism ? `
+          <h3>Wirkmechanismus</h3>
+          ${renderParagraphs(e.mechanism)}
+        ` : ""}
+
+        ${e.scientific_note ? `
+          <h3>Wissenschaftliche Einordnung</h3>
+          ${renderParagraphs(e.scientific_note)}
+        ` : ""}
+      </section>
+
+      ${renderListSection("Positive Effekte", e.effects_positive)}
+      ${renderListSection("Mögliche Nachteile", e.effects_negative)}
+      ${renderListSection("Risikogruppen", e.risk_groups)}
+      ${renderListSection("Natürliche Quellen", e.natural_sources)}
+      ${renderListSection("Synergien", e.synergy)}
+
+      <div id="affiliateBox"></div>
+      <div id="entryActions"></div>
+
+    </article>
   `;
 
-  renderAffiliateBox(e);
+  renderAffiliateBox?.(e);
   renderEntryActions(e.title);
-  bindRatingClicks();
 }
 
 /* ================= SOCIAL ================= */
