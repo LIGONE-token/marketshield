@@ -279,7 +279,6 @@ async function loadEntry(id) {
   const box = document.getElementById("results");
   if (!box) return;
 
-  // Entry inkl. Ratings laden
   const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
   const e = d[0];
   if (!e) return;
@@ -287,22 +286,23 @@ async function loadEntry(id) {
   currentEntryId = id;
 
   box.innerHTML = `
-  <h2>${escapeHtml(e.title)}</h2>
+    <article class="entry-detail">
 
-  ${renderUserRating(e.rating_avg, e.rating_count)}
-  ${renderScoreBlock(e.score, e.processing_score, 14)}
+      <h2>${escapeHtml(e.title)}</h2>
 
-  ${renderEntryBlock("summary", e.summary)}
-  ${renderEntryBlock("mechanism", e.mechanism)}
-  ${renderEntryBlock("benefits", e.benefits)}
-  ${renderEntryBlock("risks", e.risks)}
-  ${renderEntryBlock("warnings", e.warnings)}
-  ${renderEntryBlock("target_groups", e.target_groups)}
-  ${renderEntryBlock("alternatives", e.alternatives)}
-  ${renderEntryBlock("legal", e.legal)}
-  ${renderEntryBlock("sources", e.sources)}
-  ${renderEntryBlock("notes", e.notes)}
-`;
+      ${renderRatingBlock(e.rating_avg, e.rating_count, e.title)}
+      ${renderScoreBlock(e.score, e.processing_score, 14)}
+
+      ${renderEntryBlock("summary", e.summary)}
+      ${renderEntryBlock("mechanism", e.mechanism)}
+      ${renderEntryBlock("benefits", e.benefits)}
+      ${renderEntryBlock("risks", e.risks)}
+      ${renderEntryBlock("warnings", e.warnings)}
+      ${renderEntryBlock("target_groups", e.target_groups)}
+      ${renderEntryBlock("alternatives", e.alternatives)}
+      ${renderEntryBlock("legal", e.legal)}
+      ${renderEntryBlock("sources", e.sources)}
+      ${renderEntryBlock("notes", e.notes)}
 
       <div id="affiliateBox"></div>
       <div id="entryActions"></div>
@@ -310,11 +310,12 @@ async function loadEntry(id) {
     </article>
   `;
 
-  renderAffiliateBox?.(e);
+  bindRatingClicks();
+  renderAffiliateBox(e);
   renderEntryActions(e.title);
   loadSimilarEntries(e);
-
 }
+
 async function loadSimilarEntries(current) {
   const box = document.getElementById("similarEntries");
   if (!box) return;
