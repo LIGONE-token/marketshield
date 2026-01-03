@@ -169,29 +169,35 @@ function renderRatingBlock(avg = 0, count = 0, title = "") {
            itemscope
            itemtype="https://schema.org/AggregateRating">
 
+        <!-- SEO-relevant (Google liest NUR das hier) -->
         <meta itemprop="ratingValue" content="${a}">
         <meta itemprop="ratingCount" content="${c}">
         <meta itemprop="bestRating" content="5">
         <meta itemprop="worstRating" content="1">
 
-        <div id="ratingStars" class="rating-stars">
+        <!-- Sichtbare Sterne -->
+        <div id="ratingStars" class="rating-stars" aria-label="Bewertung ${a} von 5">
           ${[1,2,3,4,5].map(n => `
             <span
               class="rating-star ${n <= filled ? "filled" : ""}"
               data-star="${n}"
-              aria-label="${n} Sterne">
+              aria-hidden="true">
               ★
             </span>
           `).join("")}
         </div>
 
+        <!-- Sichtbarer Text -->
         <span class="rating-info">
-          ${a ? a.toFixed(1) : "–"} (${c})
+          ${a ? a.toFixed(1).replace(".", ",") : "–"} von 5
+          ${c ? `(${c} Bewertung${c > 1 ? "en" : ""})` : ""}
         </span>
+
       </div>
     </div>
   `;
 }
+
 
 
 async function bindRatingClicks() {
