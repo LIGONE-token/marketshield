@@ -134,6 +134,22 @@ function renderEntryBlock(key, value) {
     </section>
   `;
 }
+/* ================= ZUR STARTSEITE ===================== */
+document.addEventListener("DOMContentLoaded", () => {
+  const backHome = document.getElementById("backHome");
+  if (!backHome) return;
+
+  // sichtbar machen
+  backHome.style.display = "inline-block";
+  backHome.style.cursor = "pointer";
+
+  // Klick = Startseite
+  backHome.addEventListener("click", () => {
+    history.pushState(null, "", location.pathname);
+    location.reload();
+  });
+});
+
 
 /* ================= USER HASH (RATING) ================= */
 function getUserHash() {
