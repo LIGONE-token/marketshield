@@ -1862,3 +1862,30 @@ footer {
   align-items: center;
   white-space: nowrap;
 }
+/* === RATING: SEO & VISUELL FINAL === */
+.rating-wrapper {
+  margin: 12px 0;
+}
+
+.rating-stars {
+  display: inline-flex !important;
+  gap: 3px;
+}
+
+.rating-star {
+  display: inline-block !important;
+  font-size: 22px;          /* ⭐ sichtbar */
+  line-height: 1;
+  color: #fbc02d;           /* ⭐ GELB (Google-like) */
+  cursor: pointer;
+}
+
+.rating-star.filled {
+  color: #fbc02d;
+}
+
+.rating-info {
+  margin-left: 8px;
+  font-size: 14px;
+  opacity: 0.85;
+}
