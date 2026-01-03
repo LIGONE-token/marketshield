@@ -1806,3 +1806,16 @@ footer {
   margin-top: 6px;
   color: #555;
 }
+/* === FIX: KEINE TEXT-ABSCHNEIDUNG IN DETAILANSICHT === */
+.entry-detail,
+.entry-detail *,
+.entry-block,
+.entry-block p {
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: unset !important;
+}
