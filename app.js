@@ -1,3 +1,12 @@
+document.addEventListener("click", e => {
+  console.log("CLICK TARGET:", e.target);
+}, true);
+
+document.addEventListener("focus", e => {
+  console.log("FOCUS TARGET:", e.target);
+}, true);
+
+
 const categoryCache = {};
 
 /* =====================================================
