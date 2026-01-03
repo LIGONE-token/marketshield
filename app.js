@@ -164,13 +164,10 @@ function renderEntryBlock(key, value) {
   const title = ENTRY_LABELS[key] || key;
   const clean = normalizeText(value);
 
-  const table = renderMarkdownTables(clean);
-  const content = table ? table : renderParagraphs(clean);
-
   return `
     <section class="entry-block">
       <h3>${title}</h3>
-      ${content}
+      ${renderParagraphs(clean)}
     </section>
   `;
 }
