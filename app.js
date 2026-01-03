@@ -60,11 +60,8 @@ function escapeHtml(s = "") {
 function normalizeText(text) {
   if (!text) return "";
   return String(text)
-    .replace(/\*\*/g, "")
-    .replace(/##+/g, "")
-    .replace(/__+/g, "")
-    .replace(/~~+/g, "")
-    .replace(/`+/g, "")
+    .replace(/\\n\\n/g, "\n\n")  // escaped doppelte Umbrüche
+    .replace(/\\n/g, "\n")      // escaped einfache Umbrüche
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
