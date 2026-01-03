@@ -71,6 +71,13 @@ function shortText(t, max = 160) {
   t = String(t).replace(/\s+/g, " ").trim();
   return t.length > max ? t.slice(0, max) + " …" : t;
 }
+function renderParagraphs(text = "") {
+  if (!text) return "";
+  return text
+    .split(/\n{2,}/)
+    .map(p => `<p>${escapeHtml(p.trim())}</p>`)
+    .join("");
+}
 
 /* ================= USER HASH (RATING) ================= */
 function getUserHash() {
