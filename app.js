@@ -270,12 +270,19 @@ async function loadCategory(cat) {
 
   history.pushState(null, "", location.pathname);
 
+  if (categoryCache[cat]) {
+    renderList(categoryCache[cat]);
+    return;
+  }
+
   const data = await supa(
     `entries?select=id,title,summary,score,processing_score&category=eq.${cat}`
   );
 
+  categoryCache[cat] = data;
   renderList(data);
 }
+
 
 
 
