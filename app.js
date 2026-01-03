@@ -239,10 +239,16 @@ async function loadCategories() {
 }
 
 async function loadCategory(cat) {
-  renderList(await supa(
+  console.log("Kategorie:", `"${cat}"`);
+
+  const data = await supa(
     `entries?select=id,title,summary,score,processing_score&category=eq.${cat}`
-  ));
+  );
+
+  console.log("Treffer:", data.length);
+  renderList(data);
 }
+
 
 /* ================= NAV ================= */
 document.addEventListener("click", (e) => {
