@@ -262,6 +262,31 @@ function parseArray(val) {
     return "";
   }
 }
+function generateQuickFacts(e) {
+  const facts = [];
+
+  // Positive Wirkungen
+  if (Array.isArray(e.effects_positive) && e.effects_positive.length > 0) {
+    facts.push("🟢 Positive Wirkungen vorhanden");
+  }
+
+  // Negative Wirkungen / Risiken
+  if (Array.isArray(e.effects_negative) && e.effects_negative.length > 0) {
+    facts.push("🔴 Kritische Aspekte zu beachten");
+  }
+
+  // Risikogruppen
+  if (Array.isArray(e.risk_groups) && e.risk_groups.length > 0) {
+    facts.push("🟡 Nicht für alle Zielgruppen unproblematisch");
+  }
+
+  // Verarbeitungsgrad (nur bei Stoffen sinnvoll)
+  if (Number(e.processing_score) >= 7) {
+    facts.push("🟡 Stark verarbeitet / technologisch optimiert");
+  }
+
+  return facts.slice(0, 3).join("\n");
+}
 
 
 /* ================= ZUR STARTSEITE ===================== */
