@@ -171,6 +171,16 @@ function renderEntryBlock(key, value) {
     </section>
   `;
 }
+function parseArray(val) {
+  if (!val) return "";
+  try {
+    const arr = typeof val === "string" ? JSON.parse(val) : val;
+    if (!Array.isArray(arr) || arr.length === 0) return "";
+    return arr.map(v => `• ${v}`).join("\n");
+  } catch {
+    return "";
+  }
+}
 
 
 /* ================= ZUR STARTSEITE ===================== */
