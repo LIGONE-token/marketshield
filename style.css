@@ -4467,3 +4467,11 @@ html, body,
 .ms-cat-all a:hover{
   text-decoration:underline;
 }
+@media (max-width:600px){
+  .ms-cat-main{
+    gap:6px;
+  }
+  .ms-cat-main a{
+    font-size:12px;
+  }
+}
