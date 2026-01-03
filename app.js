@@ -222,11 +222,18 @@ function renderEntryBlock(key, value) {
   const title = ENTRY_LABELS[key] || key;
   const raw = String(value);
 
+  // Tabelle + Kontext (falls vorhanden)
   const parsed = renderPipeTableWithContext(raw);
-  const clean = normalizeText(value);
+  const clean  = normalizeText(value);
+
+  // 👉 HIER die Klasse setzen
+  const sectionClass =
+    key === "quick_facts"
+      ? "entry-block quick-facts"
+      : "entry-block";
 
   return `
-    <section class="entry-block">
+    <section class="${sectionClass}">
       <h3>${title}</h3>
 
       ${
@@ -241,6 +248,7 @@ function renderEntryBlock(key, value) {
     </section>
   `;
 }
+
 
 
 
