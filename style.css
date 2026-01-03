@@ -1972,3 +1972,21 @@ footer {
 .ms-table tbody tr:nth-child(even) {
   background: #fafafa;
 }
+/* === Kurzfazit auf einen Blick === */
+.entry-block.quick-facts {
+  background: #f7f9f7;
+  border-left: 4px solid #2e7d32;
+  padding: 12px 14px;
+  margin: 14px 0 18px 0;
+  border-radius: 6px;
+}
+
+.entry-block.quick-facts h3 {
+  margin-top: 0;
+  font-size: 15px;
+}
+
+.entry-block.quick-facts p {
+  margin: 6px 0;
+  line-height: 1.5;
+}
