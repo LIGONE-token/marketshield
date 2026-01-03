@@ -313,6 +313,44 @@ async function loadEntry(id) {
   renderAffiliateBox?.(e);
   renderEntryActions(e.title);
 }
+async function loadSimilarEntries(current) {
+  const box = document.getElementById("similarEntries");
+  if (!box) return;
+
+  const data = await supa(
+    `entries_with_ratings?select=id,title,summary
+     &category=eq.${encodeURIComponent(current.category)}
+     &id=neq.${current.id}
+     &limit=5`
+  );
+
+  if (!data || data.length === 0) {
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = `
+    <h3>Ähnliche Einträge</h3>
+    <div class="similar-list">
+      ${data.map(e => `
+        <div class="similar-card" data-id="${e.id}">
+          <strong>${escapeHtml(e.title)}</strong>
+          <div class="similar-summary">
+            ${escapeHtml((e.summary || "").slice(0, 120))}…
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  box.querySelectorAll(".similar-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const id = card.dataset.id;
+      history.pushState({}, "", "?id=" + id);
+      loadEntry(id);
+    });
+  });
+}
 
 /* ================= SOCIAL ================= */
 function renderEntryActions(title) {
