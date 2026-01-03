@@ -240,7 +240,7 @@ async function loadCategories() {
 
 async function loadCategory(cat) {
   renderList(await supa(
-    `entries?select=id,title,summary,score,processing_score&category=eq.${encodeURIComponent(cat)}`
+    `entries?select=id,title,summary,score,processing_score&category=eq.${cat}`
   ));
 }
 
