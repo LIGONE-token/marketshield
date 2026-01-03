@@ -169,6 +169,7 @@ const ENTRY_LABELS = {
 
 function renderPipeTable(text) {
   const lines = text
+    .replace(/\r\n/g, "\n")
     .split("\n")
     .map(l => l.trim())
     .filter(Boolean);
