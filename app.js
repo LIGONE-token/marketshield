@@ -124,30 +124,43 @@ function renderScoreBlock(score, processing, size = 13) {
 }
 
 /* ================= RATING ================= */
-function renderRatingBlock(avg = 0, count = 0) {
+function renderRatingBlock(avg = 0, count = 0, title = "") {
   const a = Number(avg) || 0;
   const c = Number(count) || 0;
+  const filled = Math.floor(a);
 
   return `
-    <div class="rating-box"
+    <div class="rating-wrapper"
          itemscope
-         itemtype="https://schema.org/AggregateRating"
-         style="margin:8px 0;display:flex;align-items:center;gap:8px;">
+         itemtype="https://schema.org/Thing">
 
-      <meta itemprop="ratingValue" content="${a || 0}">
-      <meta itemprop="ratingCount" content="${c || 0}">
-      <meta itemprop="bestRating" content="5">
+      <meta itemprop="name" content="${escapeHtml(title)}">
 
-      <span id="ratingStars"
-            style="font-size:16px;cursor:pointer;user-select:none;">
-        ${[1,2,3,4,5].map(n =>
-          `<span data-star="${n}">${Math.round(a) >= n ? "★" : "☆"}</span>`
-        ).join("")}
-      </span>
+      <div class="rating-box"
+           itemprop="aggregateRating"
+           itemscope
+           itemtype="https://schema.org/AggregateRating">
 
-      <span style="font-size:13px;opacity:.75;">
-        ${a ? a.toFixed(1) : "–"} (${c})
-      </span>
+        <meta itemprop="ratingValue" content="${a}">
+        <meta itemprop="ratingCount" content="${c}">
+        <meta itemprop="bestRating" content="5">
+        <meta itemprop="worstRating" content="1">
+
+        <div id="ratingStars" class="rating-stars">
+          ${[1,2,3,4,5].map(n => `
+            <span
+              class="rating-star ${n <= filled ? "filled" : ""}"
+              data-star="${n}"
+              aria-label="${n} Sterne">
+              ★
+            </span>
+          `).join("")}
+        </div>
+
+        <span class="rating-info">
+          ${a ? a.toFixed(1) : "–"} (${c})
+        </span>
+      </div>
     </div>
   `;
 }
