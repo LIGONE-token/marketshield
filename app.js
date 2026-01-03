@@ -147,17 +147,26 @@ function renderListSection(title, jsonString) {
   `;
 }
 const ENTRY_LABELS = {
-  summary:       "Einordnung & Hintergrund",
-  mechanism:     "Wirkweise",
-  benefits:      "Vorteile",
-  risks:         "Risiken",
-  warnings:      "Wichtige Hinweise",
-  target_groups: "Geeignet für / Zielgruppen",
-  alternatives:  "Bessere Alternativen",
-  legal:         "Rechtliche Einordnung",
-  sources:       "Quellen & Studien",
-  notes:         "Zusätzliche Hinweise"
+  summary:            "Einordnung & Hintergrund",
+  mechanism:          "Wirkweise",
+
+  effects_positive:   "Positive Wirkungen",
+  effects_negative:   "Negative Wirkungen / Risiken",
+  risk_groups:        "Risikogruppen",
+
+  scientific_note:    "Wissenschaftliche Einordnung",
+
+  benefits:           "Vorteile",                // optional / legacy
+  risks:              "Risiken",                 // optional / legacy
+  warnings:           "Wichtige Hinweise",
+  target_groups:      "Geeignet für / Zielgruppen",
+
+  alternatives:       "Bessere Alternativen",
+  legal:              "Rechtliche Einordnung",
+  sources:            "Quellen & Studien",
+  notes:              "Zusätzliche Hinweise"
 };
+
 function renderEntryBlock(key, value) {
   if (!value || String(value).trim() === "") return "";
 
