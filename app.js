@@ -168,35 +168,26 @@ const ENTRY_LABELS = {
 };
 
 function renderPipeTable(text) {
-  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-  if (lines.length < 3) return null;
-
-  // Header + Trenner prüfen
-  if (!lines[0].includes("|") || !/^[-\s|]+$/.test(lines[1])) return null;
-
-  const rows = lines
-    .slice(0)
-    .filter(l => l.includes("|"))
-    .map(l => l.split("|").map(c => escapeHtml(c.trim())));
-
-  if (rows.length < 2) return null;
-
-  const header = rows[0];
-  const body   = rows.slice(1);
-
   return `
     <table class="ms-table">
       <thead>
-        <tr>${header.map(h => `<th>${h}</th>`).join("")}</tr>
+        <tr>
+          <th>TEST</th>
+          <th>TEST</th>
+          <th>TEST</th>
+        </tr>
       </thead>
       <tbody>
-        ${body.map(r =>
-          `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`
-        ).join("")}
+        <tr>
+          <td>OK</td>
+          <td>OK</td>
+          <td>OK</td>
+        </tr>
       </tbody>
     </table>
   `;
 }
+
 
 
 function renderEntryBlock(key, value) {
@@ -204,14 +195,13 @@ function renderEntryBlock(key, value) {
 
   const title = ENTRY_LABELS[key] || key;
 
-  const raw   = String(value);
-  const table = renderPipeTable(raw);
+  const table = renderPipeTable(String(value));
   const clean = normalizeText(value);
 
   return `
     <section class="entry-block">
       <h3>${title}</h3>
-      ${table ? table : renderParagraphs(clean)}
+      ${table}
     </section>
   `;
 }
