@@ -1949,3 +1949,26 @@ footer {
   white-space: pre-wrap;
   overflow-x: auto;
 }
+.ms-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.ms-table th,
+.ms-table td {
+  border: 1px solid #ddd;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ms-table thead th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+.ms-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
