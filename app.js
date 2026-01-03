@@ -312,6 +312,8 @@ async function loadEntry(id) {
 
   renderAffiliateBox?.(e);
   renderEntryActions(e.title);
+  loadSimilarEntries(e);
+
 }
 async function loadSimilarEntries(current) {
   const box = document.getElementById("similarEntries");
