@@ -1948,3 +1948,7 @@ footer {
   background: #f3f3f3;
   font-weight: 600;
 }
+/* === FIX: Scoreblock Grid nicht überschreiben === */
+.score-block div[style*="grid-template-columns"] {
+  display: grid !important;
+}
