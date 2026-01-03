@@ -168,21 +168,33 @@ const ENTRY_LABELS = {
 };
 
 function renderPipeTable(text) {
+  const lines = text
+    .split("\n")
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  if (lines.length < 3) return null;
+  if (!lines[0].includes("|")) return null;
+  if (!/^[-\s|]+$/.test(lines[1])) return null;
+
+  const rows = lines
+    .filter(l => l.includes("|"))
+    .map(l => l.split("|").map(c => escapeHtml(c.trim())));
+
+  if (rows.length < 2) return null;
+
+  const header = rows[0];
+  const body = rows.slice(1);
+
   return `
     <table class="ms-table">
       <thead>
-        <tr>
-          <th>TEST</th>
-          <th>TEST</th>
-          <th>TEST</th>
-        </tr>
+        <tr>${header.map(h => `<th>${h}</th>`).join("")}</tr>
       </thead>
       <tbody>
-        <tr>
-          <td>OK</td>
-          <td>OK</td>
-          <td>OK</td>
-        </tr>
+        ${body.map(r =>
+          `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`
+        ).join("")}
       </tbody>
     </table>
   `;
