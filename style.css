@@ -4355,3 +4355,11 @@ html, body,
   border-radius: 14px;
   box-sizing: border-box;
 }
+:root{
+  --ms-text:#1f2933;
+  --ms-muted:#6b7280;
+  --ms-border:#e5e7eb;
+  --ms-bg:#ffffff;
+
+  --ms-accent:#1e88e5;
+}
