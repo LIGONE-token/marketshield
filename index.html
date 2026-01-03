@@ -22,94 +22,109 @@
 
 <body>
 
-<header class="ms-header">
-  <h1>Market Shield</h1>
-  <p class="subtitle">Fair informiert.</p>
-</header>
+  <!-- HEADER -->
+  <header class="ms-header">
+    <h1>Market Shield</h1>
+    <p class="subtitle">Fair informiert.</p>
+  </header>
 
-<div id="backHome" class="back-home" style="display:none;">
-  ← Zur Startseite
-</div>
-
-<div class="search-container">
-  <input id="searchInput" type="text" placeholder="Produkt, Stoff oder Kategorie eingeben …">
-</div>
-
-<main id="results">
-  <div id="shareBox"></div>
-
-  <!-- FAIL-SAFE EINTRÄGE (IMMER SICHTBAR) -->
-  <section id="static-entries" class="static-entries">
-    <article class="entry">
-      <h2>Warum MarketShield?</h2>
-      <p>
-        MarketShield sammelt und ordnet verbraucherrelevante Hinweise
-        zu Produkten, Inhaltsstoffen und Risiken – unabhängig, sachlich
-        und nachvollziehbar.
-      </p>
-    </article>
-
-    <article class="entry">
-      <h2>Einträge werden geladen</h2>
-      <p>
-        Sollte die interaktive Ansicht nicht verfügbar sein,
-        bleiben diese Informationen sichtbar.
-      </p>
-    </article>
-  </section>
-</main>
-
-
-<div class="sub-info">
-  Über <strong>100.000 Einträge</strong> – fair informiert.
-</div>
-
-<div class="ligone-links">
-  <a href="https://ligone.ch" target="_blank" rel="noopener">Offizielle Seite</a> |
-  <a href="https://ligone-token.github.io/ligone-web/" target="_blank" rel="noopener">Token App</a>
-</div>
-
-<div class="category-grid"></div>
-
-<footer>
-  <div class="footer-main">
-    MarketShield © 2025 – Ein Projekt für faire und klare Verbraucherinformationen.
+  <!-- ZUR STARTSEITE -->
+  <div id="backHome" class="back-home" style="display:none;">
+    ← Zur Startseite
   </div>
-  <div class="footer-links">
-    <a href="about.html">Über MarketShield</a> ·
-    <a href="stiftung.html">Über die LIGONE Stiftung</a> ·
-    <a href="impressum.html">Impressum</a> ·
-    <a href="datenschutz.html">Datenschutz</a>
+
+  <!-- SUCHE -->
+  <div class="search-container">
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Produkt, Stoff oder Kategorie eingeben …"
+      autocomplete="off">
   </div>
-</footer>
 
-<!-- APP -->
-<script src="app.js" defer></script>
+  <!-- KATEGORIEN (MUSS VOR results stehen!) -->
+  <div class="category-grid"></div>
 
-<!-- Google Analytics (unverändert, korrekt) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-QBT1L9DKNW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-QBT1L9DKNW');
-</script>
-<button id="reportFab" aria-label="Problem melden">⚠️</button>
+  <!-- ERGEBNISSE -->
+  <main id="results">
+    <div id="shareBox"></div>
 
-<div id="reportModal" class="report-modal">
-  <div class="report-box">
-    <h3>Problem oder Hinweis melden</h3>
+    <!-- FAIL-SAFE / STARTTEXT -->
+    <section id="static-entries" class="static-entries">
+      <article class="entry">
+        <h2>Warum MarketShield?</h2>
+        <p>
+          MarketShield sammelt und ordnet verbraucherrelevante Hinweise
+          zu Produkten, Inhaltsstoffen und Risiken – unabhängig, sachlich
+          und nachvollziehbar.
+        </p>
+      </article>
 
-    <textarea id="reportText"
-      placeholder="Was ist dir aufgefallen? (Fehler, falsche Info, Verbesserungsvorschlag)"
-      rows="5"></textarea>
+      <article class="entry">
+        <h2>Einträge werden geladen</h2>
+        <p>
+          Sollte die interaktive Ansicht nicht verfügbar sein,
+          bleiben diese Informationen sichtbar.
+        </p>
+      </article>
+    </section>
+  </main>
 
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
-      <button id="closeReportModal">Abbrechen</button>
-      <button id="sendReport">Senden</button>
+  <!-- INFO -->
+  <div class="sub-info">
+    Über <strong>100.000 Einträge</strong> – fair informiert.
+  </div>
+
+  <!-- LIGONE LINKS -->
+  <div class="ligone-links">
+    <a href="https://ligone.ch" target="_blank" rel="noopener">Offizielle Seite</a> |
+    <a href="https://ligone-token.github.io/ligone-web/" target="_blank" rel="noopener">Token App</a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-main">
+      MarketShield © 2025 – Ein Projekt für faire und klare Verbraucherinformationen.
+    </div>
+    <div class="footer-links">
+      <a href="about.html">Über MarketShield</a> ·
+      <a href="stiftung.html">Über die LIGONE Stiftung</a> ·
+      <a href="impressum.html">Impressum</a> ·
+      <a href="datenschutz.html">Datenschutz</a>
+    </div>
+  </footer>
+
+  <!-- REPORT FAB -->
+  <button id="reportFab" aria-label="Problem melden">⚠️</button>
+
+  <!-- REPORT MODAL -->
+  <div id="reportModal" class="report-modal">
+    <div class="report-box">
+      <h3>Problem oder Hinweis melden</h3>
+
+      <textarea
+        id="reportText"
+        placeholder="Was ist dir aufgefallen? (Fehler, falsche Info, Verbesserungsvorschlag)"
+        rows="5"></textarea>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+        <button id="closeReportModal">Abbrechen</button>
+        <button id="sendReport">Senden</button>
+      </div>
     </div>
   </div>
-</div>
+
+  <!-- APP -->
+  <script src="app.js" defer></script>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QBT1L9DKNW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-QBT1L9DKNW');
+  </script>
 
 </body>
 </html>
