@@ -1,76 +1,36 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>MarketShield – Transparente Hinweise für Verbraucher</title>
-  <meta name="description"
-        content="MarketShield macht Risiken, Hinweise und Auffälligkeiten sichtbar – schnell, transparent und zielgruppenspezifisch." />
+  <title>MarketShield</title>
 
-  <!-- CSS zuerst, klein & renderfreundlich -->
-  <link rel="stylesheet" href="style.css" />
-
-  <!-- JS blockiert NICHT -->
-  <script src="app.js" defer></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- ================= HEADER (sofort sichtbar) ================= -->
-  <header class="ms-header">
-    <h1>MarketShield</h1>
-    <p class="ms-tagline">
-      Hinweise & Auffälligkeiten – transparent, aktuell, gemeinschaftlich
-    </p>
-  </header>
+  <div id="ms-page">
 
-  <!-- ================= STATUS + ZEIT (D1/D1+) ================= -->
-  <section class="ms-context">
-    <div class="ms-status ms-status-build">
-      <span class="dot"></span>
-      <span class="label">Hinweislage im Aufbau</span>
-    </div>
+    <header class="ms-header">
+      <h1>MarketShield</h1>
+      <p>Transparente Hinweise für Verbraucher</p>
+    </header>
 
-    <div class="ms-time">
-      Zuletzt aktualisiert: wird geladen …
-    </div>
-  </section>
+    <nav class="ms-categories">
+      <strong>Kategorien</strong>
+    </nav>
 
-  <!-- ================= KATEGORIEN (HTML-FIRST) ================= -->
-  <nav class="ms-categories">
-    <ul>
-      <li><a href="?cat=ernaehrung">Ernährung</a></li>
-      <li><a href="?cat=gesundheit">Gesundheit</a></li>
-      <li><a href="?cat=kosmetik">Kosmetik</a></li>
-      <li><a href="?cat=haushalt">Haushalt</a></li>
-      <li><a href="?cat=risiken">Risiken</a></li>
-    </ul>
-  </nav>
+    <main id="content">
+      <p>Seite wird geladen …</p>
+    </main>
 
-  <!-- ================= HAUPTINHALT ================= -->
-  <main id="content">
+    <footer class="ms-footer">
+      <p>© MarketShield</p>
+    </footer>
 
-    <!-- Skeleton / Platzhalter -->
-    <article class="ms-card ms-skeleton">
-      <h2>Lädt Eintrag …</h2>
-      <p>Hinweise und Details werden geladen.</p>
-    </article>
-
-    <article class="ms-card ms-skeleton">
-      <h2>Lädt Eintrag …</h2>
-      <p>Hinweise und Details werden geladen.</p>
-    </article>
-
-  </main>
-
-  <!-- ================= FOOTER ================= -->
-  <footer class="ms-footer">
-    <p>
-      MarketShield ist ein Informations- & Orientierungssystem.
-      Keine Bewertung ersetzt eigene Verantwortung.
-    </p>
-  </footer>
+  </div>
 
 </body>
 </html>
