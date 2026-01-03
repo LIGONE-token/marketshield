@@ -1680,3 +1680,22 @@ main,
 #searchInput {
   z-index: 1000 !important;
 }
+#static-entries {
+  pointer-events: none;
+}
+main#results {
+  position: relative;
+  z-index: 1;
+}
+.category-grid {
+  position: relative;
+  z-index: 10;
+}
+
+.category-grid button {
+  cursor: pointer;
+}
+footer {
+  position: relative;
+  z-index: 1;
+}
