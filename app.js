@@ -448,6 +448,9 @@ async function loadEntry(id) {
   if (!e) return;
 
   currentEntryId = id;
+if (!e.quick_facts) {
+  e.quick_facts = generateQuickFacts(e);
+}
 
   box.innerHTML = `
     <article class="entry-detail">
