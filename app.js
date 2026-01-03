@@ -136,6 +136,8 @@ async function loadEntry(id) {
   `;
 
   renderEntryActions(e.title);
+   renderAffiliateBox(e);
+
 }
 
 /* ================= SOCIAL ================= */
