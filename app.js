@@ -110,6 +110,18 @@ function renderListSection(title, jsonString) {
     </section>
   `;
 }
+const ENTRY_LABELS = {
+  summary:        "Kurzfassung",
+  mechanism:     "Wirkweise",
+  benefits:      "Vorteile",
+  risks:         "Risiken",
+  warnings:      "Wichtige Hinweise",
+  target_groups: "Geeignet für / Zielgruppen",
+  alternatives:  "Bessere Alternativen",
+  legal:         "Rechtliche Einordnung",
+  sources:       "Quellen & Studien",
+  notes:         "Zusätzliche Hinweise"
+};
 
 /* ================= USER HASH (RATING) ================= */
 function getUserHash() {
