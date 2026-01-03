@@ -1648,3 +1648,35 @@ svg,
   z-index: 60 !important;
   pointer-events: auto !important;
 }
+/* =========================================
+   FINAL CLICK RESET – NICHT ANFASSEN
+========================================= */
+
+/* Grundsätzlich alles klickbar machen */
+* {
+  pointer-events: auto !important;
+}
+
+/* Kritische Container explizit freigeben */
+body,
+main,
+#results,
+#results *,
+.search-container,
+.search-container *,
+.category-grid,
+.category-grid * {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: auto !important;
+}
+
+/* Kategorien sichtbar & über allem */
+.category-grid {
+  z-index: 999 !important;
+}
+
+/* Suche IMMER fokussierbar */
+#searchInput {
+  z-index: 1000 !important;
+}
