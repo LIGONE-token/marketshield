@@ -1,22 +1,70 @@
-/* =========================
-   MarketShield – Basis CSS
-   Reset nach Zerstörung
-   ========================= */
+/* ==================================================
+   MarketShield – Stabilitäts-CSS (Drop-in)
+   EINMAL einfügen, nichts weiter anfassen
+   ================================================== */
 
-*{
-  box-sizing:border-box;
-}
+*{ box-sizing:border-box; }
 
 body{
   margin:0;
-  font-family:system-ui, Arial, sans-serif;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
   background:#ffffff;
   color:#222;
 }
 
+/* ZENTRALER RAHMEN */
 #ms-safe,
 #ms-page{
   max-width:1100px;
   margin:0 auto;
-  padding:20px;
+  padding:16px;
+}
+
+/* HEADER */
+.ms-header h1{
+  margin:0;
+  font-size:24px;
+}
+.ms-header p{
+  margin:4px 0 0;
+  color:#666;
+}
+
+/* KATEGORIEN */
+.ms-categories{
+  margin:16px 0;
+  padding:12px;
+  background:#f4f6f8;
+  border-radius:6px;
+}
+
+.ms-categories ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.ms-categories a{
+  text-decoration:none;
+  font-size:13px;
+  padding:4px 8px;
+  background:#e0e4ea;
+  color:#111;
+  border-radius:4px;
+}
+
+/* CONTENT */
+#content{
+  min-height:200px;
+  margin-top:16px;
+}
+
+/* FOOTER */
+.ms-footer{
+  margin-top:32px;
+  font-size:12px;
+  color:#666;
 }
