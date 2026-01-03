@@ -167,28 +167,54 @@ const ENTRY_LABELS = {
   notes:              "Zusätzliche Hinweise"
 };
 
+function renderPipeTable(text) {
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  if (lines.length < 3) return null;
+
+  // Header + Trenner prüfen
+  if (!lines[0].includes("|") || !/^[-\s|]+$/.test(lines[1])) return null;
+
+  const rows = lines
+    .slice(0)
+    .filter(l => l.includes("|"))
+    .map(l => l.split("|").map(c => escapeHtml(c.trim())));
+
+  if (rows.length < 2) return null;
+
+  const header = rows[0];
+  const body   = rows.slice(1);
+
+  return `
+    <table class="ms-table">
+      <thead>
+        <tr>${header.map(h => `<th>${h}</th>`).join("")}</tr>
+      </thead>
+      <tbody>
+        ${body.map(r =>
+          `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`
+        ).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+
 function renderEntryBlock(key, value) {
   if (!value || String(value).trim() === "") return "";
 
   const title = ENTRY_LABELS[key] || key;
   const clean = normalizeText(value);
 
-  const lines = clean.split("\n").filter(Boolean);
-  const isComparison =
-    lines.length >= 2 &&
-    lines.every(l => (l.match(/\|/g) || []).length >= 2);
+  const table = renderPipeTable(clean);
 
   return `
     <section class="entry-block">
       <h3>${title}</h3>
-      ${
-        isComparison
-          ? `<div class="comparison-box">${escapeHtml(clean)}</div>`
-          : renderParagraphs(clean)
-      }
+      ${table ? table : renderParagraphs(clean)}
     </section>
   `;
 }
+
 
 function parseArray(val) {
   if (!val) return "";
