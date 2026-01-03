@@ -170,35 +170,50 @@ const ENTRY_LABELS = {
 function renderPipeTable(text) {
   const lines = text
     .replace(/\r\n/g, "\n")
-    .split("\n")
-    .map(l => l.trim())
-    .filter(Boolean);
+    .split("\n");
 
-  if (lines.length < 3) return null;
-  if (!lines[0].includes("|")) return null;
-  if (!/^[-\s|]+$/.test(lines[1])) return null;
+  for (let i = 0; i < lines.length - 2; i++) {
+    const header = lines[i];
+    const divider = lines[i + 1];
 
-  const rows = lines
-    .filter(l => l.includes("|"))
-    .map(l => l.split("|").map(c => escapeHtml(c.trim())));
+    // Kopf + Trenner erkennen
+    if (
+      header.includes("|") &&
+      /^[-\s|]{5,}$/.test(divider)
+    ) {
+      const rows = [header];
 
-  if (rows.length < 2) return null;
+      // alle folgenden Pipe-Zeilen einsammeln
+      for (let j = i + 2; j < lines.length; j++) {
+        if (!lines[j].includes("|")) break;
+        rows.push(lines[j]);
+      }
 
-  const header = rows[0];
-  const body = rows.slice(1);
+      if (rows.length < 2) return null;
 
-  return `
-    <table class="ms-table">
-      <thead>
-        <tr>${header.map(h => `<th>${h}</th>`).join("")}</tr>
-      </thead>
-      <tbody>
-        ${body.map(r =>
-          `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`
-        ).join("")}
-      </tbody>
-    </table>
-  `;
+      const parsed = rows.map(r =>
+        r.split("|").map(c => escapeHtml(c.trim()))
+      );
+
+      const thead = parsed[0];
+      const tbody = parsed.slice(1);
+
+      return `
+        <table class="ms-table">
+          <thead>
+            <tr>${thead.map(h => `<th>${h}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${tbody
+              .map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`)
+              .join("")}
+          </tbody>
+        </table>
+      `;
+    }
+  }
+
+  return null;
 }
 
 
