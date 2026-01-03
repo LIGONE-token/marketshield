@@ -1624,3 +1624,27 @@ svg,
   pointer-events: auto;
   cursor: pointer;
 }
+/* === NOTFALL: INTERAKTION FREIGEBEN === */
+
+#results {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+.category-grid {
+  position: relative !important;
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+.category-grid * {
+  pointer-events: auto !important;
+}
+
+.search-container,
+.search-container * {
+  position: relative;
+  z-index: 60 !important;
+  pointer-events: auto !important;
+}
