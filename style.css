@@ -4381,3 +4381,26 @@ html, body,
 .ms-context{
   padding:6px 20px 10px;
 }
+.ms-status{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  margin-bottom:4px;
+}
+
+.ms-status .dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+}
+
+.ms-status-build .dot{ background:#f9a825; }
+.ms-status-new .dot{ background:#1e88e5; }
+.ms-status-stable .dot{ background:#2e7d32; }
+.ms-status-alert .dot{ background:#c62828; }
+
+.ms-time{
+  font-size:12px;
+  color:var(--ms-muted);
+}
