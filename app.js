@@ -202,24 +202,25 @@ async function smartSearch(q) {
 
 
 function initSearch() {
-  const input = $("searchInput");
-  const box = $("results");
+  const input = document.getElementById("searchInput");
+  const box = document.getElementById("results");
   const staticBlock = document.getElementById("static-entries");
   if (!input || !box) return;
 
+  input.addEventListener("focus", () => {
+    if (staticBlock) staticBlock.style.display = "none";
+  });
+
   input.addEventListener("input", async () => {
     const q = input.value.trim();
-
-    if (staticBlock) staticBlock.style.display = "none";
-
     if (q.length < 2) {
       box.innerHTML = "";
       return;
     }
-
     renderList(await smartSearch(q));
   });
 }
+
 
 
 /* ================= KATEGORIEN ================= */
