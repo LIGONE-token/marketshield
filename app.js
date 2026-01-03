@@ -343,6 +343,14 @@ async function loadEntry(id) {
 
       ${renderEntryBlock("summary", e.summary)}
       ${renderEntryBlock("mechanism", e.mechanism)}
+      ${renderEntryBlock("effects_positive", parseArray(e.effects_positive))}
+      ${renderEntryBlock("effects_negative", parseArray(e.effects_negative))}
+      ${renderEntryBlock("risk_groups", parseArray(e.risk_groups))}
+
+      ${renderEntryBlock("scientific_note", e.scientific_note)}
+      ${renderEntryBlock("synergy", parseArray(e.synergy))}
+      ${renderEntryBlock("natural_sources", parseArray(e.natural_sources))}
+
       ${renderEntryBlock("benefits", e.benefits)}
       ${renderEntryBlock("risks", e.risks)}
       ${renderEntryBlock("warnings", e.warnings)}
