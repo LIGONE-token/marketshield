@@ -1725,3 +1725,36 @@ footer {
   padding-top: 12px;
   border-top: 1px solid #e0e0e0;
 }
+/* ===== RATING ===== */
+
+.rating-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rating-stars {
+  display: inline-flex;
+  gap: 2px;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.rating-star {
+  cursor: pointer;
+  user-select: none;
+  color: #ccc;              /* leer = grau */
+}
+
+.rating-star.filled {
+  color: #f9a825;           /* gefüllt = gelb */
+}
+
+.rating-star:hover {
+  opacity: 0.7;
+}
+
+.rating-info {
+  font-size: 13px;
+  opacity: 0.75;
+}
