@@ -118,6 +118,22 @@
   gtag('js', new Date());
   gtag('config', 'G-QBT1L9DKNW');
 </script>
+<button id="reportFab" aria-label="Problem melden">⚠️</button>
+
+<div id="reportModal" class="report-modal">
+  <div class="report-box">
+    <h3>Problem oder Hinweis melden</h3>
+
+    <textarea id="reportText"
+      placeholder="Was ist dir aufgefallen? (Fehler, falsche Info, Verbesserungsvorschlag)"
+      rows="5"></textarea>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+      <button id="closeReportModal">Abbrechen</button>
+      <button id="sendReport">Senden</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
