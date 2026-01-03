@@ -4363,3 +4363,21 @@ html, body,
 
   --ms-accent:#1e88e5;
 }
+.ms-header{
+  padding:16px 20px 10px;
+}
+
+.ms-header h1{
+  font-size:24px;
+  margin:0;
+}
+
+.ms-tagline{
+  font-size:14px;
+  color:var(--ms-muted);
+  margin-top:4px;
+}
+
+.ms-context{
+  padding:6px 20px 10px;
+}
