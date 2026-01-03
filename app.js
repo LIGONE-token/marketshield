@@ -231,12 +231,28 @@ async function loadCategories() {
   grid.innerHTML = "";
 
   (data.categories || []).forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c.title;
-    b.onclick = () => loadCategory(c.title);
-    grid.appendChild(b);
+    grid.insertAdjacentHTML(
+      "beforeend",
+      `<button class="cat-btn" data-cat="${c.title}">${c.title}</button>`
+    );
   });
 }
+
+// EIN globaler Listener – unkaptuttbar
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".cat-btn");
+  if (!btn) return;
+
+  const cat = btn.dataset.cat;
+  if (!cat) return;
+
+  const staticBlock = document.getElementById("static-entries");
+  if (staticBlock) staticBlock.style.display = "none";
+
+  history.pushState(null, "", location.pathname);
+  loadCategory(cat);
+});
+
 
 async function loadCategory(cat) {
   const staticBlock = document.getElementById("static-entries");
