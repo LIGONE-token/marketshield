@@ -167,49 +167,47 @@ const ENTRY_LABELS = {
   notes:              "Zusätzliche Hinweise"
 };
 
-function renderPipeTable(text) {
-  const lines = text
-    .replace(/\r\n/g, "\n")
-    .split("\n");
+function renderPipeTableWithContext(text) {
+  const raw = text.replace(/\r\n/g, "\n");
+  const lines = raw.split("\n");
 
   for (let i = 0; i < lines.length - 2; i++) {
     const header = lines[i];
     const divider = lines[i + 1];
 
-    // Kopf + Trenner erkennen
-    if (
-      header.includes("|") &&
-      /^[-\s|]{5,}$/.test(divider)
-    ) {
-      const rows = [header];
+    if (header.includes("|") && /^[-\s|]{5,}$/.test(divider)) {
+      const tableLines = [header];
+      let end = i + 2;
 
-      // alle folgenden Pipe-Zeilen einsammeln
-      for (let j = i + 2; j < lines.length; j++) {
-        if (!lines[j].includes("|")) break;
-        rows.push(lines[j]);
+      for (; end < lines.length; end++) {
+        if (!lines[end].includes("|")) break;
+        tableLines.push(lines[end]);
       }
 
-      if (rows.length < 2) return null;
+      const before = lines.slice(0, i).join("\n").trim();
+      const after  = lines.slice(end).join("\n").trim();
 
-      const parsed = rows.map(r =>
+      const rows = tableLines.map(r =>
         r.split("|").map(c => escapeHtml(c.trim()))
       );
 
-      const thead = parsed[0];
-      const tbody = parsed.slice(1);
+      const thead = rows[0];
+      const tbody = rows.slice(1);
 
-      return `
+      const tableHtml = `
         <table class="ms-table">
           <thead>
             <tr>${thead.map(h => `<th>${h}</th>`).join("")}</tr>
           </thead>
           <tbody>
-            ${tbody
-              .map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`)
-              .join("")}
+            ${tbody.map(r =>
+              `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`
+            ).join("")}
           </tbody>
         </table>
       `;
+
+      return { before, tableHtml, after };
     }
   }
 
@@ -222,15 +220,24 @@ function renderEntryBlock(key, value) {
   if (!value || String(value).trim() === "") return "";
 
   const title = ENTRY_LABELS[key] || key;
+  const raw = String(value);
 
-  const raw   = String(value);          // für Tabellen-Erkennung
-  const table = renderPipeTable(raw);   // echte Tabelle, wenn erkannt
-  const clean = normalizeText(value);   // normaler Text
+  const parsed = renderPipeTableWithContext(raw);
+  const clean = normalizeText(value);
 
   return `
     <section class="entry-block">
       <h3>${title}</h3>
-      ${table ? table : renderParagraphs(clean)}
+
+      ${
+        parsed
+          ? `
+              ${parsed.before ? renderParagraphs(parsed.before) : ""}
+              ${parsed.tableHtml}
+              ${parsed.after ? renderParagraphs(parsed.after) : ""}
+            `
+          : renderParagraphs(clean)
+      }
     </section>
   `;
 }
