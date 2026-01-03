@@ -1,3 +1,10 @@
+console.log("APP START");
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM READY");
+});
+
+
+
 document.addEventListener("click", e => {
   console.log("CLICK TARGET:", e.target);
 }, true);
