@@ -1780,3 +1780,29 @@ footer {
   margin-left: 6px;
   color: #555;
 }
+#similarEntries {
+  margin-top: 40px;
+}
+
+.similar-list {
+  display: grid;
+  gap: 12px;
+}
+
+.similar-card {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #fafafa;
+}
+
+.similar-card:hover {
+  background: #f0f0f0;
+}
+
+.similar-summary {
+  font-size: 13px;
+  margin-top: 6px;
+  color: #555;
+}
