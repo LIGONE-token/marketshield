@@ -1,19 +1,3 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const staticBlock = document.getElementById("static-entries");
-  if (staticBlock) {
-    staticBlock.style.display = "none";
-  }
-});
-
-document.addEventListener("DOMContentLoaded", initApp);
-
-function initApp() {
-  initCategories();
-  initSearch();
-  initReport();
-}
-
-
 /* =====================================================
    MarketShield – app.js (STABIL / REPARIERT)
 ===================================================== */
@@ -229,9 +213,14 @@ document.addEventListener("click", (e) => {
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", () => {
+  const staticBlock = document.getElementById("static-entries");
+  if (staticBlock) staticBlock.style.display = "none";
+
   loadCategories();
   initSearch();
+  initReport?.(); // falls vorhanden, sonst ignoriert
 
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
+
