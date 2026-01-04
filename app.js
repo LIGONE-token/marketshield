@@ -67,6 +67,16 @@ function normalizeText(text) {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
+function stripMarkdown(text) {
+  return String(text)
+    // Überschriften ### entfernen
+    .replace(/^#{1,6}\s*/gm, "")
+    // **fett** / *kursiv* entfernen
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    // __unterstrichen__ entfernen
+    .replace(/__(.*?)__/g, "$1");
+}
 
 function shortText(t, max = 160) {
   if (!t) return "";
@@ -224,7 +234,8 @@ function renderEntryBlock(key, value) {
 
   // Tabelle + Kontext (falls vorhanden)
   const parsed = renderPipeTableWithContext(raw);
-  const clean  = normalizeText(value);
+  const clean = stripMarkdown(normalizeText(value));
+
 
   // 👉 HIER die Klasse setzen
   const sectionClass =
