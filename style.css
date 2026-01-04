@@ -2201,3 +2201,7 @@ footer .support-crypto code {
     grid-template-columns: repeat(6, 1fr);
   }
 }
+.category-grid {
+  background: rgba(0,0,0,0.02);
+  border-radius: 12px;
+}
