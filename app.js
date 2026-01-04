@@ -524,10 +524,15 @@ if (!e.quick_facts) {
     <div class="support-crypto">
       <strong>🔐 Alternativ: Unterstützung per Kryptowährung</strong>
       <p>Für Nutzer, die bewusst dezentral unterstützen möchten.</p>
-      <code>
-        ETH / Polygon (ERC20)<br>
-        0x5883C4013B4051e7f47624dC81B7118dE8fbD0FF
-      </code>
+      <code
+  class="crypto-address"
+  onclick="copyCryptoAddress(this)"
+  title="Adresse kopieren"
+>
+ETH / Polygon (ERC20)<br>
+<span>0x5883C4013B4051e7f47624dC81B7118dE8fbD0FF</span>
+</code>
+
       <small>
         Die Adresse gehört ausschließlich dem Projekt MarketShield.
       </small>
