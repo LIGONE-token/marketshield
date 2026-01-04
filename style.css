@@ -2077,3 +2077,13 @@ footer .support-crypto code {
   font-weight: 600;
   cursor: pointer;
 }
+/* === Kategorien-Grid – FINAL STABIL === */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+
+  max-width: 720px;
+  margin: 18px auto;
+  padding: 0 12px;
+}
