@@ -779,10 +779,3 @@ document.addEventListener("click", function (e) {
 });
 
 
-  // Klick außerhalb schließt auch
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-      modal.classList.remove("open");
-    }
-  });
-});
