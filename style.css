@@ -2060,3 +2060,20 @@ footer .support-crypto code {
 .crypto-address:hover {
   background: #eef6ff;
 }
+#msReportFab:hover {
+  background: #256628;
+  transform: scale(1.05);
+}
+
+#msReportFab span {
+  pointer-events: none;
+}
+.back-home {
+  max-width: 720px;
+  margin: 12px auto 0 auto;
+  padding: 0 12px;
+
+  color: #2e7d32;
+  font-weight: 600;
+  cursor: pointer;
+}
