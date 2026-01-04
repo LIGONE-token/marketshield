@@ -380,20 +380,22 @@ function renderRatingBlock(avg = 0, count = 0, title = "") {
   const a = Number(avg) || 0;
   const c = Number(count) || 0;
 
-  const filled = Math.floor(a);
+  const filled = c > 0 ? Math.round(a) : 0;
 
   return `
     <div class="rating-wrapper">
-
       <div class="rating-box">
 
         <div class="rating-stars" aria-label="Bewertung">
-          ${[1,2,3,4,5].map(n => `
-            <span class="rating-star ${n <= filled ? "filled" : ""}"
-                  data-star="${n}">
-              ★
-            </span>
-          `).join("")}
+          ${[1,2,3,4,5].map(n => {
+            const isFilled = c > 0 && n <= filled;
+            return `
+              <span class="rating-star ${isFilled ? "filled" : "empty"}"
+                    data-star="${n}">
+                ${isFilled ? "★" : "☆"}
+              </span>
+            `;
+          }).join("")}
         </div>
 
         <span class="rating-info">
@@ -406,6 +408,7 @@ function renderRatingBlock(avg = 0, count = 0, title = "") {
     </div>
   `;
 }
+
 
 
 
