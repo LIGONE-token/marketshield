@@ -761,3 +761,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const id = new URLSearchParams(location.search).get("id");
   if (id) loadEntry(id);
 });
+function copyCryptoAddress(el) {
+  const addr = el.querySelector("span")?.innerText;
+  if (!addr) return;
+
+  navigator.clipboard.writeText(addr).then(() => {
+    const old = el.innerHTML;
+    el.innerHTML = "✅ Adresse kopiert";
+    setTimeout(() => {
+      el.innerHTML = old;
+    }, 1200);
+  });
+}
