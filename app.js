@@ -459,9 +459,10 @@ async function loadEntry(id) {
   if (!e) return;
 
   currentEntryId = id;
-if (!e.quick_facts) {
-  e.quick_facts = generateQuickFacts(e);
-}
+
+  if (!e.quick_facts) {
+    e.quick_facts = generateQuickFacts(e);
+  }
 
   box.innerHTML = `
     <article class="entry-detail">
@@ -490,53 +491,44 @@ if (!e.quick_facts) {
       ${renderEntryBlock("sources", e.sources)}
       ${renderEntryBlock("notes", e.notes)}
 
+      <!-- ================= SUPPORT BOX ================= -->
+      <section class="support-box">
+        <h3>💚 MarketShield unterstützen</h3>
+
+        <p class="support-text">
+          MarketShield ist ein unabhängiges Aufklärungsprojekt.
+          Es gibt keine Investoren, keine Industrie-Finanzierung
+          und keine bezahlten Bewertungen.
+        </p>
+
+        <a
+          class="support-paypal"
+          href="https://paypal.me/wahrheitgewinnt"
+          target="_blank"
+          rel="noopener"
+        >
+          Über PayPal unterstützen
+        </a>
+
+        <div class="support-crypto">
+          <strong>🔐 Alternativ: Unterstützung per Kryptowährung</strong>
+          <p>Für Nutzer, die bewusst dezentral unterstützen möchten.</p>
+
+          <code class="crypto-address">
+            ETH / Polygon (ERC20)<br>
+            <span>0x5883C4013B4051e7f47624dC81B7118dE8fbD0FF</span>
+          </code>
+
+          <small>
+            Die Adresse gehört ausschließlich dem Projekt MarketShield.
+          </small>
+        </div>
+      </section>
+
       <div id="affiliateBox"></div>
       <div id="entryActions"></div>
 
     </article>
-    box.innerHTML = `
-  <h2>${escapeHtml(e.title)}</h2>
-
-  ${renderRatingBlock(e.rating_avg, e.rating_count)}
-  ${renderScoreBlock(e.score, e.processing_score, 14)}
-  ${renderTextBlock("Zusammenfassung", e.summary)}
-  ${renderTextBlock("Wirkung", e.mechanism)}
-
-  <!-- ================= SUPPORT BOX ================= -->
-  <section class="support-box">
-    <h3>💚 MarketShield unterstützen</h3>
-
-    <p class="support-text">
-      MarketShield ist ein unabhängiges Aufklärungsprojekt.
-      Es gibt keine Investoren, keine Industrie-Finanzierung
-      und keine bezahlten Bewertungen.
-    </p>
-
-    <a
-      class="support-paypal"
-      href="https://paypal.me/wahrheitgewinnt"
-      target="_blank"
-      rel="noopener"
-    >
-      Über PayPal unterstützen
-    </a>
-
-    <div class="support-crypto">
-      <strong>🔐 Alternativ: Unterstützung per Kryptowährung</strong>
-      <p>Für Nutzer, die bewusst dezentral unterstützen möchten.</p>
-      <code class="crypto-address">
-ETH / Polygon (ERC20)<br>
-<span>0x5883C4013B4051e7f47624dC81B7118dE8fbD0FF</span>
-</code>
-
-
-      <small>
-        Die Adresse gehört ausschließlich dem Projekt MarketShield.
-      </small>
-    </div>
-  </section>
-`;
-
   `;
 
   bindRatingClicks();
