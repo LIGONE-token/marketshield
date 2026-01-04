@@ -777,11 +777,12 @@ document.addEventListener("click", function (e) {
     }, 1200);
   });
 });
-document.addEventListener("DOMContentLoaded", () => {
-  const fab = document.getElementById("msReportFab");
-  if (!fab) return;
 
-  fab.addEventListener("click", () => {
-    alert("Melden-Funktion folgt in Kürze.");
+
+  // Klick außerhalb schließt auch
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.classList.remove("open");
+    }
   });
 });
