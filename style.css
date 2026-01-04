@@ -2107,3 +2107,35 @@ footer .support-crypto code {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+/* ================= KATEGORIEN GRID – FINAL ================= */
+
+.category-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+
+  max-width: 720px;
+  margin: 24px auto;
+  padding: 0 12px;
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .category-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Tablet */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .category-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 639px) {
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
