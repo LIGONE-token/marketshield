@@ -770,3 +770,18 @@ function copyCryptoAddress(el) {
     }, 1200);
   });
 }
+document.addEventListener("click", function (e) {
+  const el = e.target.closest(".crypto-address");
+  if (!el) return;
+
+  const addr = el.querySelector("span")?.innerText;
+  if (!addr) return;
+
+  navigator.clipboard.writeText(addr).then(() => {
+    const old = el.innerHTML;
+    el.innerHTML = "✅ Adresse kopiert";
+    setTimeout(() => {
+      el.innerHTML = old;
+    }, 1200);
+  });
+});
