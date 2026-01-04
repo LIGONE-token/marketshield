@@ -2205,3 +2205,18 @@ footer .support-crypto code {
   background: rgba(0,0,0,0.02);
   border-radius: 12px;
 }
+.category-card {
+  background: transparent;          /* statt weiß */
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+
+  padding: 10px 8px;
+  text-align: center;
+
+  transition: background .15s ease, box-shadow .15s ease;
+}
+.category-card span,
+.category-card small {
+  font-size: 13px;
+  opacity: 0.9;
+}
