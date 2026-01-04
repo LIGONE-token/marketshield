@@ -2053,3 +2053,10 @@ footer .support-crypto code {
 .crypto-address:hover {
   background: #eef6ff;
 }
+.crypto-address {
+  cursor: pointer;
+  user-select: all;
+}
+.crypto-address:hover {
+  background: #eef6ff;
+}
