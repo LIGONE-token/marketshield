@@ -282,14 +282,27 @@
     Sachlich · respektvoll · keine Finanzberatung
   </div>
 
-  <div id="comments"></div>
+  <!-- Beitragsanzeige -->
+  <div id="comments">
+    <p class="placeholder">
+      Noch keine Beiträge vorhanden.
+    </p>
+  </div>
 
+  <!-- Eingabe -->
   <form id="commentForm" class="comment-form">
     <input type="text" id="alias" placeholder="Name oder Alias" required>
-    <textarea id="message" placeholder="Dein Beitrag (max. 500 Zeichen)" required></textarea>
+
+    <textarea
+      id="message"
+      placeholder="Dein Beitrag (max. 500 Zeichen)"
+      maxlength="500"
+      required></textarea>
+
     <button type="submit">Beitrag veröffentlichen</button>
   </form>
 </section>
+
 
 
 </main>
