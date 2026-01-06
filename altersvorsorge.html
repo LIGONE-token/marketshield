@@ -500,19 +500,25 @@ loadComments();
 
 <style>
   .lig1-buy-box {
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
-    width: 320px;
-    max-height: 80vh;
-    background: #fff;
-    border: 2px solid #2e7d32;
-    border-radius: 14px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
-    font-family: system-ui, sans-serif;
-    z-index: 9999;
-    overflow: hidden;
-  }
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+
+  /* 👇 SCHMAL im geschlossenen Zustand */
+  width: 200px;
+
+  max-height: 80vh;
+  background: #fff;
+  border: 2px solid #2e7d32;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  font-family: system-ui, sans-serif;
+  z-index: 9999;
+  overflow: hidden;
+
+  transition: width 0.25s ease;
+}
+
 
   .lig1-header {
     padding: 14px 16px;
