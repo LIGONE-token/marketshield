@@ -259,13 +259,31 @@ ETH / Polygon (ERC20)<br>
 
   /* 📱 IMMER sichtbar platzieren */
   .lig1-buy-box {
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
+  position: fixed !important;
+  right: 12px !important;
+  bottom: 12px !important;
+  left: auto !important;
 
-    width: 160px;        /* 👈 geschlossen: schmal */
-    margin-left: auto;  /* 👈 nach rechts schieben */
-  }
+  width: 170px;
+  max-height: 80vh;
+
+  background: #ffffff;
+  border: 2px solid #2e7d32;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+
+  font-family: system-ui, sans-serif;
+  z-index: 2147483647 !important; /* maximal */
+
+  overflow: hidden;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+
+  transform: none !important;
+  transition: width 0.25s ease;
+}
+
 
   /* 📱 NUR offen = breit */
   .lig1-buy-box.open {
