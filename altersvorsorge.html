@@ -459,7 +459,7 @@ function escapeHtml(text) {
 /* Laden */
 async function loadComments() {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/vorsorge_comments?page=eq.${PAGE}&order=created_at.desc`,
+    `${SUPABASE_URL}/rest/v1/vorsorge_comments?page=eq.${PAGE}&order=created_at.asc`,
     {
       headers: {
         apikey: SUPABASE_KEY,
