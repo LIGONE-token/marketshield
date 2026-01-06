@@ -291,6 +291,13 @@ ETH / Polygon (ERC20)<br>
     margin-left: 0;
   }
 }
+/* 🔒 MOBILE FIX: verhindert Verschwinden von position:fixed */
+@media (max-width: 768px) {
+  html, body {
+    transform: none !important;
+    overflow-x: hidden;
+  }
+}
 
 </style>
 
