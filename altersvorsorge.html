@@ -436,6 +436,12 @@
 </main>
 <!-- Gesprächsraum Script -->
 <script>
+  // Alias aus localStorage laden
+const savedAlias = localStorage.getItem("vorsorge_alias");
+if (savedAlias) {
+  aliasField.value = savedAlias;
+}
+
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JHb4LBhP26eI7BgDS1jIkw_4OYn3-F9";
 const PAGE = "altersvorsorge";
@@ -525,8 +531,15 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  form.reset();
-  loadComments();
+  // Alias merken
+localStorage.setItem("vorsorge_alias", alias);
+
+// Nur Nachricht leeren, Name bleibt
+messageField.value = "";
+
+// Neu laden
+loadComments();
+
 });
 
 /* Start */
