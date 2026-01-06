@@ -440,6 +440,12 @@ const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JHb4LBhP26eI7BgDS1jIkw_4OYn3-F9";
 const PAGE = "altersvorsorge";
 
+const commentsBox = document.getElementById("comments");
+const form = document.getElementById("commentForm");
+const aliasField = document.getElementById("alias");
+const messageField = document.getElementById("message");
+
+/* Escape */
 function escapeHtml(text) {
   return text.replace(/[&<>"']/g, m => ({
     "&":"&amp;",
@@ -450,10 +456,9 @@ function escapeHtml(text) {
   })[m]);
 }
 
+/* Laden */
 async function loadComments() {
-  const box = document.getElementById("comments");
-
-  const r = await fetch(
+  const res = await fetch(
     `${SUPABASE_URL}/rest/v1/vorsorge_comments?page=eq.${PAGE}&order=created_at.desc`,
     {
       headers: {
@@ -463,50 +468,71 @@ async function loadComments() {
     }
   );
 
-  const data = await r.json();
-  box.innerHTML = "";
+  if (!res.ok) {
+    commentsBox.innerHTML = "<p>Kommentare konnten nicht geladen werden.</p>";
+    return;
+  }
 
-  if (!data.length) {
-    box.innerHTML = `<p class="placeholder">Noch keine Beiträge vorhanden.</p>`;
+  const data = await res.json();
+  commentsBox.innerHTML = "";
+
+  if (data.length === 0) {
+    commentsBox.innerHTML =
+      "<p style='color:#777;font-style:italic'>Noch keine Beiträge.</p>";
     return;
   }
 
   data.forEach(c => {
-    const div = document.createElement("div");
-    div.className = "comment";
-    div.innerHTML = `
-      <div class="meta">
-        ${escapeHtml(c.alias)} · ${new Date(c.created_at).toLocaleString()}
+    commentsBox.innerHTML += `
+      <div class="comment">
+        <div class="meta">
+          ${escapeHtml(c.alias)} · ${new Date(c.created_at).toLocaleString()}
+        </div>
+        <div>${escapeHtml(c.message)}</div>
       </div>
-      <div>${escapeHtml(c.message).replace(/\n/g, "<br>")}</div>
     `;
-    box.appendChild(div);
   });
 }
 
-document.getElementById("commentForm").addEventListener("submit", async e => {
+/* Absenden */
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const alias = document.getElementById("alias").value.trim();
-  const message = document.getElementById("message").value.trim();
-  if (!alias || !message) return;
+  const alias = aliasField.value.trim();
+  const message = messageField.value.trim();
 
-  await fetch(`${SUPABASE_URL}/rest/v1/vorsorge_comments`, {
+  if (alias.length < 2 || message.length < 5) {
+    alert("Bitte Name und sinnvollen Beitrag eingeben.");
+    return;
+  }
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vorsorge_comments`, {
     method: "POST",
     headers: {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${SUPABASE_KEY}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ page: PAGE, alias, message })
+    body: JSON.stringify({
+      page: PAGE,
+      alias,
+      message
+    })
   });
 
-  e.target.reset();
+  if (!res.ok) {
+    alert("Fehler beim Senden:\n" + await res.text());
+    return;
+  }
+
+  form.reset();
   loadComments();
 });
 
+/* Start */
 loadComments();
 </script>
+
 
 <!-- =====================================================
  LIG1 KAUF-BOX – FINAL / STABIL / NULL-LAIEN
