@@ -418,6 +418,149 @@ document.getElementById("commentForm").addEventListener("submit", async e => {
 loadComments();
 </script>
 
+<!-- ===============================
+ LIG1 Kaufen – Fixe Rand-Box
+ NULL-Laien-sicher
+================================ -->
+
+<style>
+  .lig1-buy-box {
+    position: fixed;
+    right: 16px;
+    top: 120px;
+    width: 320px;
+    background: #ffffff;
+    border: 2px solid #2e7d32;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    padding: 16px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    z-index: 9999;
+  }
+
+  .lig1-buy-box h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #2e7d32;
+  }
+
+  .lig1-buy-box p {
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 6px 0;
+  }
+
+  .lig1-step {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .lig1-highlight {
+    font-weight: 700;
+  }
+
+  .lig1-button {
+    display: block;
+    margin-top: 12px;
+    padding: 12px;
+    text-align: center;
+    background: #2e7d32;
+    color: #ffffff;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .lig1-button:hover {
+    background: #256428;
+  }
+
+  .lig1-small {
+    font-size: 12px;
+    color: #555;
+    margin-top: 8px;
+  }
+
+  /* Mobile: Box unten fixieren */
+  @media (max-width: 768px) {
+    .lig1-buy-box {
+      width: calc(100% - 24px);
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      top: auto;
+    }
+  }
+</style>
+
+<div class="lig1-buy-box">
+  <h3>💶 LIG1 kaufen (1-Euro-Beispiel)</h3>
+
+  <p><strong>Preis (Richtwert):</strong><br>
+  1 LIG1 ≈ <span class="lig1-highlight">$0.000624</span></p>
+
+  <p><strong>Beispiel:</strong><br>
+  Für <span class="lig1-highlight">1 Euro</span> bekommst du ungefähr
+  <span class="lig1-highlight">1.600 LIG1</span>.</p>
+
+  <div class="lig1-step">
+    <p><strong>1️⃣ App installieren</strong></p>
+    <p>Installiere die kostenlose Wallet-App<br>
+    <span class="lig1-highlight">:contentReference[oaicite:0]{index=0}</span></p>
+    <p class="lig1-small">
+      Neue Wallet erstellen<br>
+      Wörter sicher aufschreiben
+    </p>
+  </div>
+
+  <div class="lig1-step">
+    <p><strong>2️⃣ Genau 1 Euro vorbereiten</strong></p>
+    <p>
+      In der App auf <strong>„Kaufen“</strong> tippen<br>
+      <strong>POL (Polygon)</strong> wählen<br>
+      <span class="lig1-highlight">1,00 €</span> eingeben
+    </p>
+  </div>
+
+  <div class="lig1-step">
+    <p><strong>3️⃣ Preis ansehen</strong></p>
+    <p>
+      Du siehst <strong>vorher</strong>, wie viele LIG1 du bekommst.<br>
+      <span class="lig1-highlight">Noch kein Kauf.</span>
+    </p>
+  </div>
+
+  <div class="lig1-step">
+    <p><strong>4️⃣ Kaufen</strong></p>
+    <p>
+      Nur wenn alles passt:<br>
+      auf <strong>„Tauschen“</strong> klicken<br>
+      und bestätigen.
+    </p>
+  </div>
+
+  <a href="https://app.uniswap.org/#/swap?chain=polygon&outputCurrency=0x35291849e169A1B001eAf43Ac9D1D259fD7d22b1
+"
+     target="_blank"
+     rel="noopener"
+     class="lig1-button">
+     LIG1 kaufen (Preis vorher sehen)
+  </a>
+
+  <p class="lig1-small">
+    🔒 Kein Abo · kein Vertrag · Kauf nur nach Bestätigung · jederzeit abbrechen
+  </p>
+
+  <div class="lig1-step">
+    <p><strong>LIG1 nicht sichtbar?</strong></p>
+    <p class="lig1-small">
+      Wallet öffnen → nach unten scrollen →<br>
+      „Token hinzufügen“ → LIG1-Adresse einfügen
+    </p>
+  </div>
+</div>
 
 </body>
 </html>
