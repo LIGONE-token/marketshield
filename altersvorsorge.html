@@ -509,20 +509,23 @@ loadComments();
 /* ===== MOBILE ===== */
 @media (max-width: 768px) {
 
-  /* geschlossen: SCHMAL */
+  /* 📱 IMMER sichtbar platzieren */
   .lig1-buy-box {
-    right: 12px;
-    bottom: 12px;
-    width: 170px;
-  }
-
-  /* offen: BREIT */
-  .lig1-buy-box.open {
     left: 12px;
     right: 12px;
-    width: auto;
+    bottom: 12px;
+
+    width: 160px;        /* 👈 geschlossen: schmal */
+    margin-left: auto;  /* 👈 nach rechts schieben */
+  }
+
+  /* 📱 NUR offen = breit */
+  .lig1-buy-box.open {
+    width: auto;        /* volle Breite */
+    margin-left: 0;
   }
 }
+
 </style>
 
 <div class="lig1-buy-box" id="lig1Box">
