@@ -420,6 +420,11 @@
   type="text"
   id="alias"
   placeholder="Name oder Alias (optional)">
+    <div class="alias-hint">
+  Dein Name wird nur lokal in diesem Browser gespeichert.
+  <a href="#" id="changeAlias">Name ändern</a>
+</div>
+
 
     <textarea
       id="message"
@@ -434,14 +439,7 @@
 
 
 </main>
-<!-- Gesprächsraum Script -->
-<script>
-  // Alias aus localStorage laden
-const savedAlias = localStorage.getItem("vorsorge_alias");
-if (savedAlias) {
-  aliasField.value = savedAlias;
-}
-
+<!-- Gesprächsraum Script --><script>
 const SUPABASE_URL = "https://thrdlycfwlsegriduqvw.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JHb4LBhP26eI7BgDS1jIkw_4OYn3-F9";
 const PAGE = "altersvorsorge";
@@ -451,8 +449,14 @@ const form = document.getElementById("commentForm");
 const aliasField = document.getElementById("alias");
 const messageField = document.getElementById("message");
 
-/* Escape */
-function escapeHtml(text) {
+/* Alias aus localStorage laden */
+const savedAlias = localStorage.getItem("vorsorge_alias");
+if (savedAlias && aliasField) {
+  aliasField.value = savedAlias;
+}
+
+/* HTML escapen */
+function escapeHtml(text = "") {
   return text.replace(/[&<>"']/g, m => ({
     "&":"&amp;",
     "<":"&lt;",
@@ -462,7 +466,7 @@ function escapeHtml(text) {
   })[m]);
 }
 
-/* Laden */
+/* Kommentare laden */
 async function loadComments() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/vorsorge_comments?page=eq.${PAGE}&order=created_at.asc`,
@@ -475,7 +479,8 @@ async function loadComments() {
   );
 
   if (!res.ok) {
-    commentsBox.innerHTML = "<p>Kommentare konnten nicht geladen werden.</p>";
+    commentsBox.innerHTML =
+      "<p style='color:#777'>Kommentare konnten nicht geladen werden.</p>";
     return;
   }
 
@@ -531,20 +536,17 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  // Alias merken
-localStorage.setItem("vorsorge_alias", alias);
+  /* Alias merken, Textfeld leeren */
+  localStorage.setItem("vorsorge_alias", alias);
+  messageField.value = "";
 
-// Nur Nachricht leeren, Name bleibt
-messageField.value = "";
-
-// Neu laden
-loadComments();
-
+  loadComments();
 });
 
-/* Start */
+/* Initial laden */
 loadComments();
 </script>
+
 
 
 <!-- =====================================================
