@@ -656,6 +656,14 @@ loadComments();
     margin-left: 0;
   }
 }
+/* FIX: letzte Zeile (Adresse) wird unten abgeschnitten */
+.lig1-small {
+  line-height: 1.6;        /* wichtig */
+}
+
+.lig1-content {
+  padding-bottom: 6px;     /* Raum für letzte Zeile */
+}
 
 </style>
 
@@ -737,10 +745,12 @@ loadComments();
         MetaMask öffnen → nach unten scrollen →<br>
         <strong>„Token hinzufügen“</strong> → Adresse einfügen:
       </p>
-      <p class="lig1-small" style="word-break:break-all;">
-        <strong>LIG1-Adresse:</strong><br>
-        0xdaf8744329067b5a2b10a5dfca1c916e099b66d2
-      </p>
+        <p class="lig1-small"><strong>LIG1-Adresse:</strong></p>
+<p class="lig1-small"
+   style="word-break: break-word; overflow-wrap: anywhere;">
+  0xdaf8744329067b5a2b10a5dfca1c916e099b66d2
+</p>
+
     </div>
 
   </div>
