@@ -394,6 +394,38 @@ function toggleLig1Box() {
   document.getElementById("lig1Box").classList.toggle("open");
 }
 </script>
+<script>
+(async function () {
+  try {
+    const res = await fetch("/marketshield/data/buy-price.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) {
+      throw new Error("buy-price.json nicht erreichbar");
+    }
+
+    const data = await res.json();
+
+    if (!data.ligPerEuro || data.ligPerEuro <= 0) {
+      throw new Error("ligPerEuro ungültig");
+    }
+
+    const ligFormatted = data.ligPerEuro.toLocaleString("de-DE");
+
+    const el = document.getElementById("buyExample");
+    if (!el) return;
+
+    el.innerHTML = `
+      <strong>Beispiel:</strong><br>
+      Für <strong>1 Euro</strong> bekommst du ca.
+      <strong>${ligFormatted} LIG1</strong>.
+    `;
+  } catch (err) {
+    console.warn("⚠️ Buy-Box nicht aktualisiert:", err.message);
+  }
+})();
+</script>
 
 
 </body>
