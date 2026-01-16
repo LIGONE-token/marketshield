@@ -412,10 +412,14 @@ function toggleLig1Box() {
 
     const data = await res.json();
 
-    const ligValue = Number(data.ligPerEuro);
-    if (!ligValue || ligValue <= 0) {
-      throw new Error("ligPerEuro fehlt oder ungültig");
-    }
+    const priceEur = Number(data.price_eur);
+if (!priceEur || priceEur <= 0) {
+  throw new Error("price_eur fehlt oder ungültig");
+}
+
+// Für 1 €
+const ligValue = 1 / priceEur;
+
 
     const ligFormatted = ligValue.toLocaleString("de-DE");
 
