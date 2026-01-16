@@ -427,10 +427,15 @@ const ligValue = 1 / priceEur;
     if (!el) return;
 
     el.innerHTML = `
-      <strong>Beispiel:</strong><br>
-      Für <strong>1 Euro</strong> bekommst du aktuell
-      <strong>ca. ${ligFormatted} LIG1</strong>.
-    `;
+  <strong>Beispiel:</strong><br>
+  Für <strong>1 €</strong> bekommst du aktuell<br>
+  <strong>≈ ${ligFormatted} LIG1</strong><br>
+  <span class="lig1-small">
+    (auf Basis des aktuellen Uniswap-Pool-Preises,
+    exakte Menge wird im Swap berechnet)
+  </span>
+`;
+
   } catch (err) {
     console.warn("⚠️ Buy-Box nicht aktualisiert:", err.message);
   }
