@@ -23,8 +23,8 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - run: |
-          git config user.name "seo-bot"
-          git config user.email "seo@bot"
-          git add docs
-          git commit -m "auto: build seo pages" || echo "no changes"
-          git push
+    git config user.name "seo-bot"
+    git config user.email "seo@bot"
+    git add *.html
+    git commit -m "auto: build seo pages" || echo "no changes"
+    git push
