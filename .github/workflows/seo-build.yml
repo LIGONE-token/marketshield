@@ -17,8 +17,15 @@ jobs:
       - name: Generate SEO pages
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          echo "SUPABASE_URL is set: ${SUPABASE_URL:+YES}"
-          echo "SUPABASE_SERVICE_KEY is set: ${SUPABASE_SERVICE_KEY:+YES}"
+          npm install node-fetch
           node scripts/generate-seo.js
+
+      - name: Commit generated pages
+        run: |
+          git config user.name "seo-bot"
+          git config user.email "seo@bot"
+          git add *.html
+          git commit -m "auto: build seo pages" || echo "no changes"
+          git push
