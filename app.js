@@ -634,8 +634,12 @@ let searchTimer = null;
 
 async function smartSearch(q) {
   const term = q.trim();
-  if (term.length < 2) return [];
+  if (term.length < 2) return []; // Verhindert unnötige Anfragen bei zu kurzen Suchbegriffen
+
+  // Einmalige URL-Kodierung für den Suchbegriff
   const enc = encodeURIComponent(term);
+  
+  // Supabase-Abfrage
   return await supa(
     `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&title=ilike.%25${enc}%25`
   );
@@ -669,7 +673,7 @@ async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
 
-  const data = await fetch("categories.json").then(r => r.json());
+  const data = await supa("categories.json");  // oder falls Kategorien in Supabase sind, die entsprechende Tabelle
   grid.innerHTML = "";
 
   (data.categories || []).forEach(c => {
