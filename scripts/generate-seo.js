@@ -4,8 +4,13 @@ import fetch from "node-fetch";
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_KEY");
+  process.exit(1);
+}
+
 function escapeHtml(str = "") {
-  return str
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
@@ -13,7 +18,7 @@ function escapeHtml(str = "") {
 
 async function run() {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/seo_pages?published=eq.true`,
+    `${SUPABASE_URL}/rest/v1/seo_pages?select=*`,
     {
       headers: {
         apikey: SUPABASE_KEY,
@@ -22,32 +27,35 @@ async function run() {
     }
   );
 
- const pages = await res.json();
+  if (!res.ok) {
+    const t = await res.text();
+    console.error("Supabase HTTP error:", res.status, t);
+    process.exit(1);
+  }
 
-if (!Array.isArray(pages)) {
-  console.error("Supabase response is not an array:", pages);
-  process.exit(1);
-}
+  const pages = await res.json();
 
-for (const p of pages) {
+  if (!Array.isArray(pages)) {
+    console.error("Supabase response not array:", pages);
+    process.exit(1);
+  }
 
-    const contentHtml = p.content
-      .map(
-        s =>
-          `<h2>${escapeHtml(s.h2)}</h2><p>${escapeHtml(s.text)}</p>`
-      )
+  for (const p of pages) {
+    if (!p.slug || !p.meta_title || !p.meta_description || !p.h1) {
+      console.warn("Skipping invalid page:", p);
+      continue;
+    }
+
+    const contentHtml = (p.content || [])
+      .map(s => `<h2>${escapeHtml(s.h2)}</h2><p>${escapeHtml(s.text)}</p>`)
       .join("");
 
     const faqHtml = (p.faq || [])
-      .map(
-        f =>
-          `<h3>${escapeHtml(f.question)}</h3><p>${escapeHtml(f.answer)}</p>`
-      )
+      .map(f => `<h3>${escapeHtml(f.question)}</h3><p>${escapeHtml(f.answer)}</p>`)
       .join("");
 
-    const faqSchema =
-      p.faq && p.faq.length
-        ? `<script type="application/ld+json">
+    const faqSchema = (p.faq && p.faq.length)
+      ? `<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -63,33 +71,25 @@ for (const p of pages) {
   )}
 }
 </script>`
-        : "";
+      : "";
 
     const html = `<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
   <title>${escapeHtml(p.meta_title)}</title>
-  <meta name="description" content="${escapeHtml(
-    p.meta_description
-  )}">
+  <meta name="description" content="${escapeHtml(p.meta_description)}">
   ${faqSchema}
 </head>
 <body>
   <h1>${escapeHtml(p.h1)}</h1>
-
   ${contentHtml}
-
-  ${
-    p.faq && p.faq.length
-      ? `<section><h2>Häufige Fragen</h2>${faqHtml}</section>`
-      : ""
-  }
+  ${p.faq && p.faq.length ? `<section><h2>Häufige Fragen</h2>${faqHtml}</section>` : ""}
 </body>
 </html>`;
 
     fs.writeFileSync(`./${p.slug}.html`, html);
-    console.log(`✔ generated ${p.slug}.html`);
+    console.log("Generated:", p.slug);
   }
 }
 
