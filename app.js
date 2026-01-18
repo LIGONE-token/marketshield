@@ -698,12 +698,12 @@ document.addEventListener("click", (e) => {
   const c = e.target.closest(".entry-card");
   if (!c) return;
 
-  const id = c.dataset.id;
-  if (!id) return;
+  const slug = c.dataset.slug;
+  if (!slug) return;
 
-  history.pushState({}, "", "?id=" + encodeURIComponent(id));
-  loadEntry(id);
+  location.href = "/marketshield/" + slug + "/";
 });
+
 
 /* ================= REPORT FAB ================= */
 function initReport() {
