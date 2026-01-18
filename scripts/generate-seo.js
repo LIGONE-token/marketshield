@@ -2,7 +2,7 @@ import fs from "fs";
 import fetch from "node-fetch";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
@@ -36,15 +36,12 @@ async function run() {
   const pages = await res.json();
 
   if (!Array.isArray(pages)) {
-    console.error("Supabase response not array:", pages);
+    console.error("Supabase response is not an array:", pages);
     process.exit(1);
   }
 
   for (const p of pages) {
-    if (!p.slug || !p.meta_title || !p.meta_description || !p.h1) {
-      console.warn("Skipping invalid page:", p);
-      continue;
-    }
+    if (!p.slug || !p.meta_title || !p.meta_description || !p.h1) continue;
 
     const contentHtml = (p.content || [])
       .map(s => `<h2>${escapeHtml(s.h2)}</h2><p>${escapeHtml(s.text)}</p>`)
