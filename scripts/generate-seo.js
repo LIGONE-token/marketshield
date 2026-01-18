@@ -4,10 +4,6 @@ import fetch from "node-fetch";
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
-if (!fs.existsSync("./docs")) {
-  fs.mkdirSync("./docs");
-}
-
 function escapeHtml(str = "") {
   return str
     .replace(/&/g, "&amp;")
@@ -86,7 +82,7 @@ async function run() {
 </body>
 </html>`;
 
-    fs.writeFileSync(`./docs/${p.slug}.html`, html);
+    fs.writeFileSync(`./${p.slug}.html`, html);
     console.log(`✔ generated ${p.slug}.html`);
   }
 }
