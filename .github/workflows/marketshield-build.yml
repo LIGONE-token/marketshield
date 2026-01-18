@@ -16,7 +16,8 @@ jobs:
 
       - run: npm install node-fetch canvas
 
-      - run: node marketshield/scripts/build-marketshield.js
+      - run: node ./marketshield/scripts/build-marketshield.js
+
 
       - run: |
           git config user.name "marketshield-bot"
