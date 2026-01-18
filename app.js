@@ -680,18 +680,24 @@ async function loadCategories() {
     // Lade die Kategorien-Datei
     const response = await fetch(CATEGORIES_URL, { cache: "no-store" });
 
-    // Überprüfe, ob die Antwort erfolgreich war (Status 200)
+    // Fehlerbehandlung, falls der Request fehlschlägt
     if (!response.ok) {
       console.error(`❌ Fehler beim Laden von categories.json: ${response.status}`);
       return;
     }
 
-    // Verarbeite die JSON-Daten
+    // Ausgabe für Debugging
+    console.log("categories.json geladen", response);
+
+    // Verarbeite die JSON-Antwort
     const data = await response.json();
+    
+    // Ausgabe für Debugging
+    console.log("Daten aus categories.json:", data);
 
     // Überprüfe, ob die Struktur korrekt ist
     if (!data.categories || !Array.isArray(data.categories)) {
-      console.error("❌ Falsche Struktur in categories.json:", data);
+      console.error("❌ Fehlerhafte Struktur in categories.json:", data);
       return;
     }
 
@@ -706,8 +712,9 @@ async function loadCategories() {
       grid.appendChild(button);
     });
 
-    // Zeige den Grid-Container an, falls er versteckt war
+    // Stelle sicher, dass der Grid-Container sichtbar ist
     grid.style.display = "grid";
+
   } catch (err) {
     console.error("❌ Fehler beim Abrufen der Kategorien:", err);
   }
