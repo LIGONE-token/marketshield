@@ -654,7 +654,6 @@ function initSearch() {
 
 
 /* ================= KATEGORIEN ================= */
-// Funktion zum Laden der Kategorien
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
@@ -662,14 +661,21 @@ async function loadCategories() {
   const data = await supa('categories');  // Holen der Kategorien aus Supabase
   grid.innerHTML = "";
 
-  data.forEach(c => {
-    const button = document.createElement("button");
-    button.textContent = c.title;
-    button.className = "cat-btn";
-    button.addEventListener("click", () => loadCategory(c.title));
-    grid.appendChild(button);
-  });
+  if (data && Array.isArray(data)) {
+    data.forEach(c => {
+      const button = document.createElement("button");
+      button.textContent = c.title;
+      button.className = "cat-btn";
+      button.addEventListener("click", () => loadCategory(c.title));
+      grid.appendChild(button);
+    });
+  } else {
+    console.error("Kategorien konnten nicht abgerufen werden.");
+  }
+
+  grid.style.display = "grid";
 }
+
 
 // Funktion zum Laden der Einträge einer Kategorie
 async function loadCategory(cat) {
