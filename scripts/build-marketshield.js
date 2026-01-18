@@ -97,12 +97,36 @@ function wrap(ctx, text, x, y, maxW, lh) {
 
 (async () => {
   const entries = await fetchEntries();
+  const urls = [];
+
   for (const e of entries) {
     if (!e.slug) continue;
+
+    const pageUrl = `${BASE_URL}/${e.slug}/`;
+    urls.push(pageUrl);
+
     const dir = path.join(OUT_DIR, e.slug);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, "index.html"), renderHTML(e));
     renderOG(e.slug, e.meta_title || e.title);
   }
-  console.log(`OK: ${entries.length} Seiten erzeugt`);
+
+  // 🔹 SITEMAP ERZEUGEN
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(u => `<url>
+  <loc>${u}</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.7</priority>
+</url>`).join("\n")}
+</urlset>`;
+
+  fs.writeFileSync(
+    path.join(OUT_DIR, "sitemap.xml"),
+    sitemap,
+    "utf8"
+  );
+
+  console.log(`OK: ${urls.length} Seiten + sitemap.xml erzeugt`);
 })();
+
