@@ -732,14 +732,27 @@ function initReport() {
 }
 
 /* ================= INIT ================= */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   loadCategories();
-   showCategories();
+  showCategories();
   initSearch();
   initReport();
 
-  
+  // 👇 SEO-URL auswerten
+  const path = location.pathname
+    .replace("/marketshield/", "")
+    .replaceAll("/", "");
+
+  if (path) {
+    const r = await supa(
+      `entries_with_ratings?select=id&slug=eq.${encodeURIComponent(path)}`
+    );
+    if (r.length === 1) {
+      loadEntry(r[0].id);
+    }
+  }
 });
+
 function copyCryptoAddress(el) {
   const addr = el.querySelector("span")?.innerText;
   if (!addr) return;
