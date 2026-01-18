@@ -671,19 +671,48 @@ function initSearch() {
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
-  if (!grid) return;
+  if (!grid) {
+    console.error("❌ Das Element '.category-grid' existiert nicht!");
+    return;
+  }
 
-  const data = await supa("categories.json");  // oder falls Kategorien in Supabase sind, die entsprechende Tabelle
-  grid.innerHTML = "";
+  try {
+    // Lade die Kategorien-Datei
+    const response = await fetch(CATEGORIES_URL, { cache: "no-store" });
 
-  (data.categories || []).forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c.title;
-    b.className = "cat-btn";
-    b.addEventListener("click", () => loadCategory(c.title));
-    grid.appendChild(b);
-  });
+    // Überprüfe, ob die Antwort erfolgreich war (Status 200)
+    if (!response.ok) {
+      console.error(`❌ Fehler beim Laden von categories.json: ${response.status}`);
+      return;
+    }
+
+    // Verarbeite die JSON-Daten
+    const data = await response.json();
+
+    // Überprüfe, ob die Struktur korrekt ist
+    if (!data.categories || !Array.isArray(data.categories)) {
+      console.error("❌ Falsche Struktur in categories.json:", data);
+      return;
+    }
+
+    grid.innerHTML = ""; // Lösche bestehenden Inhalt im Grid-Container
+
+    // Erstelle für jede Kategorie einen Button
+    data.categories.forEach(c => {
+      const button = document.createElement("button");
+      button.textContent = c.title;
+      button.className = "cat-btn";
+      button.addEventListener("click", () => loadCategory(c.title)); // Hier wird die Funktion für den Klick auf die Kategorie definiert
+      grid.appendChild(button);
+    });
+
+    // Zeige den Grid-Container an, falls er versteckt war
+    grid.style.display = "grid";
+  } catch (err) {
+    console.error("❌ Fehler beim Abrufen der Kategorien:", err);
+  }
 }
+
 
 async function loadCategory(cat) {
   hideStaticEntries();
