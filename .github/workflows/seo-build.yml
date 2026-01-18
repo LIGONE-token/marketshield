@@ -1,6 +1,8 @@
-name: SEO Generator
+name: SEO Build
 
 on:
+  schedule:
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -8,31 +10,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Generate SEO pages
+      - name: Install dependencies
+        run: |
+          npm install node-fetch svgexport
+
+      - name: Generate pages
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          npm install node-fetch
-          node scripts/generate-seo.js
+          node scripts/generate-pages.js
 
-      - name: Commit generated pages
+      - name: Generate OG images
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          node scripts/generate-og-images.js
+
+      - name: Commit and push
         run: |
           git config user.name "seo-bot"
           git config user.email "seo@bot"
-          git add *.html
-          git commit -m "auto: build seo pages" || echo "no changes"
+          git add .
+          git commit -m "auto: seo pages + og images" || echo "no changes"
           git push
-- name: Generate OG images
-  env:
-    SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-  run: |
-    npm install node-fetch svgexport
-    node scripts/generate-og-images.js
