@@ -571,13 +571,13 @@ async function loadSimilarEntries(current) {
   `;
 
   box.querySelectorAll(".similar-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const id = card.dataset.id;
-      history.pushState({}, "", "?id=" + id);
-      loadEntry(id);
-    });
+  card.addEventListener("click", () => {
+    const slug = card.dataset.slug;
+    if (!slug) return;
+    location.href = "/marketshield/" + slug + "/";
   });
-}
+});
+
 
 /* ================= SOCIAL ================= */
 function renderEntryActions(title) {
