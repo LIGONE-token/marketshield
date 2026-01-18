@@ -634,103 +634,51 @@ let searchTimer = null;
 
 async function smartSearch(q) {
   const term = q.trim();
-  if (term.length < 2) return []; // Verhindert unnötige Anfragen bei zu kurzen Suchbegriffen
-
-  // Einmalige URL-Kodierung für den Suchbegriff
+  if (term.length < 2) return [];
   const enc = encodeURIComponent(term);
-  
-  // Supabase-Abfrage
-  return await supa(
-    `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&title=ilike.%25${enc}%25`
-  );
+  return await supa(`entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&title=ilike.%25${enc}%25`);
 }
 
+// Event-Listener zur Suche
 function initSearch() {
   const input = $("searchInput");
   const box = $("results");
   if (!input || !box) return;
 
-  input.addEventListener("focus", hideStaticEntries);
-
-  input.addEventListener("input", () => {
-    clearTimeout(searchTimer);
+  input.addEventListener("input", async () => {
     const q = input.value.trim();
-
-    searchTimer = setTimeout(async () => {
-      if (q.length < 2) {
-        box.innerHTML = "";
-        return;
-      }
-      hideStaticEntries();
-      const data = await smartSearch(q);
-      renderList(data);
-    }, 300);
+    const data = await smartSearch(q);
+    renderList(data);  // Anzeige der Suchergebnisse
   });
 }
 
+
 /* ================= KATEGORIEN ================= */
+// Funktion zum Laden der Kategorien
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
-  if (!grid) {
-    console.error("❌ Das Element '.category-grid' existiert nicht!");
-    return;
-  }
+  if (!grid) return;
 
-  try {
-    // Lade die Kategorien-Datei
-    const response = await fetch(CATEGORIES_URL, { cache: "no-store" });
+  const data = await supa('categories');  // Holen der Kategorien aus Supabase
+  grid.innerHTML = "";
 
-    // Fehlerbehandlung, falls der Request fehlschlägt
-    if (!response.ok) {
-      console.error(`❌ Fehler beim Laden von categories.json: ${response.status}`);
-      return;
-    }
-
-    // Ausgabe für Debugging
-    console.log("categories.json geladen", response);
-
-    // Verarbeite die JSON-Antwort
-    const data = await response.json();
-    
-    // Ausgabe für Debugging
-    console.log("Daten aus categories.json:", data);
-
-    // Überprüfe, ob die Struktur korrekt ist
-    if (!data.categories || !Array.isArray(data.categories)) {
-      console.error("❌ Fehlerhafte Struktur in categories.json:", data);
-      return;
-    }
-
-    grid.innerHTML = ""; // Lösche bestehenden Inhalt im Grid-Container
-
-    // Erstelle für jede Kategorie einen Button
-    data.categories.forEach(c => {
-      const button = document.createElement("button");
-      button.textContent = c.title;
-      button.className = "cat-btn";
-      button.addEventListener("click", () => loadCategory(c.title)); // Hier wird die Funktion für den Klick auf die Kategorie definiert
-      grid.appendChild(button);
-    });
-
-    // Stelle sicher, dass der Grid-Container sichtbar ist
-    grid.style.display = "grid";
-
-  } catch (err) {
-    console.error("❌ Fehler beim Abrufen der Kategorien:", err);
-  }
+  data.forEach(c => {
+    const button = document.createElement("button");
+    button.textContent = c.title;
+    button.className = "cat-btn";
+    button.addEventListener("click", () => loadCategory(c.title));
+    grid.appendChild(button);
+  });
 }
 
-
+// Funktion zum Laden der Einträge einer Kategorie
 async function loadCategory(cat) {
   hideStaticEntries();
   history.pushState(null, "", location.pathname);
 
   const encCat = encodeURIComponent(cat);
-  const data = await supa(
-    `entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encCat}`
-  );
-
-  renderList(data);
+  const data = await supa(`entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encCat}`);
+  renderList(data);  // Anzeige der Einträge
 }
 
 /* ================= NAV ================= */
