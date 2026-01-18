@@ -22,12 +22,12 @@ jobs:
         run: |
           npm install node-fetch svgexport
 
-      - name: Generate pages
+      - name: Generate SEO pages
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          node scripts/generate-pages.js
+          node scripts/generate-seo.js
 
       - name: Generate OG images
         env:
