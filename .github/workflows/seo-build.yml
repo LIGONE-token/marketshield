@@ -29,3 +29,10 @@ jobs:
           git add *.html
           git commit -m "auto: build seo pages" || echo "no changes"
           git push
+- name: Generate OG images
+  env:
+    SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+    SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+  run: |
+    npm install node-fetch svgexport
+    node scripts/generate-og-images.js
