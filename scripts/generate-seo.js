@@ -22,9 +22,15 @@ async function run() {
     }
   );
 
-  const pages = await res.json();
+ const pages = await res.json();
 
-  for (const p of pages) {
+if (!Array.isArray(pages)) {
+  console.error("Supabase response is not an array:", pages);
+  process.exit(1);
+}
+
+for (const p of pages) {
+
     const contentHtml = p.content
       .map(
         s =>
