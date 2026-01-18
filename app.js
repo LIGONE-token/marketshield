@@ -698,10 +698,10 @@ document.addEventListener("click", (e) => {
   const c = e.target.closest(".entry-card");
   if (!c) return;
 
-  const slug = c.dataset.slug;
-  if (!slug) return;
+  const id = c.dataset.id;
+  if (!id) return;
 
-  location.href = "/marketshield/" + slug + "/";
+  loadEntry(id);   // ← NUR anzeigen
 });
 
 
@@ -750,8 +750,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initSearch();
   initReport();
 
-  const id = new URLSearchParams(location.search).get("id");
-  if (id) loadEntry(id);
+  
 });
 function copyCryptoAddress(el) {
   const addr = el.querySelector("span")?.innerText;
