@@ -15,10 +15,8 @@ const HEADERS = {
   Authorization: `Bearer ${SUPABASE_KEY}`,
 };
 
-// Zielordner für OG-Bilder (Repo-root/og)
+// Zielordner für OG-Bilder
 const OG_DIR = "./og";
-
-// Ordner sicherstellen
 if (!fs.existsSync(OG_DIR)) {
   fs.mkdirSync(OG_DIR, { recursive: true });
 }
@@ -32,7 +30,7 @@ function esc(s = "") {
 
 async function run() {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/pages?seo_enabled=eq.true&select=slug,path,seo_title,category_name`,
+    `${SUPABASE_URL}/rest/v1/seo_pages?published=eq.true&select=slug,meta_title,h1`,
     { headers: HEADERS }
   );
 
@@ -49,19 +47,18 @@ async function run() {
   }
 
   for (const p of pages) {
-    if (!p.slug || !p.path || !p.seo_title) continue;
+    if (!p.slug || !p.meta_title) continue;
 
-    // stabiler Dateiname aus path + slug
-    const name = `${p.path}-${p.slug}`.replace(/\//g, "-");
-
-    const svgPath = `${OG_DIR}/${name}.svg`;
+    const name = `seo-${p.slug}`;
     const pngPath = `${OG_DIR}/${name}.png`;
 
-    // 🔒 WICHTIG: Bild nur EINMAL erzeugen
+    // ✅ nur einmal erzeugen
     if (fs.existsSync(pngPath)) {
       console.log("OG image exists, skipping:", pngPath);
       continue;
     }
+
+    const svgPath = `${OG_DIR}/${name}.svg`;
 
     const svg = `
 <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
@@ -78,7 +75,7 @@ async function run() {
         font-size="36"
         fill="#38bdf8"
         font-family="Arial, Helvetica, sans-serif">
-    ${esc(p.category_name || "MarketShield")}
+    MarketShield
   </text>
 
   <foreignObject x="60" y="180" width="1080" height="300">
@@ -90,7 +87,7 @@ async function run() {
            font-weight:bold;
            line-height:1.2;
          ">
-      ${esc(p.seo_title)}
+      ${esc(p.meta_title)}
     </div>
   </foreignObject>
 
@@ -103,8 +100,6 @@ async function run() {
 </svg>`;
 
     fs.writeFileSync(svgPath, svg);
-
-    // SVG → PNG
     execSync(`npx svgexport ${svgPath} ${pngPath}`, { stdio: "ignore" });
 
     console.log("OG image generated:", pngPath);
