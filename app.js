@@ -38,6 +38,29 @@ async function supaPost(table, payload) {
 }
 
 /* ================= HELPERS ================= */
+function setMeta(name, content) {
+  if (!content) return;
+  let m = document.querySelector(`meta[name="${name}"]`);
+  if (!m) {
+    m = document.createElement("meta");
+    m.setAttribute("name", name);
+    document.head.appendChild(m);
+  }
+  m.setAttribute("content", content);
+}
+
+function setOG(property, content) {
+  if (!content) return;
+  let m = document.querySelector(`meta[property="${property}"]`);
+  if (!m) {
+    m = document.createElement("meta");
+    m.setAttribute("property", property);
+    document.head.appendChild(m);
+  }
+  m.setAttribute("content", content);
+}
+
+
 const $ = (id) => document.getElementById(id);
 
 function hideStaticEntries() {
@@ -460,6 +483,29 @@ async function loadEntry(id) {
   const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
   const e = d[0];
   if (!e) return;
+const slug = e.slug;
+const url  = `${location.origin}/marketshield/${slug}/`;
+const img  = `${location.origin}/marketshield/images/${slug}.jpg`;
+
+// Title
+document.title = `${e.title} – MarketShield`;
+
+// Description
+setMeta("description", shortText(e.summary, 155));
+
+// OpenGraph
+setOG("og:title", e.title);
+setOG("og:description", shortText(e.summary, 155));
+setOG("og:url", url);
+setOG("og:image", img);
+setOG("og:type", "article");
+setOG("og:site_name", "MarketShield");
+
+// Twitter / X
+setOG("twitter:card", "summary_large_image");
+setOG("twitter:title", e.title);
+setOG("twitter:description", shortText(e.summary, 155));
+setOG("twitter:image", img);
 
   currentEntryId = id;
 
@@ -469,6 +515,14 @@ async function loadEntry(id) {
 
   box.innerHTML = `
     <article class="entry-detail">
+<img
+  src="/marketshield/images/${e.slug}.jpg"
+  alt="${escapeHtml(e.title)} – MarketShield Analyse"
+  width="1200"
+  height="630"
+  loading="eager"
+  style="max-width:100%;border-radius:12px;margin:12px 0;"
+/>
 
       <h2>${escapeHtml(e.title)}</h2>
 
