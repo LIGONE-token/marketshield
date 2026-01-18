@@ -441,7 +441,7 @@ function renderList(data) {
   hideStaticEntries();
 
   box.innerHTML = (data || []).map(e => `
-    <div class="entry-card" data-id="${e.id}">
+    <div class="entry-card" data-id="${e.id}" data-slug="${e.slug}">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderRatingBlock(e.rating_avg, e.rating_count)}
       ${renderScoreBlock(e.score, e.processing_score)}
@@ -694,10 +694,17 @@ document.addEventListener("click", (e) => {
   if (!c) return;
 
   const id = c.dataset.id;
+  const slug = c.dataset.slug;
+
   if (!id) return;
 
-  loadEntry(id);   // ← NUR anzeigen
+  if (slug) {
+    history.pushState(null, "", `/marketshield/${slug}/`);
+  }
+
+  loadEntry(id);
 });
+
 
 
 /* ================= REPORT FAB ================= */
