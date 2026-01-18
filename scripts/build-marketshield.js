@@ -1,3 +1,6 @@
+const BASE_URL = "https://ligone-token.github.io/marketshield";
+
+
 /* FINAL MarketShield Generator
  * - liest Supabase (anon)
  * - erzeugt fertige HTML-Seiten
