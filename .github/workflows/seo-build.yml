@@ -1,0 +1,30 @@
+name: Auto SEO Generator
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install node-fetch
+
+      - run: node scripts/generate-seo.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+
+      - run: |
+          git config user.name "seo-bot"
+          git config user.email "seo@bot"
+          git add docs
+          git commit -m "auto: build seo pages" || echo "no changes"
+          git push
