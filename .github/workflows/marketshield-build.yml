@@ -1,0 +1,26 @@
+name: MarketShield Build
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install node-fetch canvas
+
+      - run: node marketshield/scripts/build-marketshield.js
+
+      - run: |
+          git config user.name "marketshield-bot"
+          git config user.email "bot@marketshield"
+          git add marketshield/generated
+          git commit -m "auto: build MarketShield pages" || echo "No changes"
+          git push
