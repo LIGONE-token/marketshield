@@ -242,3 +242,17 @@ window.addEventListener("popstate", () => {
     showCategories();
   }
 });
+function bindEntryCardClicks() {
+  document.querySelectorAll(".entry-card").forEach(card => {
+    card.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const slug = card.dataset.slug;
+      if (!slug || slug === "undefined") return;
+
+      history.pushState(null, "", `/marketshield/${slug}/`);
+      loadEntry(slug);
+    });
+  });
+}
