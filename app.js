@@ -837,11 +837,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (slug && slug !== "undefined") {
     loadEntry(slug);
-  } else {
-    history.replaceState(null, "", "/marketshield/");
-    showCategories();
   }
+  // ⛔ KEIN showCategories() HIER
 });
+;
 
 
 
