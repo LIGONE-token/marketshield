@@ -2248,3 +2248,11 @@ footer .support-crypto code {
   opacity: .85;
   margin-left: 6px;
 }
+.entry-card {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.entry-card * {
+  pointer-events: none;
+}
