@@ -480,6 +480,9 @@ async function loadEntry(slug) {
   const box = document.getElementById("results");
   if (!box || !slug) return;
 
+   const grid = document.querySelector(".category-grid");
+  if (grid) grid.style.display = "none";
+
   const d = await supa(
     `entries_with_ratings?select=*&slug=eq.${encodeURIComponent(slug)}`
   );
@@ -815,9 +818,21 @@ function initReport() {
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", async () => {
   loadCategories();
-  showCategories();
   initSearch();
   initReport();
+
+  const slug = location.pathname
+    .replace(/^\/marketshield\/|\/$/g, "");
+
+  if (slug) {
+    // Detailseite → KEINE Kategorien
+    loadEntry(slug);
+  } else {
+    // Startseite → Kategorien anzeigen
+    showCategories();
+  }
+});
+
 
   // 👇 SEO-URL auswerten
   const path = location.pathname
