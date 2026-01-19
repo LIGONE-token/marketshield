@@ -818,7 +818,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   } else {
     // Startseite → Kategorien anzeigen
     showCategories();
-  }
+  }if (slug && slug !== "undefined") {
+  loadEntry(slug);
+} else {
+  history.replaceState(null, "", "/marketshield/");
+  showCategories();
+}
+
 });
 
 
