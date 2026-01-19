@@ -749,25 +749,7 @@ async function loadCategory(cat) {
 }
 
 /* ================= NAV ================= */
-document.addEventListener("click", (e) => {
-  const c = e.target.closest(".entry-card");
-  if (!c) return;
 
-  const slug = c.dataset.slug;
-if (!slug) return;
-
-history.pushState(null, "", `/marketshield/${slug}/`);
-loadEntry(slug);
-
-
-  if (!id) return;
-
-  if (slug) {
-    history.pushState(null, "", `/marketshield/${slug}/`);
-  }
-
-  loadEntry(id);
-});
 
 
 
