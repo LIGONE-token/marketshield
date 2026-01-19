@@ -489,6 +489,7 @@ async function loadEntry(slug) {
 
   const e = d[0];
   if (!e) return;
+currentEntryId = e.id;
 
 
   const canonicalPath = `/marketshield/${e.slug}/`;
@@ -618,7 +619,7 @@ async function loadSimilarEntries(current) {
     <h3>Ähnliche Einträge</h3>
     <div class="similar-list">
       ${data.map(e => `
-        <div class="similar-card" data-id="${e.id}">
+        <div class="similar-card" data-slug="${e.slug}">
           <strong>${escapeHtml(e.title)}</strong>
           <div class="similar-summary">
             ${escapeHtml((e.summary || "").slice(0, 120))}…
