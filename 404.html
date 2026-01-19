@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>MarketShield</title>
+  <script>
+    // Redirect alle unbekannten URLs auf die SPA
+    var path = location.pathname.replace('/marketshield/', '');
+    location.replace('/marketshield/?p=' + encodeURIComponent(path));
+  </script>
+</head>
+<body></body>
+</html>
