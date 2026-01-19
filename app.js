@@ -613,7 +613,7 @@ async function loadSimilarEntries(current) {
   if (!box) return;
 
   const data = await supa(
-    `entries_with_ratings?select=id,title,summary
+    `entries_with_ratings?select=id,slug,title,summary
      &category=eq.${encodeURIComponent(current.category)}
      &id=neq.${current.id}
      &limit=5`
@@ -708,7 +708,7 @@ async function smartSearch(q) {
   const term = q.trim();
   if (term.length < 2) return [];
   const enc = encodeURIComponent(term);
-  return await supa(`entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&title=ilike.%25${enc}%25`);
+  return await supa(`entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&title=ilike.%25${enc}%25`);
 }
 
 // Event-Listener zur Suche
@@ -755,7 +755,7 @@ async function loadCategory(cat) {
   history.pushState(null, "", location.pathname);
 
   const encCat = encodeURIComponent(cat);
-  const data = await supa(`entries_with_ratings?select=id,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encCat}`);
+  const data = await supa(`entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encCat}`);
   renderList(data);  // Anzeige der Einträge
 }
 
