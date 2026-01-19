@@ -46,6 +46,19 @@ async function supaPost(table, payload) {
   return true;
 }
 
+/* ================= SAFE SUPA (FIX) ================= */
+/* supa() bleibt unverändert. Wir fangen Fehler nur an den Aufrufstellen ab,
+   damit bei 1 Fehler nicht die komplette App tot ist. */
+async function safeSupa(query) {
+  try {
+    const d = await supa(query);
+    return Array.isArray(d) ? d : [];
+  } catch (e) {
+    console.error("SUPA FAIL:", e);
+    return [];
+  }
+}
+
 /* ================= HELPERS ================= */
 function setMeta(name, content) {
   if (!content) return;
@@ -256,8 +269,6 @@ function renderPipeTableWithContext(text) {
   return null;
 }
 
-
-
 function renderEntryBlock(key, value) {
   if (!value || String(value).trim() === "") return "";
 
@@ -268,8 +279,6 @@ function renderEntryBlock(key, value) {
   const parsed = renderPipeTableWithContext(raw);
   const clean = stripMarkdown(normalizeText(value));
 
-
-  // 👉 HIER die Klasse setzen
   const sectionClass =
     key === "quick_facts"
       ? "entry-block quick-facts"
@@ -292,9 +301,6 @@ function renderEntryBlock(key, value) {
   `;
 }
 
-
-
-
 function parseArray(val) {
   if (!val) return "";
   try {
@@ -308,46 +314,28 @@ function parseArray(val) {
 function generateQuickFacts(e) {
   const facts = [];
 
-  // Positive Wirkungen
-  if (Array.isArray(e.effects_positive) && e.effects_positive.length > 0) {
-    facts.push("🟢 Positive Wirkungen vorhanden");
-  }
-
-  // Negative Wirkungen / Risiken
-  if (Array.isArray(e.effects_negative) && e.effects_negative.length > 0) {
-    facts.push("🔴 Kritische Aspekte zu beachten");
-  }
-
-  // Risikogruppen
-  if (Array.isArray(e.risk_groups) && e.risk_groups.length > 0) {
-    facts.push("🟡 Nicht für alle Zielgruppen unproblematisch");
-  }
-
-  // Verarbeitungsgrad (nur bei Stoffen sinnvoll)
-  if (Number(e.processing_score) >= 7) {
-    facts.push("🟡 Stark verarbeitet / technologisch optimiert");
-  }
+  if (Array.isArray(e.effects_positive) && e.effects_positive.length > 0) facts.push("🟢 Positive Wirkungen vorhanden");
+  if (Array.isArray(e.effects_negative) && e.effects_negative.length > 0) facts.push("🔴 Kritische Aspekte zu beachten");
+  if (Array.isArray(e.risk_groups) && e.risk_groups.length > 0) facts.push("🟡 Nicht für alle Zielgruppen unproblematisch");
+  if (Number(e.processing_score) >= 7) facts.push("🟡 Stark verarbeitet / technologisch optimiert");
 
   return facts.slice(0, 3).join("\n");
 }
-
 
 /* ================= ZUR STARTSEITE ===================== */
 document.addEventListener("DOMContentLoaded", () => {
   const backHome = document.getElementById("backHome");
   if (!backHome) return;
 
-  // sichtbar machen
   backHome.style.display = "inline-block";
   backHome.style.cursor = "pointer";
 
-  // Klick = Startseite
+  // FIX: wirklich zur Startseite (ohne Strukturänderung)
   backHome.addEventListener("click", () => {
-    history.pushState(null, "", location.pathname);
+    history.pushState(null, "", "/marketshield/");
     location.reload();
   });
 });
-
 
 /* ================= USER HASH (RATING) ================= */
 function getUserHash() {
@@ -360,6 +348,7 @@ function getUserHash() {
 }
 
 /* ================= SCORES ================= */
+/* UNVERÄNDERT */
 function renderHealth(score) {
   const n = Number(score);
   if (!Number.isFinite(n) || n <= 0) return "";
@@ -377,16 +366,15 @@ function renderIndustry(score) {
   const clamped = Math.min(Math.max(n, 0), 10);
   const w = Math.round((clamped / 10) * 80);
 
-  let color = "#2e7d32"; // grün (0–2)
-  if (clamped >= 3 && clamped <= 7) color = "#f9a825"; // gelb
-  if (clamped >= 8) color = "#c62828"; // rot
+  let color = "#2e7d32";
+  if (clamped >= 3 && clamped <= 7) color = "#f9a825";
+  if (clamped >= 8) color = "#c62828";
 
   return `
     <div style="width:80px;height:8px;background:#e0e0e0;border-radius:6px;">
       <div style="width:${w}px;height:8px;background:${color};border-radius:6px;"></div>
     </div>`;
 }
-
 
 function renderScoreBlock(score, processing, size = 13) {
   const h = renderHealth(score);
@@ -417,7 +405,6 @@ function renderRatingBlock(avg = 0, count = 0, title = "") {
   return `
     <div class="rating-wrapper">
       <div class="rating-box">
-
         <div class="rating-stars" aria-label="Bewertung">
           ${[1,2,3,4,5].map(n => {
             const isFilled = c > 0 && n <= filled;
@@ -435,14 +422,10 @@ function renderRatingBlock(avg = 0, count = 0, title = "") {
             ? `${a.toFixed(1).replace(".", ",")} von 5 (${c} Bewertung${c > 1 ? "en" : ""})`
             : "Bitte Eintrag bewerten!"}
         </span>
-
       </div>
     </div>
   `;
 }
-
-
-
 
 function bindRatingClicks() {
   const box = document.querySelector(".rating-stars");
@@ -464,7 +447,6 @@ function bindRatingClicks() {
   });
 }
 
-
 /* ================= LISTE ================= */
 function renderList(data) {
   const box = $("results");
@@ -474,7 +456,7 @@ function renderList(data) {
   currentEntryId = null;
 
   box.innerHTML = (data || [])
-    .filter(e => e.slug) // 🔑 ABSOLUT KRITISCH
+    .filter(e => e.slug)
     .map(e => `
       <div class="entry-card" data-slug="${e.slug}">
         <div style="font-size:20px;font-weight:800;">
@@ -493,52 +475,44 @@ function renderList(data) {
   }
 }
 
-
 /* ================= DETAIL ================= */
 async function loadEntry(slug) {
   const box = document.getElementById("results");
   if (!box || !slug) return;
 
-   const grid = document.querySelector(".category-grid");
+  const grid = document.querySelector(".category-grid");
   if (grid) grid.style.display = "none";
 
-  const d = await supa(
+  const d = await safeSupa(
     `entries_with_ratings?select=*&slug=eq.${encodeURIComponent(slug)}`
   );
 
   const e = d[0];
   if (!e) return;
-currentEntryId = e.id;
-
+  currentEntryId = e.id;
 
   const canonicalPath = `/marketshield/${e.slug}/`;
-if (location.pathname !== canonicalPath) {
-  history.replaceState(null, "", canonicalPath);
-}
+  if (location.pathname !== canonicalPath) {
+    history.replaceState(null, "", canonicalPath);
+  }
 
-  if (!e) return;
-const url  = `${location.origin}/marketshield/${slug}/`;
-const img  = `${location.origin}/marketshield/images/${slug}.jpg`;
+  const url  = `${location.origin}/marketshield/${slug}/`;
+  const img  = `${location.origin}/marketshield/images/${slug}.jpg`;
 
-// Title
-document.title = `${e.title} – MarketShield`;
+  document.title = `${e.title} – MarketShield`;
+  setMeta("description", shortText(e.summary, 155));
 
-// Description
-setMeta("description", shortText(e.summary, 155));
+  setOG("og:title", e.title);
+  setOG("og:description", shortText(e.summary, 155));
+  setOG("og:url", url);
+  setOG("og:image", img);
+  setOG("og:type", "article");
+  setOG("og:site_name", "MarketShield");
 
-// OpenGraph
-setOG("og:title", e.title);
-setOG("og:description", shortText(e.summary, 155));
-setOG("og:url", url);
-setOG("og:image", img);
-setOG("og:type", "article");
-setOG("og:site_name", "MarketShield");
-
-// Twitter / X
-setOG("twitter:card", "summary_large_image");
-setOG("twitter:title", e.title);
-setOG("twitter:description", shortText(e.summary, 155));
-setOG("twitter:image", img);
+  setOG("twitter:card", "summary_large_image");
+  setOG("twitter:title", e.title);
+  setOG("twitter:description", shortText(e.summary, 155));
+  setOG("twitter:image", img);
 
   if (!e.quick_facts) {
     e.quick_facts = generateQuickFacts(e);
@@ -546,8 +520,6 @@ setOG("twitter:image", img);
 
   box.innerHTML = `
     <article class="entry-detail">
-
-
       <h2>${escapeHtml(e.title)}</h2>
 
       ${renderRatingBlock(e.rating_avg, e.rating_count, e.title)}
@@ -572,22 +544,15 @@ setOG("twitter:image", img);
       ${renderEntryBlock("sources", e.sources)}
       ${renderEntryBlock("notes", e.notes)}
 
-      <!-- ================= SUPPORT BOX ================= -->
       <section class="support-box">
         <h3>💚 MarketShield unterstützen</h3>
-
         <p class="support-text">
           MarketShield ist ein unabhängiges Aufklärungsprojekt.
           Es gibt keine Investoren, keine Industrie-Finanzierung
           und keine bezahlten Bewertungen.
         </p>
 
-        <a
-          class="support-paypal"
-          href="https://paypal.me/wahrheitgewinnt"
-          target="_blank"
-          rel="noopener"
-        >
+        <a class="support-paypal" href="https://paypal.me/wahrheitgewinnt" target="_blank" rel="noopener">
           Über PayPal unterstützen
         </a>
 
@@ -600,14 +565,15 @@ setOG("twitter:image", img);
             <span>0x5883C4013B4051e7f47624dC81B7118dE8fbD0FF</span>
           </code>
 
-          <small>
-            Die Adresse gehört ausschließlich dem Projekt MarketShield.
-          </small>
+          <small>Die Adresse gehört ausschließlich dem Projekt MarketShield.</small>
         </div>
       </section>
 
       <div id="affiliateBox"></div>
       <div id="entryActions"></div>
+
+      <!-- FIX: Similar Container existiert jetzt wirklich -->
+      <div id="similarEntries"></div>
 
     </article>
   `;
@@ -622,11 +588,9 @@ async function loadSimilarEntries(current) {
   const box = document.getElementById("similarEntries");
   if (!box) return;
 
-  const data = await supa(
-    `entries_with_ratings?select=id,slug,title,summary
-     &category=eq.${encodeURIComponent(current.category)}
-     &id=neq.${current.id}
-     &limit=5`
+  // FIX: Query als EIN Zeile (keine Zeilenumbrüche im URL-String)
+  const data = await safeSupa(
+    `entries_with_ratings?select=id,slug,title,summary&category=eq.${encodeURIComponent(current.category)}&id=neq.${current.id}&limit=5`
   );
 
   if (!data || data.length === 0) {
@@ -650,16 +614,13 @@ async function loadSimilarEntries(current) {
 
   box.querySelectorAll(".similar-card").forEach(card => {
     card.addEventListener("click", () => {
-  const slug = card.dataset.slug;
-  if (!slug) return;
-
-  history.pushState(null, "", `/marketshield/${slug}/`);
-  loadEntry(slug);
-});
-
+      const slug = card.dataset.slug;
+      if (!slug) return;
+      history.pushState(null, "", `/marketshield/${slug}/`);
+      loadEntry(slug);
+    });
   });
 }
-
 
 /* ================= SOCIAL ================= */
 function renderEntryActions(title) {
@@ -718,13 +679,11 @@ async function smartSearch(q) {
   const term = q.trim();
   if (term.length < 2) return [];
   const enc = encodeURIComponent(term);
-  return await supa(
-  `entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&slug=not.is.null&title=ilike.%25${enc}%25`
-);
-
+  return await safeSupa(
+    `entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&slug=not.is.null&title=ilike.%25${enc}%25`
+  );
 }
 
-// Event-Listener zur Suche
 function initSearch() {
   const input = $("searchInput");
   const box = $("results");
@@ -733,7 +692,6 @@ function initSearch() {
   input.addEventListener("input", async () => {
     const q = input.value.trim();
 
-    // 🔑 DAS FEHLTE
     const grid = document.querySelector(".category-grid");
     if (grid) grid.style.display = "none";
 
@@ -748,14 +706,12 @@ function initSearch() {
   });
 }
 
-
-
 /* ================= KATEGORIEN ================= */
 async function loadCategories() {
   const grid = document.querySelector(".category-grid");
   if (!grid) return;
 
-  const data = await supa('categories');  // Holen der Kategorien aus Supabase
+  const data = await safeSupa("categories");
   grid.innerHTML = "";
 
   if (data && Array.isArray(data)) {
@@ -773,49 +729,36 @@ async function loadCategories() {
   grid.style.display = "grid";
 }
 
-
-// Funktion zum Laden der Einträge einer Kategorie
 async function loadCategory(cat) {
   hideStaticEntries();
-  history.pushState(null, "", location.pathname);
+
+  // FIX: Kategorie-Auswahl soll Startseiten-URL setzen (nicht Detail-URL behalten)
+  history.pushState(null, "", "/marketshield/");
 
   const encCat = encodeURIComponent(cat);
-  const data = await supa(
-  `entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encCat}&slug=not.is.null`
-);
+  const data = await safeSupa(
+    `entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encCat}&slug=not.is.null`
+  );
 
-  renderList(data);  // Anzeige der Einträge
+  renderList(data);
 }
 
-/* ================= NAV ================= */
-
 /* ================= NAV (FINAL / SAFE) ================= */
-
-// Helper: sichere Navigation zu einem Slug
 function goToSlug(slug) {
   if (!slug || slug === "undefined") return;
-
   const clean = String(slug).trim();
   if (!clean) return;
-
   history.pushState(null, "", `/marketshield/${clean}/`);
   loadEntry(clean);
 }
 
 document.addEventListener("click", (e) => {
-  // ✅ Niemals UI-Controls kapern
   if (e.target.closest("button, a, input, textarea, select, label")) return;
-
-  // ✅ Niemals Ratings/Support/Share kapern (deine Klassen/IDs)
   if (e.target.closest(".rating-wrapper, .rating-stars, .rating-star")) return;
   if (e.target.closest(".support-box, .support-paypal, .crypto-address")) return;
   if (e.target.closest("#entryActions, #affiliateBox")) return;
-
-  // ✅ Wenn Kategorien sichtbar sind: keine Karten-Navigation erzwingen
-  // (Buttons regeln das selbst)
   if (e.target.closest(".category-grid")) return;
 
-  // ✅ Entry-Karten (Liste) klicken
   const card = e.target.closest(".entry-card");
   if (!card) return;
 
@@ -825,10 +768,6 @@ document.addEventListener("click", (e) => {
   e.preventDefault();
   goToSlug(slug);
 });
-
-
-
-
 
 /* ================= REPORT FAB ================= */
 function initReport() {
@@ -882,14 +821,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (slug && slug !== "undefined") {
     loadEntry(slug);
   } else {
-    showCategories(); // ✅ HIER JA
+    showCategories();
   }
 });
 
-
-
- 
-
+/* ================= COPY CRYPTO ================= */
 function copyCryptoAddress(el) {
   const addr = el.querySelector("span")?.innerText;
   if (!addr) return;
@@ -902,6 +838,7 @@ function copyCryptoAddress(el) {
     }, 1200);
   });
 }
+
 document.addEventListener("click", function (e) {
   const el = e.target.closest(".crypto-address");
   if (!el) return;
@@ -917,5 +854,3 @@ document.addEventListener("click", function (e) {
     }, 1200);
   });
 });
-
-
