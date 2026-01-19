@@ -497,7 +497,6 @@ if (location.pathname !== canonicalPath) {
 }
 
   if (!e) return;
-const slug = e.slug;
 const url  = `${location.origin}/marketshield/${slug}/`;
 const img  = `${location.origin}/marketshield/images/${slug}.jpg`;
 
@@ -521,22 +520,13 @@ setOG("twitter:title", e.title);
 setOG("twitter:description", shortText(e.summary, 155));
 setOG("twitter:image", img);
 
-  currentEntryId = id;
-
   if (!e.quick_facts) {
     e.quick_facts = generateQuickFacts(e);
   }
 
   box.innerHTML = `
     <article class="entry-detail">
-<img
-  src="/marketshield/images/${e.slug}.jpg"
-  alt="${escapeHtml(e.title)} – MarketShield Analyse"
-  width="1200"
-  height="630"
-  loading="eager"
-  style="max-width:100%;border-radius:12px;margin:12px 0;"
-/>
+
 
       <h2>${escapeHtml(e.title)}</h2>
 
@@ -763,8 +753,12 @@ document.addEventListener("click", (e) => {
   const c = e.target.closest(".entry-card");
   if (!c) return;
 
-  const id = c.dataset.id;
   const slug = c.dataset.slug;
+if (!slug) return;
+
+history.pushState(null, "", `/marketshield/${slug}/`);
+loadEntry(slug);
+
 
   if (!id) return;
 
@@ -834,22 +828,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 
-  // 👇 SEO-URL auswerten
-  const path = location.pathname
-    .replace("/marketshield/", "")
-    .replaceAll("/", "");
-
-  if (path) {
-    const slug = location.pathname
-  .replace(/^\/marketshield\/|\/$/g, "");
-
-if (slug) {
-  loadEntry(slug);
-}
-
-    }
-  }
-});
+ 
 
 function copyCryptoAddress(el) {
   const addr = el.querySelector("span")?.innerText;
