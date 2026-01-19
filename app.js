@@ -821,19 +821,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const slug = location.pathname
     .replace(/^\/marketshield\/|\/$/g, "");
 
-  if (slug) {
-    // Detailseite → KEINE Kategorien
+  if (slug && slug !== "undefined") {
     loadEntry(slug);
   } else {
-    // Startseite → Kategorien anzeigen
+    history.replaceState(null, "", "/marketshield/");
     showCategories();
-  }if (slug && slug !== "undefined") {
-  loadEntry(slug);
-} else {
-  history.replaceState(null, "", "/marketshield/");
-  showCategories();
-}
-
+  }
 });
 
 
