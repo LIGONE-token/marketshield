@@ -464,7 +464,7 @@ function renderList(data) {
   hideStaticEntries();
 
   box.innerHTML = (data || []).map(e => `
-    <div class="entry-card" data-id="${e.id}" data-slug="${e.slug}">
+    <div class="entry-card" data-slug="${e.slug}">
       <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
       ${renderRatingBlock(e.rating_avg, e.rating_count)}
       ${renderScoreBlock(e.score, e.processing_score)}
@@ -476,12 +476,25 @@ function renderList(data) {
 }
 
 /* ================= DETAIL ================= */
-async function loadEntry(id) {
+async function loadEntry(slug) {
   const box = document.getElementById("results");
-  if (!box) return;
+  if (!box || !slug) return;
+
+  const d = await supa(
+    `entries_with_ratings?select=*&slug=eq.${encodeURIComponent(slug)}`
+  );
+
+  const e = d[0];
+  if (!e) return;
+
 
   const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
   const e = d[0];
+  const canonicalPath = `/marketshield/${e.slug}/`;
+if (location.pathname !== canonicalPath) {
+  history.replaceState(null, "", canonicalPath);
+}
+
   if (!e) return;
 const slug = e.slug;
 const url  = `${location.origin}/marketshield/${slug}/`;
@@ -626,9 +639,11 @@ async function loadSimilarEntries(current) {
 
   box.querySelectorAll(".similar-card").forEach(card => {
     card.addEventListener("click", () => {
-      const id = card.dataset.id;
-      if (!id) return;
-      loadEntry(id); // direkt laden (kein slug nötig)
+      const slug = c.dataset.slug;
+if (!slug) return;
+
+loadEntry(slug);
+
     });
   });
 }
