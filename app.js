@@ -778,11 +778,17 @@ document.addEventListener("click", (e) => {
   if (!c) return;
 
   const slug = c.dataset.slug;
-  if (!slug) return;
+
+  // 🔒 HARTER GUARD
+  if (!slug || slug === "undefined" || slug === "null") {
+    console.warn("Entry ohne gültigen Slug – Klick ignoriert");
+    return;
+  }
 
   history.pushState(null, "", `/marketshield/${slug}/`);
   loadEntry(slug);
 });
+
 
 
 
