@@ -837,10 +837,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (slug && slug !== "undefined") {
     loadEntry(slug);
+  } else {
+    showCategories(); // ✅ HIER JA
   }
-  // ⛔ KEIN showCategories() HIER
 });
-;
 
 
 
