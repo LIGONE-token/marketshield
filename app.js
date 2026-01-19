@@ -817,6 +817,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadCategories();
   initSearch();
   initReport();
+const params = new URLSearchParams(location.search);
+const slug = params.get("p") || location.pathname.replace(/^\/marketshield\/|\/$/g, "");
+
+if (slug && slug !== "undefined") {
+  loadEntry(slug);
+} else {
+  showCategories();
+}
 
   const slug = location.pathname
     .replace(/^\/marketshield\/|\/$/g, "");
