@@ -1,6 +1,15 @@
 /* =====================================================
    MarketShield – app.js (FINAL / EXAKT)
 ===================================================== */
+/* ================= HARD GUARD ================= */
+
+// Repariert /marketshield/undefined/ VOR ALLER LOGIK
+(function () {
+  if (location.pathname.endsWith("/undefined/")) {
+    history.replaceState(null, "", "/marketshield/");
+  }
+})();
+
 
 /* ================= GLOBAL ================= */
 let currentEntryId = null;
