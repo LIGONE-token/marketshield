@@ -450,7 +450,7 @@ function bindRatingClicks() {
         user_hash: getUserHash()
       });
 
-      loadEntry(currentEntryId); // sofort aktualisieren
+      loadEntry(location.pathname.replace(/^\/marketshield\/|\/$/g, ""));
     });
   });
 }
@@ -630,12 +630,13 @@ async function loadSimilarEntries(current) {
 
   box.querySelectorAll(".similar-card").forEach(card => {
     card.addEventListener("click", () => {
-      const slug = c.dataset.slug;
-if (!slug) return;
+  const slug = card.dataset.slug;
+  if (!slug) return;
 
-loadEntry(slug);
+  history.pushState(null, "", `/marketshield/${slug}/`);
+  loadEntry(slug);
+});
 
-    });
   });
 }
 
