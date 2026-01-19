@@ -146,12 +146,17 @@ function renderList(data) {
     if (!e.slug) return;
 
     const a = document.createElement("a");
-    a.href = `/marketshield/${e.slug}/`;
+    a.href = `/marketshield/${e.slug}/`; // SEO & Fallback
     a.className = "entry-card";
     a.style.display = "block";
     a.style.cursor = "pointer";
     a.style.textDecoration = "none";
     a.style.color = "inherit";
+
+    a.addEventListener("click", (ev) => {
+      ev.preventDefault();              // ⛔ verhindert Startseiten-Sprung
+      goToSlug(e.slug);                 // ✅ SPA-Navigation
+    });
 
     a.innerHTML = `
       <div style="font-size:20px;font-weight:800;">
@@ -167,6 +172,7 @@ function renderList(data) {
     box.appendChild(a);
   });
 }
+
 
 
 /* ================= DETAIL ================= */
