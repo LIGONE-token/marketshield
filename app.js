@@ -719,10 +719,22 @@ function initSearch() {
 
   input.addEventListener("input", async () => {
     const q = input.value.trim();
+
+    // 🔑 DAS FEHLTE
+    const grid = document.querySelector(".category-grid");
+    if (grid) grid.style.display = "none";
+
+    if (q.length < 2) {
+      showCategories();
+      box.innerHTML = "";
+      return;
+    }
+
     const data = await smartSearch(q);
-    renderList(data);  // Anzeige der Suchergebnisse
+    renderList(data);
   });
 }
+
 
 
 /* ================= KATEGORIEN ================= */
