@@ -145,12 +145,15 @@ function renderList(data) {
   data.forEach(e => {
     if (!e.slug) return;
 
-    const card = document.createElement("div");
-    card.className = "entry-card";
-    card.style.cursor = "pointer";
-    card.dataset.slug = e.slug;
+    const a = document.createElement("a");
+    a.href = `/marketshield/${e.slug}/`;
+    a.className = "entry-card";
+    a.style.display = "block";
+    a.style.cursor = "pointer";
+    a.style.textDecoration = "none";
+    a.style.color = "inherit";
 
-    card.innerHTML = `
+    a.innerHTML = `
       <div style="font-size:20px;font-weight:800;">
         ${escapeHtml(e.title)}
       </div>
@@ -161,11 +164,7 @@ function renderList(data) {
       </div>
     `;
 
-    card.addEventListener("click", () => {
-      goToSlug(e.slug);
-    });
-
-    box.appendChild(card);
+    box.appendChild(a);
   });
 }
 
