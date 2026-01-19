@@ -234,3 +234,11 @@ document.addEventListener("DOMContentLoaded",()=>{
   const slug=location.pathname.replace(/^\/marketshield\/|\/$/g,"");
   if(slug) loadEntry(slug); else showCategories();
 });
+window.addEventListener("popstate", () => {
+  const slug = location.pathname.replace(/^\/marketshield\/|\/$/g, "");
+  if (slug) {
+    loadEntry(slug);
+  } else {
+    showCategories();
+  }
+});
