@@ -471,18 +471,28 @@ function renderList(data) {
   if (!box) return;
 
   hideStaticEntries();
+  currentEntryId = null;
 
-  box.innerHTML = (data || []).map(e => `
-    <div class="entry-card" data-slug="${e.slug}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
-      ${renderRatingBlock(e.rating_avg, e.rating_count)}
-      ${renderScoreBlock(e.score, e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;">
-        ${escapeHtml(shortText(e.summary))}
+  box.innerHTML = (data || [])
+    .filter(e => e.slug) // 🔑 ABSOLUT KRITISCH
+    .map(e => `
+      <div class="entry-card" data-slug="${e.slug}">
+        <div style="font-size:20px;font-weight:800;">
+          ${escapeHtml(e.title)}
+        </div>
+        ${renderRatingBlock(e.rating_avg, e.rating_count)}
+        ${renderScoreBlock(e.score, e.processing_score)}
+        <div style="font-size:15px;line-height:1.4;">
+          ${escapeHtml(shortText(e.summary))}
+        </div>
       </div>
-    </div>
-  `).join("");
+    `).join("");
+
+  if (!box.innerHTML.trim()) {
+    box.innerHTML = "<p style='opacity:.6'>Keine passenden Einträge gefunden.</p>";
+  }
 }
+
 
 /* ================= DETAIL ================= */
 async function loadEntry(slug) {
@@ -708,7 +718,10 @@ async function smartSearch(q) {
   const term = q.trim();
   if (term.length < 2) return [];
   const enc = encodeURIComponent(term);
-  return await supa(`entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&title=ilike.%25${enc}%25`);
+  return await supa(
+  `entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&slug=not.is.null&title=ilike.%25${enc}%25`
+);
+
 }
 
 // Event-Listener zur Suche
@@ -767,7 +780,10 @@ async function loadCategory(cat) {
   history.pushState(null, "", location.pathname);
 
   const encCat = encodeURIComponent(cat);
-  const data = await supa(`entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encCat}`);
+  const data = await supa(
+  `entries_with_ratings?select=id,slug,title,summary,score,processing_score,rating_avg,rating_count&category=eq.${encCat}&slug=not.is.null`
+);
+
   renderList(data);  // Anzeige der Einträge
 }
 
