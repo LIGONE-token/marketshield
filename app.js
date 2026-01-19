@@ -488,8 +488,6 @@ async function loadEntry(slug) {
   if (!e) return;
 
 
-  const d = await supa(`entries_with_ratings?select=*&id=eq.${id}`);
-  const e = d[0];
   const canonicalPath = `/marketshield/${e.slug}/`;
 if (location.pathname !== canonicalPath) {
   history.replaceState(null, "", canonicalPath);
