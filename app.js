@@ -129,18 +129,46 @@ function bindRatingClicks(){
 }
 
 /* ================= LISTE ================= */
-function renderList(data){
-  const box=$("results"); if(!box) return;
-  hideStaticEntries(); currentEntryId=null;
-  box.innerHTML=(data||[])
-    .filter(e=>e.slug!==null&&e.slug!==undefined)
-    .map(e=>`<div class="entry-card" data-slug="${e.slug}">
-      <div style="font-size:20px;font-weight:800;">${escapeHtml(e.title)}</div>
-      ${renderRatingBlock(e.rating_avg,e.rating_count)}
-      ${renderScoreBlock(e.score,e.processing_score)}
-      <div style="font-size:15px;line-height:1.4;">${escapeHtml(shortText(e.summary))}</div>
-    </div>`).join("") || "<p style='opacity:.6'>Keine passenden Einträge gefunden.</p>";
+function renderList(data) {
+  const box = document.getElementById("results");
+  if (!box) return;
+
+  hideStaticEntries();
+  currentEntryId = null;
+  box.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    box.innerHTML = "<p style='opacity:.6'>Keine passenden Einträge gefunden.</p>";
+    return;
+  }
+
+  data.forEach(e => {
+    if (!e.slug) return;
+
+    const card = document.createElement("div");
+    card.className = "entry-card";
+    card.style.cursor = "pointer";
+    card.dataset.slug = e.slug;
+
+    card.innerHTML = `
+      <div style="font-size:20px;font-weight:800;">
+        ${escapeHtml(e.title)}
+      </div>
+      ${renderRatingBlock(e.rating_avg, e.rating_count)}
+      ${renderScoreBlock(e.score, e.processing_score)}
+      <div style="font-size:15px;line-height:1.4;">
+        ${escapeHtml(shortText(e.summary))}
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      goToSlug(e.slug);
+    });
+
+    box.appendChild(card);
+  });
 }
+
 
 /* ================= DETAIL ================= */
 async function loadEntry(slug){
