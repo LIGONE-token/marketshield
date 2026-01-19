@@ -789,21 +789,43 @@ async function loadCategory(cat) {
 
 /* ================= NAV ================= */
 
+/* ================= NAV (FINAL / SAFE) ================= */
+
+// Helper: sichere Navigation zu einem Slug
+function goToSlug(slug) {
+  if (!slug || slug === "undefined") return;
+
+  const clean = String(slug).trim();
+  if (!clean) return;
+
+  history.pushState(null, "", `/marketshield/${clean}/`);
+  loadEntry(clean);
+}
+
 document.addEventListener("click", (e) => {
-  const c = e.target.closest(".entry-card");
-  if (!c) return;
+  // ✅ Niemals UI-Controls kapern
+  if (e.target.closest("button, a, input, textarea, select, label")) return;
 
-  const slug = c.dataset.slug;
+  // ✅ Niemals Ratings/Support/Share kapern (deine Klassen/IDs)
+  if (e.target.closest(".rating-wrapper, .rating-stars, .rating-star")) return;
+  if (e.target.closest(".support-box, .support-paypal, .crypto-address")) return;
+  if (e.target.closest("#entryActions, #affiliateBox")) return;
 
-  // 🔒 HARTER GUARD
-  if (!slug || slug === "undefined" || slug === "null") {
-    console.warn("Entry ohne gültigen Slug – Klick ignoriert");
-    return;
-  }
+  // ✅ Wenn Kategorien sichtbar sind: keine Karten-Navigation erzwingen
+  // (Buttons regeln das selbst)
+  if (e.target.closest(".category-grid")) return;
 
-  history.pushState(null, "", `/marketshield/${slug}/`);
-  loadEntry(slug);
+  // ✅ Entry-Karten (Liste) klicken
+  const card = e.target.closest(".entry-card");
+  if (!card) return;
+
+  const slug = card.dataset.slug;
+  if (!slug || slug === "undefined") return;
+
+  e.preventDefault();
+  goToSlug(slug);
 });
+
 
 
 
