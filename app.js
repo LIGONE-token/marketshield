@@ -827,11 +827,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     .replaceAll("/", "");
 
   if (path) {
-    const r = await supa(
-      `entries_with_ratings?select=id&slug=eq.${encodeURIComponent(path)}`
-    );
-    if (r.length === 1) {
-      loadEntry(r[0].id);
+    const slug = location.pathname
+  .replace(/^\/marketshield\/|\/$/g, "");
+
+if (slug) {
+  loadEntry(slug);
+}
+
     }
   }
 });
