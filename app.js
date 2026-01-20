@@ -67,6 +67,39 @@ function hideStaticEntries(){
   const s=$("static-entries");
   if(s) s.style.display="none";
 }
+function renderMarkdownTableBlock(text) {
+  if (!text || !text.includes("|")) return null;
+
+  const lines = text.split("\n").map(l => l.trim());
+  const sep = lines.findIndex(l => /^[-\s|]{5,}$/.test(l));
+  if (sep <= 0) return null;
+
+  const header = lines[sep - 1].split("|").map(s => s.trim()).filter(Boolean);
+  const rows = [];
+
+  for (let i = sep + 1; i < lines.length; i++) {
+    if (!lines[i].includes("|")) break;
+    rows.push(lines[i].split("|").map(s => s.trim()).filter(Boolean));
+  }
+
+  if (!rows.length) return null;
+
+  return `
+    <div class="table-wrapper">
+      <table class="ms-table">
+        <thead>
+          <tr>${header.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
+        </thead>
+        <tbody>
+          ${rows.map(r =>
+            `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
+          ).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderParagraphs(text = "") {
   if (!text) return "";
   return String(text)
