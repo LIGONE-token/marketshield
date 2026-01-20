@@ -70,10 +70,15 @@ function hideStaticEntries(){
 function renderParagraphs(text = "") {
   if (!text) return "";
   return String(text)
-    .split(/\n{2,}/)              // Absätze bei Leerzeilen
-    .map(p => `<p>${escapeHtml(p.trim())}</p>`)
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .split(/\n{2,}/)                 // echte Absatztrennung
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => `<p>${escapeHtml(p)}</p>`)
     .join("");
 }
+
 
 /* ================= SCORES (EXAKT WIE VORHER) ================= */
 function renderHealth(score){
