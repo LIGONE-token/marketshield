@@ -152,7 +152,9 @@ function renderList(data) {
 
     a.addEventListener("click", (ev) => {
       ev.preventDefault();              // ⛔ verhindert Startseiten-Sprung
-      goToSlug(e.slug);                 // ✅ SPA-Navigation
+      history.pushState(null, "", `/marketshield/${e.slug}/`);
+loadEntry(e.slug);
+                 
     });
 
     a.innerHTML = `
