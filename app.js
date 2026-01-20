@@ -10,9 +10,6 @@
   }
 })();
 
-window.addEventListener("error", () => {});
-window.addEventListener("unhandledrejection", () => {});
-
 /* ================= GLOBAL ================= */
 let currentEntryId = null;
 
