@@ -209,13 +209,43 @@ async function loadEntry(slug){
 
 /* ================= SIMILAR ================= */
 async function loadSimilarEntries(cur){
-  const box=$("similarEntries"); if(!box) return;
-  const d=await supa(`entries_with_ratings?select=id,slug,title,summary&category=eq.${encodeURIComponent(cur.category)}&id=neq.${cur.id}&limit=5`);
-  if(!d.length){box.innerHTML="";return;}
-  box.innerHTML=`<h3>Ähnliche Einträge</h3><div class="similar-list">
-    ${d.map(e=>`<div class="similar-card" data-slug="${e.slug}"><strong>${escapeHtml(e.title)}</strong><div>${escapeHtml(shortText(e.summary,120))}</div></div>`).join("")}
-  </div>`;
+  const box = $("similarEntries");
+  if (!box) return;
+
+  const d = await supa(
+    `entries_with_ratings?select=id,slug,title,summary&category=eq.${encodeURIComponent(cur.category)}&id=neq.${cur.id}&limit=5`
+  );
+
+  if (!d.length) {
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = `
+    <h3>Ähnliche Einträge</h3>
+    <div class="similar-list">
+      ${d.map(e => `
+        <div class="similar-card" data-slug="${e.slug}">
+          <strong>${escapeHtml(e.title)}</strong>
+          <div>${escapeHtml(shortText(e.summary,120))}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  /* ✅ DAS FEHLTE – CLICK BINDING */
+  box.querySelectorAll(".similar-card").forEach(card => {
+    card.style.cursor = "pointer";
+    card.addEventListener("click", () => {
+      const slug = card.dataset.slug;
+      if (!slug) return;
+      history.pushState(null, "", `/marketshield/${slug}/`);
+      loadEntry(slug);
+    });
+  });
 }
+
+
 
 /* ================= SEARCH + CATEGORIES ================= */
 async function smartSearch(q){
