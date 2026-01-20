@@ -72,12 +72,13 @@ function renderParagraphs(text = "") {
   return String(text)
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
-    .split(/\n{2,}/)                 // echte Absatztrennung
+    .split(/\n+/)                  // ⬅️ JEDER Zeilenumbruch
     .map(p => p.trim())
     .filter(Boolean)
     .map(p => `<p>${escapeHtml(p)}</p>`)
     .join("");
 }
+
 
 
 /* ================= SCORES (EXAKT WIE VORHER) ================= */
