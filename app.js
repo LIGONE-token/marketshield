@@ -67,6 +67,13 @@ function hideStaticEntries(){
   const s=$("static-entries");
   if(s) s.style.display="none";
 }
+function renderParagraphs(text = "") {
+  if (!text) return "";
+  return String(text)
+    .split(/\n{2,}/)              // Absätze bei Leerzeilen
+    .map(p => `<p>${escapeHtml(p.trim())}</p>`)
+    .join("");
+}
 
 /* ================= SCORES (EXAKT WIE VORHER) ================= */
 function renderHealth(score){
@@ -185,7 +192,7 @@ async function loadEntry(slug){
     <h2>${escapeHtml(e.title)}</h2>
     ${renderRatingBlock(e.rating_avg,e.rating_count)}
     ${renderScoreBlock(e.score,e.processing_score,14)}
-    <p>${escapeHtml(e.summary||"")}</p>
+    ${renderParagraphs(e.summary || "")}
     <div id="similarEntries"></div>
     <div id="affiliateBox"></div>
     <div id="entryActions"></div>
