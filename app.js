@@ -100,16 +100,49 @@ function renderMarkdownTableBlock(text) {
   `;
 }
 
-function renderParagraphs(text = "") {
+function renderContent(text = "") {
   if (!text) return "";
-  return String(text)
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
-    .split(/\n+/)                  // ⬅️ JEDER Zeilenumbruch
-    .map(p => p.trim())
-    .filter(Boolean)
-    .map(p => `<p>${escapeHtml(p)}</p>`)
-    .join("");
+
+  const blocks = [];
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+
+  let buffer = [];
+  let tableBuffer = [];
+
+  function flushParagraph() {
+    if (buffer.length) {
+      blocks.push(
+        buffer.map(p => `<p>${escapeHtml(p)}</p>`).join("")
+      );
+      buffer = [];
+    }
+  }
+
+  function flushTable() {
+    if (tableBuffer.length) {
+      const table = renderMarkdownTableBlock(tableBuffer.join("\n"));
+      if (table) blocks.push(table);
+      tableBuffer = [];
+    }
+  }
+
+  for (let line of lines) {
+    const isTableLine = line.includes("|");
+
+    if (isTableLine) {
+      flushParagraph();
+      tableBuffer.push(line);
+    } else {
+      flushTable();
+      if (line.trim()) buffer.push(line.trim());
+      else flushParagraph();
+    }
+  }
+
+  flushTable();
+  flushParagraph();
+
+  return blocks.join("");
 }
 
 
@@ -231,7 +264,7 @@ async function loadEntry(slug){
     <h2>${escapeHtml(e.title)}</h2>
     ${renderRatingBlock(e.rating_avg,e.rating_count)}
     ${renderScoreBlock(e.score,e.processing_score,14)}
-    ${renderParagraphs(e.summary || "")}
+    ${renderContent(e.summary || "")}
     <div id="similarEntries"></div>
     <div id="affiliateBox"></div>
     <div id="entryActions"></div>
