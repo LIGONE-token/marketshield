@@ -70,16 +70,40 @@ function hideStaticEntries(){
 function renderMarkdownTableBlock(text) {
   if (!text || !text.includes("|")) return null;
 
-  const lines = text.split("\n").map(l => l.trim());
-  const sep = lines.findIndex(l => /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?$/.test(l));
-  if (sep <= 0) return null;
+  const lines = text
+    .split("\n")
+    .map(l => l.trim())
+    .filter(Boolean);
 
-  const header = lines[sep - 1].split("|").map(s => s.trim()).filter(Boolean);
+  // finde Header + Trennlinie (egal ob Linien dazwischen sind)
+  let headerIndex = -1;
+  let sepIndex = -1;
+
+  for (let i = 0; i < lines.length - 1; i++) {
+    if (
+      lines[i].includes("|") &&
+      /^(\|?\s*:?-+:?\s*)+(\|\s*:?-+:?\s*)*\|?$/.test(lines[i + 1])
+    ) {
+      headerIndex = i;
+      sepIndex = i + 1;
+      break;
+    }
+  }
+
+  if (headerIndex === -1) return null;
+
+  const header = lines[headerIndex]
+    .split("|")
+    .map(s => s.trim())
+    .filter(Boolean);
+
   const rows = [];
 
-  for (let i = sep + 1; i < lines.length; i++) {
+  for (let i = sepIndex + 1; i < lines.length; i++) {
     if (!lines[i].includes("|")) break;
-    rows.push(lines[i].split("|").map(s => s.trim()).filter(Boolean));
+    rows.push(
+      lines[i].split("|").map(s => s.trim()).filter(Boolean)
+    );
   }
 
   if (!rows.length) return null;
@@ -91,9 +115,12 @@ function renderMarkdownTableBlock(text) {
           <tr>${header.map(h => `<th>${escapeHtml(h)}</th>`).join("")}</tr>
         </thead>
         <tbody>
-          ${rows.map(r =>
-            `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
-          ).join("")}
+          ${rows
+            .map(
+              r =>
+                `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join("")}</tr>`
+            )
+            .join("")}
         </tbody>
       </table>
     </div>
