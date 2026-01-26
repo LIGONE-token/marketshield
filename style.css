@@ -2256,3 +2256,20 @@ footer .support-crypto code {
 .entry-card * {
   pointer-events: none;
 }
+.table-wrapper {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.ms-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+
+.ms-table th,
+.ms-table td {
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  text-align: left;
+}
