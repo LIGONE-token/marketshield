@@ -71,7 +71,7 @@ function renderMarkdownTableBlock(text) {
   if (!text || !text.includes("|")) return null;
 
   const lines = text.split("\n").map(l => l.trim());
-  const sep = lines.findIndex(l => /^[-\s|]{5,}$/.test(l));
+  const sep = lines.findIndex(l => /^\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?$/.test(l));
   if (sep <= 0) return null;
 
   const header = lines[sep - 1].split("|").map(s => s.trim()).filter(Boolean);
@@ -337,16 +337,15 @@ async function loadCategories(){
 
 /* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded",()=>{
-  loadCategories();
   initSearch();
-  const slug=location.pathname.replace(/^\/marketshield\/|\/$/g,"");
-  if(slug) loadEntry(slug); else showCategories();
-});
-window.addEventListener("popstate", () => {
+
   const slug = location.pathname.replace(/^\/marketshield\/|\/$/g, "");
+
   if (slug) {
-    loadEntry(slug);
+    loadEntry(slug);        // 👉 Detailseite zuerst
   } else {
+    loadCategories();       // 👉 nur Startseite
     showCategories();
   }
 });
+
