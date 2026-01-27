@@ -50,6 +50,26 @@ async function supaPost(table, payload) {
 }
 
 /* ================= HELPERS ================= */
+function renderEffectsBlock(title, items) {
+  if (!items) return "";
+  let arr;
+  try {
+    arr = Array.isArray(items) ? items : JSON.parse(items);
+  } catch {
+    return "";
+  }
+  if (!arr.length) return "";
+
+  return `
+    <section class="entry-effects">
+      <h3>${title}</h3>
+      <ul>
+        ${arr.map(i => `<li>${escapeHtml(i)}</li>`).join("")}
+      </ul>
+    </section>
+  `;
+}
+
 const $ = id => document.getElementById(id);
 
 function escapeHtml(s="") {
@@ -283,23 +303,61 @@ loadEntry(e.slug);
 
 /* ================= DETAIL ================= */
 async function loadEntry(slug){
-  const box=$("results"); if(!box||!slug) return;
-  const d=await supa(`entries_with_ratings?select=*&slug=eq.${encodeURIComponent(slug)}`);
-  const e=d[0]; if(!e) return; currentEntryId=e.id;
-  history.replaceState(null,"",`/marketshield/${e.slug}/`);
-  document.title=`${e.title} – MarketShield`;
-  box.innerHTML=`<article class="entry-detail">
-    <h2>${escapeHtml(e.title)}</h2>
-    ${renderRatingBlock(e.rating_avg,e.rating_count)}
-    ${renderScoreBlock(e.score,e.processing_score,14)}
-    ${renderContent(e.summary || "")}
-    <div id="similarEntries"></div>
-    <div id="affiliateBox"></div>
-    <div id="entryActions"></div>
-  </article>`;
+  const box = $("results");
+  if (!box || !slug) return;
+
+  const d = await supa(`entries_with_ratings?select=*&slug=eq.${encodeURIComponent(slug)}`);
+  const e = d[0];
+  if (!e) return;
+
+  currentEntryId = e.id;
+  history.replaceState(null, "", `/marketshield/${e.slug}/`);
+  document.title = `${e.title} – MarketShield`;
+
+  box.innerHTML = `
+    <article class="entry-detail">
+
+      <!-- 1. Titel -->
+      <h2>${escapeHtml(e.title)}</h2>
+
+      <!-- 2. Bewertung / Einordnung -->
+      ${renderRatingBlock(e.rating_avg, e.rating_count)}
+      ${renderScoreBlock(e.score, e.processing_score, 14)}
+
+      <!-- 3. Zusammenfassung -->
+      <section class="entry-summary">
+        ${renderContent(e.summary || "")}
+      </section>
+
+      <!-- 4. Einordnung nach Wirkung -->
+      ${renderEffectsBlock("Positiv", e.effects_positive)}
+      ${renderEffectsBlock("Negativ", e.effects_negative)}
+      ${renderEffectsBlock("Risikogruppen", e.risk_groups)}
+
+      <!-- 5. Fachliche Details -->
+      ${e.mechanism ? `
+        <section class="entry-mechanism">
+          <h3>Wirkmechanismus</h3>
+          <p>${escapeHtml(e.mechanism)}</p>
+        </section>` : ""}
+
+      ${e.scientific_note ? `
+        <section class="entry-science">
+          <h3>Wissenschaftliche Einordnung</h3>
+          <p>${escapeHtml(e.scientific_note)}</p>
+        </section>` : ""}
+
+      <div id="similarEntries"></div>
+      <div id="affiliateBox"></div>
+      <div id="entryActions"></div>
+
+    </article>
+  `;
+
   bindRatingClicks();
   loadSimilarEntries(e);
 }
+
 
 /* ================= SIMILAR ================= */
 async function loadSimilarEntries(cur){
