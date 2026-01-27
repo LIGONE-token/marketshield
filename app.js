@@ -50,6 +50,14 @@ async function supaPost(table, payload) {
 }
 
 /* ================= HELPERS ================= */
+function goHome() {
+  const box = $("results");
+  if (box) box.innerHTML = "";
+  showCategories();
+  history.pushState(null, "", "/marketshield/");
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
 function renderEffectsBlock(title, items) {
   if (!items) return "";
   let arr;
@@ -280,7 +288,9 @@ function renderList(data) {
     a.addEventListener("click", (ev) => {
       ev.preventDefault();              // ⛔ verhindert Startseiten-Sprung
       history.pushState(null, "", `/marketshield/${e.slug}/`);
+window.scrollTo({ top: 0, behavior: "instant" });
 loadEntry(e.slug);
+
                  
     });
 
@@ -425,7 +435,11 @@ async function loadCategories(){
 document.addEventListener("DOMContentLoaded",()=>{
   initSearch();
 
-  const slug = location.pathname.replace(/^\/marketshield\/|\/$/g, "");
+  const path = location.pathname.replace(/\/+$/, "");
+const slug = path.startsWith("/marketshield/")
+  ? path.slice("/marketshield/".length)
+  : "";
+
 
   if (slug) {
     loadEntry(slug);        // 👉 Detailseite zuerst
