@@ -154,7 +154,8 @@ function renderContent(text = "") {
   }
 
   for (let line of lines) {
-    const isTableLine = line.includes("|");
+    const isTableLine =
+  line.includes("|") || /^[-\s]{3,}$/.test(line);
 
     if (isTableLine) {
       flushParagraph();
