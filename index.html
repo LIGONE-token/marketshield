@@ -400,7 +400,7 @@ function toggleLig1Box() {
 </script>
 
 <script>
-(async function () {
+window.addEventListener("load", async function () {
   try {
     const res = await fetch(
       "https://ligone-token.github.io/ligone-vorsorge/data/buy-price.json",
@@ -414,33 +414,30 @@ function toggleLig1Box() {
     const data = await res.json();
 
     const priceEur = Number(data.price_eur);
-if (!priceEur || priceEur <= 0) {
-  throw new Error("price_eur fehlt oder ungültig");
-}
+    if (!priceEur || priceEur <= 0) {
+      throw new Error("price_eur fehlt oder ungültig");
+    }
 
-// Für 1 €
-const ligValue = 1 / priceEur;
-
-
+    const ligValue = 1 / priceEur;
     const ligFormatted = ligValue.toLocaleString("de-DE");
 
     const el = document.getElementById("buyExample");
     if (!el) return;
 
     el.innerHTML = `
-  <strong>Beispiel:</strong><br>
-  Für <strong>1 €</strong> bekommst du aktuell<br>
-  <strong>≈ ${ligFormatted} LIG1</strong><br>
-  <span class="lig1-small">
-    (auf Basis des aktuellen Uniswap-Pool-Preises,
-    exakte Menge wird im Swap berechnet)
-  </span>
-`;
+      <strong>Beispiel:</strong><br>
+      Für <strong>1 €</strong> bekommst du aktuell<br>
+      <strong>≈ ${ligFormatted} LIG1</strong><br>
+      <span class="lig1-small">
+        (auf Basis des aktuellen Uniswap-Pool-Preises,
+        exakte Menge wird im Swap berechnet)
+      </span>
+    `;
 
   } catch (err) {
     console.warn("⚠️ Buy-Box nicht aktualisiert:", err.message);
   }
-})();
+});
 </script>
 <script>
 window.addEventListener("load", function () {
