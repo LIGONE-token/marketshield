@@ -159,15 +159,7 @@ ETH / Polygon (ERC20)<br>
   <!-- APP -->
   <script src="app.js" defer></script>
 
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QBT1L9DKNW"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-QBT1L9DKNW');
-  </script>
-<!-- =====================================================
+  <!-- =====================================================
  LIG1 KAUF-BOX – FINAL / STABIL / NULL-LAIEN
 ===================================================== -->
 
@@ -442,7 +434,21 @@ const ligValue = 1 / priceEur;
   }
 })();
 </script>
+<script>
+window.addEventListener("load", function () {
 
+  var s = document.createElement("script");
+  s.src = "https://www.googletagmanager.com/gtag/js?id=G-QBT1L9DKNW";
+  s.async = true;
+  document.head.appendChild(s);
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-QBT1L9DKNW');
+
+});
+</script>
 
 
 </body>
